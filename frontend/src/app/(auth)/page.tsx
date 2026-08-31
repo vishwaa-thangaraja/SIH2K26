@@ -29,7 +29,7 @@ export default function LoginPage() {
             <span className="text-xs font-bold text-sky-700 bg-sky-50 border border-sky-200 px-2.5 py-1 rounded-md uppercase tracking-wider">
               Longitudinal Trainee Tracking System
             </span>
-            <h2 className="text-3xl font-extrabold text-slate-900 mt-2">Skill Bridge Platform</h2>
+            <h2 className="text-3xl font-extrabold text-slate-900 mt-2">CONTINUUM Platform</h2>
             <p className="text-slate-600 mt-1 text-base">
               Autonomous identity continuity, multi-source evidence intelligence & outcome provenance.
             </p>

@@ -19,7 +19,7 @@ export default function AppHeader({ breadcrumbs }: { breadcrumbs: string[] }) {
             <line x1="4.93" y1="19.07" x2="6.34" y2="17.66" />
             <line x1="17.66" y1="4.93" x2="19.07" y2="6.34" />
           </svg>
-          <span className="font-bold text-lg">Skill Bridge</span>
+          <span className="font-bold text-lg">CONTINUUM</span>
           <span className="bg-white/10 px-2 py-0.5 rounded text-xs ml-2 border border-white/20">SIH 26135</span>
         </Link>
       </div>
