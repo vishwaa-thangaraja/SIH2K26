@@ -1,4 +1,4 @@
-# 🇮🇳 Skill Bridge | SIH 2026 (Problem Statement 26135)
+# 🇮🇳 CONTINUUM | SIH 2026 (Problem Statement 26135)
 ## Autonomous Longitudinal Trainee Outcome Tracking Platform
 
 [![Next.js](https://img.shields.io/badge/Next.js-15.0-black?style=flat-square&logo=next.js)](https://nextjs.org/)

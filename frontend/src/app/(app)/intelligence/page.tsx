@@ -1,142 +1,290 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
 import { MOCK_PROVIDERS, MOCK_SKILL_GAPS } from '@/lib/mockData'
 import { 
   BarChart3, TrendingUp, Award, Map, ArrowRight, 
-  ShieldCheck, AlertCircle, Sparkles, Building2, Users 
+  ShieldCheck, AlertCircle, Sparkles, Building2, Users,
+  Activity, ArrowUpRight, CheckCircle2, ChevronRight
 } from 'lucide-react'
 import { 
-  ResponsiveContainer, BarChart, Bar, XAxis, YAxis, 
+  ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, 
   Tooltip, Legend, CartesianGrid 
 } from 'recharts'
 
-const providerComparisonData = [
-  { name: 'PMKVY Center', '3M': 72, '6M': 81, '12M': 76 },
-  { name: 'DDUGKY Hub', '3M': 61, '6M': 69, '12M': 64 },
-  { name: 'NAPS Hub', '3M': 88, '6M': 91, '12M': 87 },
+// Longitudinal outcome trajectory data (Area Chart inspired by bklit.com)
+const longitudinalWageTrajectoryData = [
+  { milestone: 'Enrollment', avgWage: 0, verifiedTrainees: 1480, retentionRate: 100 },
+  { milestone: 'Training Exit', avgWage: 12000, verifiedTrainees: 1420, retentionRate: 96 },
+  { milestone: '3M Milestone', avgWage: 15400, verifiedTrainees: 1310, retentionRate: 88 },
+  { milestone: '6M Milestone', avgWage: 18200, verifiedTrainees: 1220, retentionRate: 82 },
+  { milestone: '12M Milestone', avgWage: 22800, verifiedTrainees: 1140, retentionRate: 77 },
+  { milestone: '24M Milestone', avgWage: 27500, verifiedTrainees: 980, retentionRate: 66 },
 ]
 
+const providerComparisonData = [
+  { name: 'PMKVY National Center', '3M': 72, '6M': 81, '12M': 76 },
+  { name: 'DDUGKY Skills Hub', '3M': 61, '6M': 69, '12M': 64 },
+  { name: 'NAPS Apprenticeship', '3M': 88, '6M': 91, '12M': 87 },
+]
+
+// Custom Tooltip component in minimal style
+function CustomAreaTooltip({ active, payload, label }: any) {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white/95 backdrop-blur-md border border-slate-200/80 p-3 rounded-xl shadow-lg text-xs font-sans space-y-1.5 min-w-[170px]">
+        <p className="font-extrabold text-slate-900 border-b border-slate-100 pb-1">{label}</p>
+        <div className="flex items-center justify-between text-blue-700">
+          <span className="text-slate-500">Average Wage:</span>
+          <span className="font-bold font-mono">₹{payload[0]?.value?.toLocaleString()}</span>
+        </div>
+        {payload[1] && (
+          <div className="flex items-center justify-between text-emerald-700">
+            <span className="text-slate-500">Verified Cohort:</span>
+            <span className="font-bold font-mono">{payload[1]?.value?.toLocaleString()}</span>
+          </div>
+        )}
+      </div>
+    )
+  }
+  return null
+}
+
 export default function OutcomeIntelligenceDashboard() {
+  const [activeMetric, setActiveMetric] = useState<'wage' | 'retention'>('wage')
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-6 animate-fade-in-up">
+      {/* ── HEADER ── */}
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-xs font-bold text-sky-700 uppercase tracking-wider mb-1">
             <span>Macro Governance Intelligence</span>
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-slate-300"></span>
             <span>Policy Feedback Loop</span>
           </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
+          <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
             Outcome &amp; Institutional Intelligence
           </h1>
-          <p className="text-sm text-slate-600 mt-1">
-            Aggregated longitudinal metrics converting verified 3M–24M livelihood events into provider performance and regional skill-gap interventions.
+          <p className="text-xs md:text-sm text-slate-600 mt-1 max-w-2xl">
+            Aggregated longitudinal metrics converting verified 3M–24M livelihood signals into institutional accountability and targeted funding directives.
           </p>
         </div>
 
         <Link
           href="/intelligence/policy"
-          className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors"
+          className="inline-flex items-center gap-2 bg-gov-navy hover:bg-blue-900 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-xs transition-all duration-200 hover:-translate-y-0.5 active:translate-y-px shrink-0"
         >
-          <Sparkles size={14} className="text-sky-400" />
-          <span>View Policy Recommendations</span>
+          <Sparkles size={14} className="text-sky-300" />
+          <span>Policy Directives (5 Active)</span>
           <ArrowRight size={14} />
         </Link>
       </div>
 
-      {/* Macro Pipeline Stepper Flow */}
-      <div className="bg-slate-900 text-white p-6 rounded-xl shadow-md">
-        <span className="text-[10px] font-bold text-sky-400 uppercase tracking-widest block mb-3">
-          Continuous Longitudinal Feedback Architecture
-        </span>
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-center text-xs">
-          <div className="bg-white/10 border border-white/10 p-3 rounded-lg">
-            <span className="text-sky-400 font-bold block text-sm">1. Verified Events</span>
-            <span className="text-slate-300 text-[11px] mt-0.5 block">Cryptographic outcome ledger</span>
+      {/* ── 4 KPI CARDS (MINIMAL & SUBTLE) ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-xs hover:border-slate-300 transition-all duration-200">
+          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Audited Candidates</span>
+          <div className="text-2xl font-black text-slate-900 mt-1 font-mono">1,480</div>
+          <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 mt-0.5">
+            <TrendingUp size={12} />
+            <span>94.2% Provenance Trust</span>
           </div>
-          <div className="bg-white/10 border border-white/10 p-3 rounded-lg">
-            <span className="text-emerald-400 font-bold block text-sm">2. Provider Scores</span>
-            <span className="text-slate-300 text-[11px] mt-0.5 block">6M–12M wage &amp; retention rates</span>
+        </div>
+
+        <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-xs hover:border-slate-300 transition-all duration-200">
+          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Median 12M Wage</span>
+          <div className="text-2xl font-black text-slate-900 mt-1 font-mono">₹22,800</div>
+          <div className="flex items-center gap-1 text-[11px] font-bold text-blue-600 mt-0.5">
+            <span>+48.3% Post-Training Lift</span>
           </div>
-          <div className="bg-white/10 border border-white/10 p-3 rounded-lg">
-            <span className="text-amber-400 font-bold block text-sm">3. Regional Demand</span>
-            <span className="text-slate-300 text-[11px] mt-0.5 block">District-level skill deficit map</span>
+        </div>
+
+        <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-xs hover:border-slate-300 transition-all duration-200">
+          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">6M Retention Rate</span>
+          <div className="text-2xl font-black text-slate-900 mt-1 font-mono">81.4%</div>
+          <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 mt-0.5">
+            <span>+12.4% vs Sector Baseline</span>
           </div>
-          <div className="bg-sky-500 text-slate-950 font-bold p-3 rounded-lg flex flex-col justify-center">
-            <span className="block text-sm">4. Policy Action</span>
-            <span className="text-[11px] text-slate-900 mt-0.5 block">Funding &amp; seat allocations</span>
+        </div>
+
+        <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-xs hover:border-slate-300 transition-all duration-200">
+          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Regional Clusters</span>
+          <div className="text-2xl font-black text-slate-900 mt-1 font-mono">6 Districts</div>
+          <div className="flex items-center gap-1 text-[11px] font-bold text-amber-600 mt-0.5">
+            <span>2 Critical Deficit Zones</span>
           </div>
         </div>
       </div>
 
-      {/* Core Analytics Grid: Provider Chart + Skill Deficit */}
+      {/* ── BKLIT-STYLE SMOOTH AREA CHART (LONGITUDINAL TRAJECTORY) ── */}
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs hover:border-slate-300 transition-all duration-300 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-100">
+          <div>
+            <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+              <Activity size={18} className="text-blue-600" />
+              Longitudinal Career &amp; Wage Growth Curve (3M–24M)
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Continuous multi-year telemetry tracking monthly wage progression and employment continuity.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg text-xs font-bold">
+            <button
+              onClick={() => setActiveMetric('wage')}
+              className={`px-3 py-1.5 rounded-md transition-all duration-200 ${
+                activeMetric === 'wage'
+                  ? 'bg-white text-slate-900 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Average Monthly Wage (₹)
+            </button>
+            <button
+              onClick={() => setActiveMetric('retention')}
+              className={`px-3 py-1.5 rounded-md transition-all duration-200 ${
+                activeMetric === 'retention'
+                  ? 'bg-white text-slate-900 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Retention Continuity (%)
+            </button>
+          </div>
+        </div>
+
+        {/* Smooth Area Chart Canvas */}
+        <div className="h-72 w-full pt-2">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart
+              data={longitudinalWageTrajectoryData}
+              margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+            >
+              <defs>
+                <linearGradient id="colorWage" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#2563eb" stopOpacity={0.35} />
+                  <stop offset="95%" stopColor="#2563eb" stopOpacity={0.0} />
+                </linearGradient>
+                <linearGradient id="colorRetention" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.35} />
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+              <XAxis
+                dataKey="milestone"
+                stroke="#94a3b8"
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+              />
+              <YAxis
+                stroke="#94a3b8"
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={(val) => activeMetric === 'wage' ? `₹${val / 1000}k` : `${val}%`}
+              />
+              <Tooltip content={<CustomAreaTooltip />} />
+              {activeMetric === 'wage' ? (
+                <Area
+                  type="monotone"
+                  dataKey="avgWage"
+                  stroke="#2563eb"
+                  strokeWidth={2.5}
+                  fillOpacity={1}
+                  fill="url(#colorWage)"
+                  dot={{ r: 4, fill: '#2563eb', strokeWidth: 2, stroke: '#ffffff' }}
+                  activeDot={{ r: 6, fill: '#2563eb', strokeWidth: 3, stroke: '#ffffff' }}
+                />
+              ) : (
+                <Area
+                  type="monotone"
+                  dataKey="retentionRate"
+                  stroke="#10b981"
+                  strokeWidth={2.5}
+                  fillOpacity={1}
+                  fill="url(#colorRetention)"
+                  dot={{ r: 4, fill: '#10b981', strokeWidth: 2, stroke: '#ffffff' }}
+                  activeDot={{ r: 6, fill: '#10b981', strokeWidth: 3, stroke: '#ffffff' }}
+                />
+              )}
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* ── INSTITUTIONAL BENCHMARKS & SKILL GAP HOTSPOTS ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
         {/* Placement Rate BarChart (2 Cols) */}
-        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
+        <div className="lg:col-span-2 bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-4">
+          <div className="flex items-center justify-between pb-2 border-b border-slate-100">
             <div>
-              <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
                 <BarChart3 size={18} className="text-blue-600" />
                 Verified Placement Retention by Provider (%)
               </h2>
-              <p className="text-xs text-slate-500 mt-0.5">3-Month, 6-Month, and 12-Month outcome benchmarks</p>
+              <p className="text-xs text-slate-500 mt-0.5">3M, 6M, and 12M outcome comparison across regional training centers</p>
             </div>
-            <span className="text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded">
+            <span className="text-[11px] font-bold text-blue-800 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-full">
               3 Centers Audited
             </span>
           </div>
 
-          <div className="h-72 w-full">
+          <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={providerComparisonData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis dataKey="name" stroke="#64748b" fontSize={12} />
-                <YAxis stroke="#64748b" fontSize={12} tickFormatter={(val) => `${val}%`} />
+              <BarChart data={providerComparisonData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
+                <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(val) => `${val}%`} />
                 <Tooltip formatter={(val) => [`${val}%`, 'Placement Rate']} />
-                <Legend wrapperStyle={{ fontSize: '12px' }} />
-                <Bar dataKey="3M" fill="#0284c7" name="3M Placement" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="6M" fill="#16a34a" name="6M Placement" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="12M" fill="#9333ea" name="12M Placement" radius={[4, 4, 0, 0]} />
+                <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                <Bar dataKey="3M" fill="#3b82f6" name="3M Placement" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="6M" fill="#10b981" name="6M Placement" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="12M" fill="#8b5cf6" name="12M Placement" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Skill Gap Hotspot Card */}
-        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col justify-between space-y-4">
+        <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs flex flex-col justify-between space-y-4">
           <div>
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
-              <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
-                <AlertCircle size={18} className="text-amber-600" />
-                Critical Deficit: Electrician &amp; CNC
+              <h3 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
+                <AlertCircle size={17} className="text-amber-600" />
+                Critical Deficit: Madurai Hub
               </h3>
+              <span className="text-[10px] font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded-full">
+                1.42x Gap
+              </span>
             </div>
 
-            <p className="text-xs text-slate-600 mb-4">
-              Pune &amp; Mumbai manufacturing belt demonstrates severe structural demand outstripping certified supply.
+            <p className="text-xs text-slate-600 mb-4 leading-relaxed">
+              Industrial corridors in Madurai &amp; Kappalur demonstrate high structural demand in CNC Machining and Precision Welding (NSQF L5).
             </p>
 
             <div className="space-y-3 text-xs">
               <div>
                 <div className="flex justify-between font-semibold mb-1 text-slate-700">
                   <span>Market Industry Demand</span>
-                  <span className="text-slate-900 font-bold">12,450 Slots (High)</span>
+                  <span className="text-slate-900 font-bold font-mono">14,200 Slots</span>
                 </div>
-                <div className="w-full bg-slate-100 rounded-full h-2">
-                  <div className="bg-blue-600 h-2 rounded-full" style={{ width: '90%' }}></div>
+                <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                  <div className="bg-blue-600 h-2 rounded-full transition-all duration-500" style={{ width: '88%' }}></div>
                 </div>
               </div>
 
               <div>
                 <div className="flex justify-between font-semibold mb-1 text-slate-700">
-                  <span>Certified Supply (Annual)</span>
-                  <span className="text-red-600 font-bold">3,120 Candidates (Low)</span>
+                  <span>Certified Supply</span>
+                  <span className="text-rose-600 font-bold font-mono">6,200 Certified</span>
                 </div>
-                <div className="w-full bg-slate-100 rounded-full h-2">
-                  <div className="bg-red-500 h-2 rounded-full" style={{ width: '25%' }}></div>
+                <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                  <div className="bg-rose-500 h-2 rounded-full transition-all duration-500" style={{ width: '44%' }}></div>
                 </div>
               </div>
             </div>
@@ -144,54 +292,11 @@ export default function OutcomeIntelligenceDashboard() {
 
           <Link
             href="/regional-analytics"
-            className="w-full inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs py-3 px-4 rounded-lg shadow transition-colors"
+            className="w-full inline-flex items-center justify-center gap-2 bg-gov-navy hover:bg-blue-900 text-white font-bold text-xs py-3 px-4 rounded-xl shadow-xs transition-all duration-200 hover:-translate-y-0.5 active:translate-y-px"
           >
-            <Map size={16} />
+            <Map size={15} />
             <span>Open Regional Skill Heatmap</span>
           </Link>
-        </div>
-      </div>
-
-      {/* Provider Scorecard Summary Table */}
-      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-        <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-          <h2 className="font-bold text-slate-900 text-sm">Provider Outcome Accountability Rankings</h2>
-          <Link href="/scorecards" className="text-xs text-sky-700 font-semibold hover:underline flex items-center gap-1">
-            Scorecards <ArrowRight size={12} />
-          </Link>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-100/70 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider">
-              <tr>
-                <th className="p-3.5">Provider Organization</th>
-                <th className="p-3.5">Total Trainees</th>
-                <th className="p-3.5">3M Placement</th>
-                <th className="p-3.5">6M Placement</th>
-                <th className="p-3.5">12M Placement</th>
-                <th className="p-3.5">Wage Adequacy</th>
-                <th className="p-3.5">Evidence Score</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {MOCK_PROVIDERS.map((p) => (
-                <tr key={p.provider_id} className="hover:bg-slate-50">
-                  <td className="p-3.5 font-bold text-slate-900">{p.provider_name}</td>
-                  <td className="p-3.5 font-mono text-slate-700">{p.total_trainees.toLocaleString()}</td>
-                  <td className="p-3.5 font-semibold text-slate-800">{Math.round(p.placement_rate_3m * 100)}%</td>
-                  <td className="p-3.5 font-bold text-emerald-700">{Math.round(p.placement_rate_6m * 100)}%</td>
-                  <td className="p-3.5 font-semibold text-slate-800">{Math.round(p.placement_rate_12m * 100)}%</td>
-                  <td className="p-3.5 font-mono font-bold text-slate-900">{p.wage_adequacy_score}</td>
-                  <td className="p-3.5">
-                    <span className="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold text-[11px]">
-                      {p.evidence_quality_score}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         </div>
       </div>
     </div>

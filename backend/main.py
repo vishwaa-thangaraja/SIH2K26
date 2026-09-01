@@ -12,7 +12,7 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(
-    title="Skill Bridge API",
+    title="CONTINUUM API",
     description="SIH 26135 — Longitudinal Trainee Outcome Tracking Platform",
     version="2.0.0",
     lifespan=lifespan
@@ -35,4 +35,4 @@ app.include_router(intelligence.router, prefix="/intelligence", tags=["Intellige
 
 @app.get("/")
 async def root():
-    return {"message": "Skill Bridge API v2.0", "status": "running", "docs": "/docs"}
+    return {"message": "CONTINUUM API v2.0", "status": "running", "docs": "/docs"}

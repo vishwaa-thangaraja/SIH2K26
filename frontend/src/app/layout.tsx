@@ -5,7 +5,7 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Skill Bridge | SIH 26135',
+  title: 'CONTINUUM | SIH 26135',
   description: 'Longitudinal Trainee Outcome Tracking Platform',
 }
 

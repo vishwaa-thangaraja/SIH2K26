@@ -65,7 +65,7 @@ export default function IdentityRecoveryInitialPage() {
           <div>
             <span className="font-bold block text-sm">No SMS Gateway Vulnerability</span>
             <p className="mt-0.5">
-              Instead of relying exclusively on mobile OTP, Skill Bridge verifies continuity by computing cross-anchor similarity across verified email, training certificates and past employment records.
+              Instead of relying exclusively on mobile OTP, CONTINUUM verifies continuity by computing cross-anchor similarity across verified email, training certificates and past employment records.
             </p>
           </div>
         </div>
