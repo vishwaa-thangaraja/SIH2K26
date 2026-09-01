@@ -30,7 +30,7 @@ Before pulling and running the project, ensure your machine has the following to
 ### 1. Clone the Repository
 Open your terminal (PowerShell, Command Prompt, or Git Bash) and run:
 ```bash
-git clone https://github.com/vishwaa-thangaraja/SIH2K26.git
+git clone -b version-dynamo https://github.com/vishwaa-thangaraja/SIH2K26.git
 cd SIH2K26
 ```
 
@@ -101,10 +101,11 @@ npm run dev
 
 | Route | Page Name | Key Features |
 |---|---|---|
-| **`/`** | **Portal Entry** | Role-based switcher (Trainee View vs. Policy Analyst View). |
+| **`/`** | **Portal Authentication** | Dual-tab login: Government Official (SSO/2FA/Division) vs. Trainee/Employee (Trainee ID/Mobile/OTP). |
+| **`/advanced-search`** | **Advanced Filter Search** | Multi-attribute search workspace (Wages, NSQF Level, Trade, District, 3M–12M Retention) with no dropdown filters. |
 | **`/dashboard`** | **Trainee Overview** | Active identity status, 3M–24M milestone stepper, recent activity log. |
 | **`/dsig`** | **DSIG Identity Graph** | Interactive **React Flow** canvas showing core identity, active & historical anchors, and temporal transitions. |
-| **`/trainees/T001/timeline`** | **Longitudinal Timeline** | **Recharts** area chart showing 33.3% wage progression (₹15k ➔ ₹20k). |
+| **`/trainees/T001/timeline`** | **Longitudinal Timeline** | **Recharts** curve showing multi-year wage progression and employment continuity. |
 | **`/outcomes`** | **Outcome Event Ledger** | Cryptographic outcome ledger with expandable provenance audit inspector. |
 | **`/outcomes/new`** | **Register Outcome** | 3-step employment logger with AI trade relevance classifier. |
 | **`/evidence/upload`** | **Evidence Ingestion** | Drag-and-drop zone for salary payslips, offer letters, and NAPS contracts. |
@@ -115,25 +116,30 @@ npm run dev
 | **`/identity/match`** | **Identity Match** | RapidFuzz + Jaro-Winkler probabilistic matching score (94% confidence). |
 | **`/identity/update`** | **Identity Hub** | Multi-anchor lifecycle management & historical anchor audit table. |
 | **`/identity/recovery`** | **Recovery Ladder** | Multi-tier escalation path resolving SIM/phone changes safely. |
-| **`/intelligence`** | **Macro Intelligence** | Multi-provider 3M/6M/12M placement retention charts. |
+| **`/identity/recovery/anchors`** | **Dynamic Anchor Weighting** | Live cumulative anchor weight calculation with 0.85 threshold gating. |
+| **`/intelligence`** | **Macro Intelligence** | Fluid area charts for longitudinal wage trajectories & provider placement retention rankings. |
 | **`/intelligence/policy`** | **Policy Interventions** | Autonomous funding and seat allocation directives. |
 | **`/scorecards`** | **Provider Scorecards** | 6-month retention and wage adequacy accountability rankings. |
 | **`/regional-analytics`** | **Skill-Gap Map** | **Leaflet** interactive geographic heatmap centered on **Madurai & Southern Corridor**. |
 
 ---
 
-## 🏛️ Core Architectural Pillars
+## 🏛️ Core Architectural Highlights
 
 1. **Dynamic Skill Identity Graph (DSIG):**
    Decouples platform identity from fragile static phone numbers. When trainee contacts migrate, a temporal transition edge is added while core identity `T001` remains continuous.
 
-2. **Multi-Source Evidence Intelligence:**
+2. **Distinct Portal Navigation & Headers:**
+   - **Government Official**: Official Ministry Emblem, `OFFICER VIEW` badge, Officer ID card, Analyst navigation tabs, and targeted Trainee ID / Location search.
+   - **Trainee Portal**: Skill India branding, `LEARNER PORTAL` badge, Candidate card (`Ravi Kumar`), Trainee modules, and Top-Right Logout.
+
+3. **Multi-Source Evidence Intelligence & OCR:**
    Converts unstructured payslip PDFs into structured data via OCR field normalizers and cross-checks them against self-reported claims.
 
-3. **Employer One-Tap Attestation:**
-   Provides authorized HR representatives with zero-friction verification links to confirm employment and wage parameters.
+4. **Dynamic Recovery Anchor Weighting:**
+   Calculates cumulative trust score dynamically (Email 0.25, Cert 0.35, DigiLocker 0.40, Employer 0.20, PFMS 0.30) against a mandatory 0.85 threshold before authorizing credential re-linking.
 
-4. **Closed-Loop Policy Intelligence:**
+5. **Closed-Loop Policy Intelligence:**
    Rolls up 3M–24M verified livelihood outcomes into district-level skill deficit heatmaps to dynamically adjust subsidized training seats.
 
 ---
