@@ -25,21 +25,27 @@ export default function AmazonGovHeader() {
   const { role } = useRole()
   const isGovernmentOfficial = role === 'analyst'
 
-  const [searchCategory, setSearchCategory] = useState(isGovernmentOfficial ? 'All Sectors' : 'All Modules')
   const [searchQuery, setSearchQuery] = useState('')
   const [allDrawerOpen, setAllDrawerOpen] = useState(false)
   const [filterFlyoutOpen, setFilterFlyoutOpen] = useState(false)
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    const query = searchQuery.trim()
+    if (!query) return
+
     if (isGovernmentOfficial) {
-      const params = new URLSearchParams()
-      if (searchQuery.trim()) params.set('q', searchQuery.trim())
-      if (searchCategory !== 'All Sectors') params.set('sector', searchCategory)
-      router.push(`/advanced-search?${params.toString()}`)
+      // Check if it's a specific Trainee ID format (e.g. T001, T002, etc.)
+      if (/^T\d+$/i.test(query)) {
+        router.push(`/trainees/${query.toUpperCase()}/timeline`)
+      } else {
+        router.push(`/advanced-search?q=${encodeURIComponent(query)}`)
+      }
     } else {
-      if (searchQuery.trim()) {
-        router.push(`/outcomes?q=${encodeURIComponent(searchQuery.trim())}`)
+      if (/^T\d+$/i.test(query)) {
+        router.push(`/trainees/${query.toUpperCase()}`)
+      } else {
+        router.push(`/outcomes?q=${encodeURIComponent(query)}`)
       }
     }
   }
@@ -75,24 +81,6 @@ export default function AmazonGovHeader() {
   ]
 
   const activeNavItems = isGovernmentOfficial ? analystNavItems : traineeNavItems
-
-  const quickFilterLinks = isGovernmentOfficial ? [
-    { label: 'Precision Welding (L5)', query: 'Welding' },
-    { label: 'CNC Machine Operation', query: 'CNC' },
-    { label: 'Madurai District Cluster', query: 'Madurai' },
-    { label: 'Coimbatore Hub', query: 'Coimbatore' },
-    { label: 'Chennai EV Cluster', query: 'Chennai' },
-    { label: 'NSQF Level 5+', query: 'L5' },
-    { label: '6M Retention Verified', query: '6M' },
-    { label: 'DigiLocker Authenticated', query: 'DigiLocker' },
-  ] : [
-    { label: 'My PMKVY Certificate (L5)', query: 'Welding' },
-    { label: '3M Milestone Verified', query: '3M' },
-    { label: '6M Milestone Verified', query: '6M' },
-    { label: '12M Milestone Track', query: '12M' },
-    { label: 'DigiLocker e-KYC Active', query: 'DigiLocker' },
-    { label: 'EPFO Linked Account', query: 'EPFO' },
-  ]
 
   return (
     <div className="w-full shrink-0 flex flex-col font-sans z-40 relative shadow-sm">
@@ -153,51 +141,26 @@ export default function AmazonGovHeader() {
           </Link>
         </div>
 
-        {/* Center Search Bar (Amazon Structure / Government Theme) */}
+        {/* Center Search Bar: Dedicated for Trainee ID or Location */}
         <form onSubmit={handleSearchSubmit} className="hidden md:flex flex-1 max-w-xl mx-2 items-center h-11 rounded-xl overflow-hidden bg-white shadow-inner focus-within:ring-2 focus-within:ring-sky-400 border border-slate-300">
-          <select
-            value={searchCategory}
-            onChange={(e) => setSearchCategory(e.target.value)}
-            className="bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold px-3 h-full border-r border-slate-300 outline-none cursor-pointer"
-          >
-            {isGovernmentOfficial ? (
-              <>
-                <option value="All Sectors">All Sectors</option>
-                <option value="Automotive & Precision Welding">Automotive &amp; Welding</option>
-                <option value="CNC Machine Operation">CNC Machining</option>
-                <option value="Electronics & IoT">Electronics &amp; IoT</option>
-                <option value="Healthcare & Nursing">Healthcare &amp; Nursing</option>
-                <option value="Renewable Energy">Renewable Energy</option>
-                <option value="Textiles & Apparel">Textiles &amp; Apparel</option>
-              </>
-            ) : (
-              <>
-                <option value="All Modules">All Records</option>
-                <option value="Outcomes">Outcome Ledger</option>
-                <option value="Evidence">Verified Evidence</option>
-                <option value="DSIG">DSIG Anchors</option>
-              </>
-            )}
-          </select>
+          <div className="flex items-center gap-1.5 pl-3.5 pr-2 text-slate-500 shrink-0">
+            <Search size={16} className="text-slate-400" />
+          </div>
 
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={
-              isGovernmentOfficial
-                ? "Search trainees, UAN, skill trades, employers, or districts..."
-                : "Search outcome milestones, payslips, DSIG graph nodes..."
-            }
-            className="flex-1 px-3.5 py-2 text-xs text-slate-900 placeholder:text-slate-400 outline-none font-medium h-full"
+            placeholder="Search by Trainee ID (e.g. T001) or Location (e.g. Madurai, Coimbatore)..."
+            className="flex-1 px-2 py-2 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 outline-none font-medium h-full"
           />
 
           <button
             type="submit"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-5 h-full flex items-center justify-center transition-colors shrink-0"
-            title="Search Portal Database"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-5 h-full flex items-center justify-center transition-colors shrink-0 font-bold text-xs"
+            title="Search by Trainee ID or Location"
           >
-            <Search size={18} className="stroke-[2.5]" />
+            <span>Search</span>
           </button>
         </form>
 
@@ -324,30 +287,6 @@ export default function AmazonGovHeader() {
             </div>
           )
         })}
-      </div>
-
-      {/* ──────────────────────────────────────────────────────────
-          ROW 3: QUICK SHORTCUTS & COHORT SUB-STRIP
-         ────────────────────────────────────────────────────────── */}
-      <div className="bg-slate-100 text-slate-700 px-4 sm:px-8 py-2 border-b border-slate-200 text-xs hidden md:flex items-center gap-2 overflow-x-auto">
-        <span className="font-bold text-[11px] text-slate-500 uppercase tracking-wider shrink-0 mr-2">
-          {isGovernmentOfficial ? 'Priority Cohorts:' : 'Quick Shortcuts:'}
-        </span>
-        {quickFilterLinks.map((cat) => (
-          <button
-            key={cat.label}
-            onClick={() => {
-              if (isGovernmentOfficial) {
-                router.push(`/advanced-search?q=${encodeURIComponent(cat.query)}`)
-              } else {
-                router.push(`/outcomes?q=${encodeURIComponent(cat.query)}`)
-              }
-            }}
-            className="bg-white hover:bg-blue-50 hover:text-blue-900 hover:border-blue-400 text-slate-700 border border-slate-300 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 shadow-2xs"
-          >
-            {cat.label}
-          </button>
-        ))}
       </div>
 
       {/* Mobile Drawer Overlay */}
