@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
+from fastapi.responses import Response
 from sqlmodel import Session, select
 from database import get_db
 from models.outcome import EvidenceRecord, OutcomeEvent
@@ -14,6 +15,8 @@ import os
 router = APIRouter()
 
 SAMPLE_PAYSLIP_PATH = os.path.join(os.path.dirname(__file__), "..", "test_payslip.png")
+UPLOADS_DIR = os.path.join(os.path.dirname(__file__), "..", "uploads")
+os.makedirs(UPLOADS_DIR, exist_ok=True)
 
 def get_sample_image_bytes() -> bytes:
     if os.path.exists(SAMPLE_PAYSLIP_PATH):
@@ -32,7 +35,8 @@ async def upload_evidence(
 ):
     """
     Uploads a payslip or supporting document, executes Tesseract OCR,
-    extracts structured fields, and evaluates deterministic consistency.
+    extracts structured fields, saves the physical document to disk,
+    and evaluates deterministic consistency.
     """
     image_bytes = None
     filename = "sample_payslip.png"
@@ -56,8 +60,24 @@ async def upload_evidence(
     conf_score = analysis.get("verification", {}).get("evidence_confidence", 85.0)
     identity_score = analysis.get("verification", {}).get("identity_match_score", 90.0)
 
+    evidence_id = f"DOC-{uuid.uuid4().hex[:8].upper()}"
+
+    # Persist the physical image file to uploads directory so it can be streamed dynamically
+    saved_filename = f"{evidence_id}_{filename}"
+    saved_path = os.path.join(UPLOADS_DIR, saved_filename)
+    try:
+        with open(saved_path, "wb") as f:
+            f.write(image_bytes)
+    except Exception as e:
+        print(f"Warning: Failed to persist upload to disk: {e}")
+
+    # Inject metadata into analysis
+    analysis["evidence_id"] = evidence_id
+    analysis["filename"] = filename
+    analysis["file_url"] = f"http://127.0.0.1:8000/evidence/{evidence_id}/file"
+
     record = EvidenceRecord(
-        evidence_id=f"DOC-{uuid.uuid4().hex[:8].upper()}",
+        evidence_id=evidence_id,
         trainee_id=trainee_id,
         event_id=event_id,
         evidence_type=doc_type,
@@ -75,8 +95,44 @@ async def upload_evidence(
     return {
         "evidence_id": record.evidence_id,
         "record": record,
-        "analysis": analysis
+        "analysis": analysis,
+        "file_url": analysis["file_url"]
     }
+
+@router.get("/{evidence_id}/file")
+def get_evidence_file(evidence_id: str, db: Session = Depends(get_db)):
+    """
+    Returns the exact image or scanned document file uploaded for this evidence record.
+    """
+    # 1. Search for saved file in UPLOADS_DIR matching evidence_id
+    if os.path.exists(UPLOADS_DIR):
+        for fname in os.listdir(UPLOADS_DIR):
+            if fname.startswith(f"{evidence_id}_"):
+                file_path = os.path.join(UPLOADS_DIR, fname)
+                with open(file_path, "rb") as f:
+                    content = f.read()
+                media_type = "image/png"
+                if fname.lower().endswith(".jpg") or fname.lower().endswith(".jpeg"):
+                    media_type = "image/jpeg"
+                elif fname.lower().endswith(".pdf"):
+                    media_type = "application/pdf"
+                return Response(content=content, media_type=media_type)
+
+    # 2. Check EvidenceRecord filename in uploads
+    record = db.exec(select(EvidenceRecord).where(EvidenceRecord.evidence_id == evidence_id)).first()
+    if record and record.filename:
+        direct_path = os.path.join(UPLOADS_DIR, record.filename)
+        if os.path.exists(direct_path):
+            with open(direct_path, "rb") as f:
+                content = f.read()
+            return Response(content=content, media_type="image/png")
+
+    # 3. Fallback to sample payslip
+    sample_bytes = get_sample_image_bytes()
+    if sample_bytes:
+        return Response(content=sample_bytes, media_type="image/png")
+
+    raise HTTPException(status_code=404, detail="Evidence file not found.")
 
 @router.post("/analyze-payslip")
 async def analyze_payslip(
@@ -111,7 +167,11 @@ def get_extraction(evidence_id: str, db: Session = Depends(get_db)):
     record = db.exec(select(EvidenceRecord).where(EvidenceRecord.evidence_id == evidence_id)).first()
     if record and record.extracted_fields_json:
         try:
-            return json.loads(record.extracted_fields_json)
+            data = json.loads(record.extracted_fields_json)
+            data["evidence_id"] = record.evidence_id
+            data["filename"] = record.filename
+            data["file_url"] = f"http://127.0.0.1:8000/evidence/{record.evidence_id}/file"
+            return data
         except Exception:
             pass
 
@@ -119,7 +179,11 @@ def get_extraction(evidence_id: str, db: Session = Depends(get_db)):
     sample_bytes = get_sample_image_bytes()
     if sample_bytes:
         trainee = db.exec(select(Trainee).where(Trainee.trainee_id == "T001")).first()
-        return payslip_ocr_service.process_payslip(sample_bytes, trainee=trainee)
+        res = payslip_ocr_service.process_payslip(sample_bytes, trainee=trainee)
+        res["evidence_id"] = evidence_id
+        res["filename"] = "sample_payslip.png"
+        res["file_url"] = f"http://127.0.0.1:8000/evidence/{evidence_id}/file"
+        return res
 
     raise HTTPException(status_code=404, detail="Evidence extraction record not found.")
 

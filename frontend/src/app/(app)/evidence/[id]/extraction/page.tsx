@@ -117,6 +117,8 @@ export default function EvidenceExtractionPage({
   const [zoomLevel, setZoomLevel] = useState(100)
   const [showRawOcr, setShowRawOcr] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [docImageSrc, setDocImageSrc] = useState<string>(`http://127.0.0.1:8000/evidence/${id}/file`)
+  const [docFilename, setDocFilename] = useState<string>('Uploaded Payslip Document')
 
   useEffect(() => {
     async function loadExtraction() {
@@ -125,6 +127,8 @@ export default function EvidenceExtractionPage({
         if (res.ok) {
           const json = await res.json()
           setData(json)
+          if (json.filename) setDocFilename(json.filename)
+          if (json.file_url) setDocImageSrc(json.file_url)
         }
       } catch (e) {
         console.warn('Using default benchmark extraction fallback:', e)
@@ -221,12 +225,12 @@ export default function EvidenceExtractionPage({
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
                 <FileText size={16} className="text-blue-600" />
-                <span className="font-bold text-slate-900 text-xs uppercase tracking-wider">Document Scan Viewer</span>
+                <span className="font-bold text-slate-900 text-xs uppercase tracking-wider">{docFilename}</span>
               </div>
               <div className="flex items-center gap-1.5 text-xs text-slate-500">
                 <button 
                   onClick={() => setZoomLevel(prev => Math.max(70, prev - 15))}
-                  className="p-1 hover:bg-slate-100 rounded border border-slate-200"
+                  className="p-1 hover:bg-slate-100 rounded border border-slate-200 cursor-pointer"
                   title="Zoom Out"
                 >
                   <ZoomOut size={14} />
@@ -234,7 +238,7 @@ export default function EvidenceExtractionPage({
                 <span className="font-mono text-[11px] px-1">{zoomLevel}%</span>
                 <button 
                   onClick={() => setZoomLevel(prev => Math.min(160, prev + 15))}
-                  className="p-1 hover:bg-slate-100 rounded border border-slate-200"
+                  className="p-1 hover:bg-slate-100 rounded border border-slate-200 cursor-pointer"
                   title="Zoom In"
                 >
                   <ZoomIn size={14} />
@@ -245,8 +249,13 @@ export default function EvidenceExtractionPage({
             {/* Visual Scan Container */}
             <div className="overflow-auto max-h-[480px] bg-slate-100 rounded-lg border border-slate-200 flex justify-center p-3">
               <img
-                src="/sample_payslip.png"
-                alt="Payslip Document"
+                src={docImageSrc}
+                alt={docFilename}
+                onError={(e) => {
+                  if (e.currentTarget.src !== window.location.origin + '/sample_payslip.png') {
+                    e.currentTarget.src = '/sample_payslip.png'
+                  }
+                }}
                 style={{ width: `${zoomLevel}%`, transition: 'width 0.2s ease-in-out' }}
                 className="rounded shadow bg-white object-contain"
               />
