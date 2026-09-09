@@ -1,3 +1,5 @@
+from fastapi import FastAPI
+from backend.routers import identity
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -42,3 +44,13 @@ app.include_router(communications.router, prefix="/communications", tags=["Commu
 @app.get("/")
 async def root():
     return {"message": "CONTINUUM API v2.0", "status": "running", "docs": "/docs"}
+
+app = FastAPI(
+    title="Continuum Core API Ledger Service",
+    version="1.0.0"
+)
+app.include_router(identity.router) # 👈 Include the modular router logic
+
+@app.get("/")
+def read_root():
+    return {"status": "online", "service": "Continuum Backend Pipeline Engines Server"}
