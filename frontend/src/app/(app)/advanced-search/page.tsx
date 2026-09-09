@@ -154,12 +154,10 @@ function AdvancedFilterSearchContent() {
     fetchSummaryStats()
   }, [])
 
-  // Combined dataset: live database trainees take precedence
+  // Dataset: live database trainees strictly used when available
   const effectiveDataset = useMemo(() => {
-    if (liveTrainees.length === 0) return MOCK_SEARCH_DATASET
-    const liveIds = new Set(liveTrainees.map((t) => t.trainee_id))
-    const existingFiltered = MOCK_SEARCH_DATASET.filter((t) => !liveIds.has(t.trainee_id))
-    return [...liveTrainees, ...existingFiltered]
+    if (liveTrainees.length > 0) return liveTrainees
+    return MOCK_SEARCH_DATASET
   }, [liveTrainees])
 
   // Dynamically compute available filter facets from the effective dataset

@@ -1,21 +1,67 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { MOCK_OUTCOMES } from '@/lib/mockData'
 import { OutcomeEvent } from '@/types'
 import { 
   Building2, Plus, Filter, Search, CheckCircle2, 
-  AlertCircle, ShieldCheck, FileText, ArrowRight, ExternalLink 
+  AlertCircle, ShieldCheck, FileText, ArrowRight, ExternalLink,
+  Zap, MessageSquare, Send
 } from 'lucide-react'
 
 export default function OutcomeLedgerPage() {
+  const [outcomes, setOutcomes] = useState<OutcomeEvent[]>(MOCK_OUTCOMES)
   const [filter, setFilter] = useState<'all' | 'verified' | 'pending'>('all')
   const [selectedEvent, setSelectedEvent] = useState<OutcomeEvent>(MOCK_OUTCOMES[2])
+  const [searchTerm, setSearchTerm] = useState('')
+  const [commStats, setCommStats] = useState<{
+    total_sent: number
+    total_delivered: number
+    total_responded: number
+    response_rate_percent: number
+    unverified_candidates: number
+  } | null>(null)
 
-  const filteredOutcomes = MOCK_OUTCOMES.filter((ev) => {
-    if (filter === 'verified') return ev.verification_status === 'verified'
-    if (filter === 'pending') return ev.verification_status === 'pending'
+  useEffect(() => {
+    // Fetch live outcomes from SQLite database
+    fetch('http://127.0.0.1:8000/outcomes')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data && data.events && data.events.length > 0) {
+          setOutcomes(data.events)
+          setSelectedEvent(data.events[0])
+        }
+      })
+      .catch(() => {})
+
+    // Fetch live communications outreach stats
+    fetch('http://127.0.0.1:8000/communications/summary')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data) {
+          setCommStats({
+            total_sent: data.total_sent || 0,
+            total_delivered: data.total_delivered || 0,
+            total_responded: data.total_responded || 0,
+            response_rate_percent: data.response_rate_percent || 0,
+            unverified_candidates: data.unverified_trainees_count || 0
+          })
+        }
+      })
+      .catch(() => {})
+  }, [])
+
+  const filteredOutcomes = outcomes.filter((ev) => {
+    if (filter === 'verified' && ev.verification_status !== 'verified') return false
+    if (filter === 'pending' && ev.verification_status === 'verified') return false
+    if (searchTerm.trim()) {
+      const q = searchTerm.toLowerCase()
+      const emp = (ev.employer_name || '').toLowerCase()
+      const role = (ev.role || '').toLowerCase()
+      const id = (ev.event_id || '').toLowerCase()
+      return emp.includes(q) || role.includes(q) || id.includes(q)
+    }
     return true
   })
 
@@ -46,6 +92,51 @@ export default function OutcomeLedgerPage() {
         </Link>
       </div>
 
+      {/* Longitudinal Outreach Activity Banner */}
+      {commStats && (
+        <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 text-white rounded-xl p-5 shadow-sm border border-blue-900/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1 bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full">
+                <Zap size={10} className="fill-amber-300" /> Longitudinal Follow-Up Engine
+              </span>
+              <span className="text-xs text-blue-200">
+                Unverified Due: <strong className="text-white">{commStats.unverified_candidates} candidates</strong>
+              </span>
+            </div>
+            <h2 className="text-base font-extrabold text-white flex items-center gap-2">
+              Autonomous Periodic Outreach & Outcome Verification Activity
+            </h2>
+            <div className="flex flex-wrap items-center gap-3 pt-1 text-xs text-blue-200 font-medium">
+              <span>Total Dispatched: <strong className="text-white font-bold">{commStats.total_sent}</strong></span>
+              <span>•</span>
+              <span>Delivered: <strong className="text-emerald-400 font-bold">{commStats.total_delivered}</strong></span>
+              <span>•</span>
+              <span>Candidate Responses: <strong className="text-sky-300 font-bold">{commStats.total_responded}</strong></span>
+              <span>•</span>
+              <span>Response Rate: <strong className="text-amber-300 font-bold">{commStats.response_rate_percent}%</strong></span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <Link
+              href="/trainees/T001/timeline"
+              className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-3.5 py-2 rounded-lg shadow-sm transition-colors"
+            >
+              <MessageSquare size={13} />
+              <span>Trainee Outreach</span>
+            </Link>
+            <Link
+              href="/advanced-search"
+              className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs px-3.5 py-2 rounded-lg shadow-sm transition-all"
+            >
+              <Zap size={13} className="fill-slate-950" />
+              <span>1-Click Broadcast</span>
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Filter Tabs & Search Bar */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -55,7 +146,7 @@ export default function OutcomeLedgerPage() {
               filter === 'all' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'
             }`}
           >
-            All Events ({MOCK_OUTCOMES.length})
+            All Events ({outcomes.length})
           </button>
           <button
             onClick={() => setFilter('verified')}
@@ -63,7 +154,7 @@ export default function OutcomeLedgerPage() {
               filter === 'verified' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'
             }`}
           >
-            Verified Only (3)
+            Verified Only ({outcomes.filter(e => e.verification_status === 'verified').length})
           </button>
           <button
             onClick={() => setFilter('pending')}
@@ -71,7 +162,7 @@ export default function OutcomeLedgerPage() {
               filter === 'pending' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'
             }`}
           >
-            Pending (1)
+            Pending ({outcomes.filter(e => e.verification_status !== 'verified').length})
           </button>
         </div>
 
