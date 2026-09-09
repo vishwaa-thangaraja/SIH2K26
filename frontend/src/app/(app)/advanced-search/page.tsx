@@ -10,7 +10,7 @@ import {
   User, Download, ArrowUpDown, SlidersHorizontal,
   ExternalLink, Network, CheckCircle2, RotateCcw,
   Sparkles, Landmark, BadgeCheck, FileText, ChevronDown,
-  Send, Zap, RefreshCw, Radio, Phone, MessageSquare, Clock
+  Send, Zap, RefreshCw, Radio, Phone, MessageSquare, Clock, Mail
 } from 'lucide-react'
 
 export default function AdvancedFilterSearchPage() {
@@ -144,6 +144,8 @@ function AdvancedFilterSearchContent() {
             completion_date: t.completion_date || '2026-03-30',
             uan_epfo_matched: false,
             digilocker_verified: true,
+            phone: t.phone || '+91 90000 01000',
+            email: t.email || `${t.trainee_id.toLowerCase()}@example.com`,
           }))
           setLiveTrainees(mapped)
         }
@@ -860,6 +862,17 @@ function AdvancedFilterSearchContent() {
                           {trainee.current_role && (
                             <span className="text-slate-500">({trainee.current_role})</span>
                           )}
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2 text-xs pt-1">
+                          <span className="inline-flex items-center gap-1 font-mono text-slate-700 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded text-[11px]">
+                            <Phone size={10} className="text-emerald-600" />
+                            {trainee.phone || '+91 90000 01000'}
+                          </span>
+                          <span className="inline-flex items-center gap-1 text-slate-700 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded text-[11px]">
+                            <Mail size={10} className="text-blue-600" />
+                            {trainee.email || `${trainee.trainee_id.toLowerCase()}@example.com`}
+                          </span>
                         </div>
                       </div>
                     </div>

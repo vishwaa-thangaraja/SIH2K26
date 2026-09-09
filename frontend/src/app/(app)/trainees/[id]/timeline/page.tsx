@@ -8,7 +8,7 @@ import { MOCK_SEARCH_DATASET } from '@/lib/mockSearchData'
 import { 
   Building2, CheckCircle2, AlertCircle, ArrowLeft, 
   TrendingUp, ShieldCheck, FileCheck, Network, UserCheck, Search,
-  Send, Phone, Clock, MessageSquare, Check, X, RefreshCw, Zap
+  Send, Phone, Clock, MessageSquare, Check, X, RefreshCw, Zap, Mail
 } from 'lucide-react'
 import { 
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, 
@@ -117,6 +117,16 @@ export default function LongitudinalTimelinePage() {
           <p className="text-sm text-slate-600 mt-1">
             Multi-year trajectory tracking for <strong>{traineeName}</strong> from certification to 24-month livelihood stability.
           </p>
+          <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 mt-2">
+            <span className="inline-flex items-center gap-1 font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded">
+              <Phone size={11} className="text-emerald-600" />
+              {liveTrainee?.phone || (found as any)?.phone || '+91 90000 01000'}
+            </span>
+            <span className="inline-flex items-center gap-1 font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded">
+              <Mail size={11} className="text-blue-600" />
+              {liveTrainee?.email || (found as any)?.email || `${id.toLowerCase()}@example.com`}
+            </span>
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
@@ -382,9 +392,16 @@ export default function LongitudinalTimelinePage() {
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-500 font-semibold">Carrier Gateway:</span>
+                  <span className="text-slate-500 font-semibold">Registered Email:</span>
+                  <span className="font-mono font-bold text-slate-800 flex items-center gap-1">
+                    <Mail size={12} className="text-blue-600" />
+                    {liveTrainee?.email || (found as any)?.email || `${id.toLowerCase()}@example.com`}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 font-semibold">Outreach Channels:</span>
                   <span className="text-[10px] font-extrabold bg-blue-50 text-blue-800 border border-blue-200 px-2 py-0.5 rounded">
-                    SIMULATED CELLULAR GATEWAY (AIRTEL / JIO DLT)
+                    DUAL CHANNEL (SMS + OFFICIAL EMAIL NOTICE)
                   </span>
                 </div>
               </div>

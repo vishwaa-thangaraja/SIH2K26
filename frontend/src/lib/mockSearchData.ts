@@ -31,6 +31,8 @@ export interface SearchTraineeRecord {
   completion_date: string
   uan_epfo_matched: boolean
   digilocker_verified: boolean
+  phone?: string
+  email?: string
 }
 
 export const MOCK_SEARCH_DATASET: SearchTraineeRecord[] = [

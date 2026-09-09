@@ -11,8 +11,8 @@ import {
 
 // Schema requirements defined for Module 1
 const EXPECTED_COLUMNS = [
-  'trainee_id', 'name', 'date_of_birth', 'gender', 'district', 'state',
-  'training_provider', 'training_centre', 'course', 'sector', 'batch_id',
+  'trainee_id', 'name', 'date_of_birth', 'gender', 'contact_number', 'email',
+  'district', 'state', 'training_provider', 'training_centre', 'course', 'sector', 'batch_id',
   'training_start_date', 'training_end_date', 'training_status',
   'attendance_percentage', 'assessment_score', 'assessment_result',
   'certification_status', 'certification_date',
@@ -105,6 +105,33 @@ export default function TrainingIntakeImportPage() {
     } catch (err: any) {
       setValidationError(err.message || 'Error loading demo dataset.')
     }
+  }
+
+  // ── 1B. DOWNLOAD EMPTY / SAMPLE CSV TEMPLATE ──
+  const handleDownloadTemplateCSV = () => {
+    const headers = [
+      'trainee_id', 'name', 'date_of_birth', 'gender', 'contact_number', 'email',
+      'district', 'state', 'training_provider', 'training_centre', 'course', 'sector',
+      'batch_id', 'training_start_date', 'training_end_date', 'training_status',
+      'attendance_percentage', 'assessment_score', 'assessment_result',
+      'certification_status', 'certification_date', 'skill_1', 'skill_2', 'skill_3', 'skill_4'
+    ]
+    const sampleRow = [
+      'T001', 'Aarav Kumar', '1995-01-01', 'Male', '9876543210', 'aarav.kumar@example.com',
+      'Chennai', 'Tamil Nadu', 'SkillBridge Training Services', 'Guindy Centre', 'Data Analytics', 'IT-ITeS',
+      'BATCH-2026-01', '2026-01-05', '2026-03-06', 'Completed', '88', '75', 'Pass',
+      'Certified', '2026-03-22', 'Excel', 'SQL', 'Python', 'PowerBI'
+    ]
+    const csvString = headers.join(',') + '\n' + sampleRow.join(',') + '\n'
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'CONTINUUM_Training_Intake_Template.csv'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
   }
 
   // ── PROCESS ANY SELECTED / DROPPED FILE ──
@@ -388,15 +415,27 @@ export default function TrainingIntakeImportPage() {
                 </p>
               </div>
 
-              {/* Quick Load Demo Button */}
-              <button
-                type="button"
-                onClick={handleLoadDemoCSV}
-                className="inline-flex items-center gap-1.5 bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 text-xs font-bold px-3 py-1.5 rounded-xl shadow-xs transition-colors"
-              >
-                <Sparkles size={13} className="text-sky-600" />
-                <span>Load Synthetic Demo CSV (100 Rows)</span>
-              </button>
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Single-Click Download Sample Template CSV Button */}
+                <button
+                  type="button"
+                  onClick={handleDownloadTemplateCSV}
+                  className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 text-xs font-bold px-3 py-1.5 rounded-xl shadow-xs transition-colors cursor-pointer"
+                >
+                  <Download size={13} className="text-slate-700" />
+                  <span>Download Sample CSV Template</span>
+                </button>
+
+                {/* Quick Load Demo Button */}
+                <button
+                  type="button"
+                  onClick={handleLoadDemoCSV}
+                  className="inline-flex items-center gap-1.5 bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 text-xs font-bold px-3 py-1.5 rounded-xl shadow-xs transition-colors cursor-pointer"
+                >
+                  <Sparkles size={13} className="text-sky-600" />
+                  <span>Load Synthetic Demo CSV (100 Rows)</span>
+                </button>
+              </div>
             </div>
 
             {/* Dropzone Area */}
@@ -864,6 +903,7 @@ export default function TrainingIntakeImportPage() {
                     <th className="px-3 py-3">Status</th>
                     <th className="px-3 py-3">Trainee ID</th>
                     <th className="px-3 py-3">Name</th>
+                    <th className="px-3 py-3">Contact &amp; Email</th>
                     <th className="px-3 py-3">District / State</th>
                     <th className="px-3 py-3">Course &amp; Batch</th>
                     <th className="px-3 py-3">Training Status</th>
@@ -899,6 +939,10 @@ export default function TrainingIntakeImportPage() {
                         <td className="px-3 py-3 whitespace-nowrap">
                           <p className="font-bold text-slate-900">{r.name || '—'}</p>
                           <p className="text-[11px] text-slate-500">{r.gender || '—'} • {r.date_of_birth || '—'}</p>
+                        </td>
+                        <td className="px-3 py-3 whitespace-nowrap">
+                          <p className="font-mono text-slate-800 font-semibold">{r.contact_number || r.phone || '—'}</p>
+                          <p className="text-[11px] text-blue-700 font-medium truncate max-w-[170px]">{r.email || '—'}</p>
                         </td>
                         <td className="px-3 py-3 whitespace-nowrap">
                           <p className="font-semibold text-slate-800">{r.district || '—'}</p>
