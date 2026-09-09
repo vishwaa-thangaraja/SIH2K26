@@ -44,7 +44,14 @@ export default function EmployerAttestationPage() {
               Employment confirmation for <strong>Ravi Kumar (T001)</strong> cryptographically recorded on the outcome ledger. Confidence updated to 0.86.
             </p>
           </div>
-          <div className="pt-2 flex justify-center gap-3">
+          <div className="pt-2 flex flex-wrap justify-center gap-3">
+            <Link
+              href="/evidence/DOC001/confidence"
+              className="inline-flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-5 py-2.5 rounded-lg shadow transition-colors"
+            >
+              <ShieldCheck size={14} />
+              <span>Inspect Calibrated Confidence (0.86)</span>
+            </Link>
             <Link
               href="/outcomes"
               className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold px-5 py-2.5 rounded-lg shadow transition-colors"

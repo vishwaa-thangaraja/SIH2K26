@@ -1,11 +1,78 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { 
   ShieldCheck, CheckCircle2, ArrowRight, ArrowLeft, 
-  Mail, GraduationCap, Building2, Smartphone 
+  Mail, GraduationCap, Building2, Landmark,
+  AlertTriangle
 } from 'lucide-react'
+
+interface AnchorItem {
+  id: string
+  title: string
+  subtitle: string
+  confidence: number
+  weight: number
+  icon: React.ElementType
+  colorClass: string
+  bgClass: string
+}
+
+const AVAILABLE_ANCHORS: AnchorItem[] = [
+  {
+    id: 'email',
+    title: 'Verified Email Address',
+    subtitle: 'ravi.kumar@example.com',
+    confidence: 97,
+    weight: 0.25,
+    icon: Mail,
+    colorClass: 'text-blue-700',
+    bgClass: 'bg-blue-100',
+  },
+  {
+    id: 'training',
+    title: 'PMKVY Training Certificate',
+    subtitle: 'NSQF Level 5 (Welding) • PMKVY-2023-T001',
+    confidence: 100,
+    weight: 0.35,
+    icon: GraduationCap,
+    colorClass: 'text-indigo-700',
+    bgClass: 'bg-indigo-100',
+  },
+  {
+    id: 'ekyc',
+    title: 'DigiLocker Mock Sandbox',
+    subtitle: 'Authoritative e-KYC Verification Token',
+    confidence: 95,
+    weight: 0.40,
+    icon: ShieldCheck,
+    colorClass: 'text-emerald-700',
+    bgClass: 'bg-emerald-100',
+  },
+  {
+    id: 'employer',
+    title: 'Past Employer Contact',
+    subtitle: 'XYZ Fabricators (3M Milestone Record)',
+    confidence: 78,
+    weight: 0.20,
+    icon: Building2,
+    colorClass: 'text-amber-700',
+    bgClass: 'bg-amber-100',
+  },
+  {
+    id: 'pfms',
+    title: 'PFMS / Bank Account Seed',
+    subtitle: 'State Bank of India (DBT Verified Account)',
+    confidence: 99,
+    weight: 0.30,
+    icon: Landmark,
+    colorClass: 'text-purple-700',
+    bgClass: 'bg-purple-100',
+  },
+]
+
+const THRESHOLD = 0.85
 
 export default function TrustedAnchorsPage() {
   const [selectedAnchors, setSelectedAnchors] = useState<string[]>(['email', 'training', 'ekyc'])
@@ -17,6 +84,18 @@ export default function TrustedAnchorsPage() {
       setSelectedAnchors([...selectedAnchors, id])
     }
   }
+
+  // Calculate cumulative weight dynamically
+  const cumulativeWeight = useMemo(() => {
+    const total = selectedAnchors.reduce((sum, id) => {
+      const anchor = AVAILABLE_ANCHORS.find(a => a.id === id)
+      return sum + (anchor ? anchor.weight : 0)
+    }, 0)
+    return Math.min(Number(total.toFixed(2)), 1.0)
+  }, [selectedAnchors])
+
+  const isThresholdMet = cumulativeWeight >= THRESHOLD
+  const progressPercentage = Math.min(Math.round((cumulativeWeight / 1.0) * 100), 100)
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -38,138 +117,124 @@ export default function TrustedAnchorsPage() {
       {/* Anchor Selection Grid */}
       <div className="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-          {/* Email Anchor */}
-          <div
-            onClick={() => toggleAnchor('email')}
-            className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
-              selectedAnchors.includes('email')
-                ? 'bg-blue-50/70 border-blue-500 shadow-sm'
-                : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
-            }`}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center">
-                <Mail size={16} />
-              </div>
-              <input
-                type="checkbox"
-                checked={selectedAnchors.includes('email')}
-                onChange={() => {}}
-                className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
-              />
-            </div>
-            <h3 className="font-bold text-slate-900 text-sm">Verified Email Address</h3>
-            <p className="text-slate-600 mt-0.5 font-mono">ravi.kumar@example.com</p>
-            <span className="inline-block text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded mt-2">
-              Confidence: 97%
-            </span>
-          </div>
+          {AVAILABLE_ANCHORS.map((anchor) => {
+            const isSelected = selectedAnchors.includes(anchor.id)
+            const Icon = anchor.icon
 
-          {/* Training Record Anchor */}
-          <div
-            onClick={() => toggleAnchor('training')}
-            className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
-              selectedAnchors.includes('training')
-                ? 'bg-blue-50/70 border-blue-500 shadow-sm'
-                : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
-            }`}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center">
-                <GraduationCap size={16} />
+            return (
+              <div
+                key={anchor.id}
+                onClick={() => toggleAnchor(anchor.id)}
+                className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                  isSelected
+                    ? 'bg-blue-50/70 border-blue-500 shadow-sm'
+                    : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className={`w-8 h-8 rounded-lg ${anchor.bgClass} ${anchor.colorClass} flex items-center justify-center`}>
+                    <Icon size={16} />
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => {}}
+                    className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer"
+                  />
+                </div>
+                <h3 className="font-bold text-slate-900 text-sm">{anchor.title}</h3>
+                <p className="text-slate-600 mt-0.5 font-mono text-[11px]">{anchor.subtitle}</p>
+                <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-200/60">
+                  <span className="inline-block text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">
+                    Confidence: {anchor.confidence}%
+                  </span>
+                  <span className="text-[10px] font-bold text-slate-600 bg-slate-200 px-2 py-0.5 rounded">
+                    Weight: +{anchor.weight.toFixed(2)}
+                  </span>
+                </div>
               </div>
-              <input
-                type="checkbox"
-                checked={selectedAnchors.includes('training')}
-                onChange={() => {}}
-                className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
-              />
-            </div>
-            <h3 className="font-bold text-slate-900 text-sm">PMKVY Training Certificate</h3>
-            <p className="text-slate-600 mt-0.5">NSQF Level 5 (Welding) • PMKVY-2023-T001</p>
-            <span className="inline-block text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded mt-2">
-              Confidence: 100%
-            </span>
-          </div>
-
-          {/* DigiLocker e-KYC Anchor */}
-          <div
-            onClick={() => toggleAnchor('ekyc')}
-            className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
-              selectedAnchors.includes('ekyc')
-                ? 'bg-blue-50/70 border-blue-500 shadow-sm'
-                : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
-            }`}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
-                <ShieldCheck size={16} />
-              </div>
-              <input
-                type="checkbox"
-                checked={selectedAnchors.includes('ekyc')}
-                onChange={() => {}}
-                className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
-              />
-            </div>
-            <h3 className="font-bold text-slate-900 text-sm">DigiLocker Mock Sandbox</h3>
-            <p className="text-slate-600 mt-0.5">Authoritative e-KYC Verification Token</p>
-            <span className="inline-block text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded mt-2">
-              Confidence: 95%
-            </span>
-          </div>
-
-          {/* Employer Anchor */}
-          <div
-            onClick={() => toggleAnchor('employer')}
-            className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
-              selectedAnchors.includes('employer')
-                ? 'bg-blue-50/70 border-blue-500 shadow-sm'
-                : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
-            }`}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center">
-                <Building2 size={16} />
-              </div>
-              <input
-                type="checkbox"
-                checked={selectedAnchors.includes('employer')}
-                onChange={() => {}}
-                className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
-              />
-            </div>
-            <h3 className="font-bold text-slate-900 text-sm">Past Employer Contact</h3>
-            <p className="text-slate-600 mt-0.5">XYZ Fabricators (3M Milestone Record)</p>
-            <span className="inline-block text-[10px] font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded mt-2">
-              Confidence: 78%
-            </span>
-          </div>
+            )
+          })}
         </div>
 
-        {/* Combined Confidence Calculation */}
-        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <CheckCircle2 size={20} className="text-emerald-600 shrink-0" />
-            <div>
-              <span className="text-xs font-bold text-emerald-950 block">Cumulative Anchor Weight: 0.97</span>
-              <p className="text-[11px] text-emerald-800">
-                {selectedAnchors.length} secondary anchors selected. Exceeds mandatory 0.85 threshold for autonomous recovery.
+        {/* Combined Confidence Calculation - DYNAMIC */}
+        <div className={`p-5 border rounded-xl transition-all ${
+          isThresholdMet 
+            ? 'bg-emerald-50 border-emerald-300' 
+            : 'bg-amber-50 border-amber-300'
+        }`}>
+          <div className="flex items-start gap-3.5">
+            {isThresholdMet ? (
+              <CheckCircle2 size={24} className="text-emerald-600 shrink-0 mt-0.5" />
+            ) : (
+              <AlertTriangle size={24} className="text-amber-600 shrink-0 mt-0.5" />
+            )}
+            <div className="flex-1 space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className={`text-sm font-extrabold ${isThresholdMet ? 'text-emerald-950' : 'text-amber-950'}`}>
+                  Cumulative Anchor Weight: <span className="font-mono text-base">{cumulativeWeight.toFixed(2)}</span> / 1.00
+                </span>
+                <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${
+                  isThresholdMet 
+                    ? 'bg-emerald-200 text-emerald-900' 
+                    : 'bg-amber-200 text-amber-900'
+                }`}>
+                  {isThresholdMet ? 'Threshold Satisfied (≥ 0.85)' : `Deficit: ${(THRESHOLD - cumulativeWeight).toFixed(2)}`}
+                </span>
+              </div>
+
+              {/* Visual Progress Bar */}
+              <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden relative">
+                {/* 0.85 threshold marker */}
+                <div 
+                  className="absolute top-0 bottom-0 w-0.5 bg-slate-700 z-10" 
+                  style={{ left: '85%' }} 
+                  title="Mandatory 0.85 Threshold"
+                />
+                <div
+                  className={`h-full transition-all duration-300 ${
+                    isThresholdMet ? 'bg-emerald-500' : 'bg-amber-500'
+                  }`}
+                  style={{ width: `${progressPercentage}%` }}
+                />
+              </div>
+
+              <p className={`text-xs ${isThresholdMet ? 'text-emerald-800' : 'text-amber-800'}`}>
+                {isThresholdMet ? (
+                  <>
+                    <strong>{selectedAnchors.length} secondary anchors selected</strong>. Exceeds mandatory {THRESHOLD} threshold for autonomous recovery. Probabilistic match engine is unlocked.
+                  </>
+                ) : (
+                  <>
+                    <strong>Insufficient anchor weight:</strong> Currently at {cumulativeWeight.toFixed(2)}. You need at least {THRESHOLD} to bypass manual desk audit. Please select additional corroborating anchors above.
+                  </>
+                )}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="flex justify-between pt-2 border-t border-slate-100">
+        <div className="flex justify-between pt-2 border-t border-slate-100 items-center">
           <Link
             href="/identity/recovery"
-            className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-semibold text-xs px-4 py-2.5 rounded-lg transition-colors"
+            className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-semibold text-xs px-4 py-2.5 rounded-lg transition-colors flex items-center gap-1.5"
           >
-            Back
+            <ArrowLeft size={14} />
+            <span>Back</span>
           </Link>
           <Link
-            href="/identity/match"
-            className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-6 py-3 rounded-lg shadow transition-colors"
+            href={isThresholdMet ? "/identity/match" : "#"}
+            onClick={(e) => {
+              if (!isThresholdMet) {
+                e.preventDefault()
+                alert(`Cumulative anchor weight (${cumulativeWeight.toFixed(2)}) is below the required 0.85 threshold. Please select more anchors.`)
+              }
+            }}
+            className={`inline-flex items-center gap-2 font-bold text-xs px-6 py-3 rounded-lg shadow transition-colors ${
+              isThresholdMet
+                ? 'bg-slate-900 hover:bg-slate-800 text-white cursor-pointer'
+                : 'bg-slate-300 text-slate-500 cursor-not-allowed'
+            }`}
           >
             <span>Run Probabilistic Match Engine</span>
             <ArrowRight size={14} />

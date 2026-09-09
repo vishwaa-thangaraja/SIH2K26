@@ -86,47 +86,125 @@ const nodeTypes = {
   custom: CustomDSIGNode
 }
 
-export default function DSIGGraph() {
-  const [selectedNode, setSelectedNode] = useState<DSIGNodeType | null>(MOCK_DSIG_NODES[0])
+interface DSIGGraphProps {
+  traineeId?: string
+}
 
-  // Map initial mock positions
-  const initialNodes: Node[] = useMemo(() => {
-    const posMap: Record<string, { x: number; y: number }> = {
-      'core-T001': { x: 380, y: 180 },
-      'phone-A': { x: 50, y: 40 },
-      'phone-B': { x: 50, y: 320 },
-      'email-1': { x: 680, y: 40 },
-      'training-1': { x: 680, y: 320 },
-      'employer-A': { x: 220, y: 480 },
-      'employer-B': { x: 520, y: 480 },
+export default function DSIGGraph({ traineeId }: DSIGGraphProps) {
+  const [liveData, setLiveData] = useState<{ nodes: DSIGNodeType[]; edges: any[] } | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [selectedNode, setSelectedNode] = useState<DSIGNodeType | null>(null)
+
+  // Fetch live DSIG when traineeId changes
+  React.useEffect(() => {
+    if (!traineeId) {
+      setLiveData(null)
+      setSelectedNode(MOCK_DSIG_NODES[0])
+      return
     }
 
-    return MOCK_DSIG_NODES.map((node) => ({
-      id: node.id,
-      type: 'custom',
-      position: posMap[node.id] || { x: 200, y: 200 },
-      data: node,
-    }))
-  }, [])
+    setLoading(true)
+    fetch(`http://127.0.0.1:8000/trainees/${traineeId}/dsig`)
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch DSIG')
+        return res.json()
+      })
+      .then(data => {
+        if (data.nodes && data.nodes.length > 0) {
+          const adaptedNodes: DSIGNodeType[] = data.nodes.map((n: any) => ({
+            ...n,
+            id: n.node_id,
+          }))
+          const adaptedEdges = data.edges.map((e: any) => ({
+            ...e,
+            id: e.edge_id,
+            source: e.source_node_id,
+            target: e.target_node_id,
+          }))
+          setLiveData({ nodes: adaptedNodes, edges: adaptedEdges })
+          setSelectedNode(adaptedNodes[0] || null)
+        }
+      })
+      .catch(err => {
+        console.warn('Using mock DSIG due to error:', err)
+        setLiveData(null)
+        setSelectedNode(MOCK_DSIG_NODES[0])
+      })
+      .finally(() => setLoading(false))
+  }, [traineeId])
+
+  const nodesToRender = liveData ? liveData.nodes : MOCK_DSIG_NODES
+  const edgesToRender = liveData ? liveData.edges : MOCK_DSIG_EDGES
+
+  // Dynamic layout generator for any trainee's graph nodes
+  const initialNodes: Node[] = useMemo(() => {
+    if (!liveData) {
+      const posMap: Record<string, { x: number; y: number }> = {
+        'core-T001': { x: 380, y: 180 },
+        'phone-A': { x: 50, y: 40 },
+        'phone-B': { x: 50, y: 320 },
+        'email-1': { x: 680, y: 40 },
+        'training-1': { x: 680, y: 320 },
+        'employer-A': { x: 220, y: 480 },
+        'employer-B': { x: 520, y: 480 },
+      }
+      return MOCK_DSIG_NODES.map((node) => ({
+        id: node.id,
+        type: 'custom',
+        position: posMap[node.id] || { x: 200, y: 200 },
+        data: node,
+      }))
+    }
+
+    // Radial/Star layout around core identity
+    const centerX = 380
+    const centerY = 220
+    const nonCore = nodesToRender.filter(n => n.node_type !== 'identity')
+    const totalOuter = nonCore.length
+
+    return nodesToRender.map((node, index) => {
+      if (node.node_type === 'identity') {
+        return {
+          id: node.id,
+          type: 'custom',
+          position: { x: centerX, y: centerY },
+          data: node,
+        }
+      }
+
+      const outerIdx = nonCore.findIndex(n => n.id === node.id)
+      const angle = (outerIdx / (totalOuter || 1)) * (2 * Math.PI) - (Math.PI / 2)
+      const radius = 240
+      const x = Math.round(centerX + radius * Math.cos(angle))
+      const y = Math.round(centerY + radius * Math.sin(angle))
+
+      return {
+        id: node.id,
+        type: 'custom',
+        position: { x, y },
+        data: node,
+      }
+    })
+  }, [liveData, nodesToRender])
 
   const initialEdges: Edge[] = useMemo(() => {
-    return MOCK_DSIG_EDGES.map((edge) => ({
+    return edgesToRender.map((edge) => ({
       id: edge.id,
       source: edge.source,
       target: edge.target,
       label: edge.label,
-      animated: edge.edge_type === 'phone_change',
+      animated: edge.edge_type === 'phone_change' || edge.edge_type === 'credential',
       style: {
-        stroke: edge.edge_type === 'phone_change' ? '#9333ea' : '#0284c7',
+        stroke: edge.edge_type === 'phone_change' ? '#9333ea' : edge.edge_type === 'credential' ? '#16a34a' : '#0284c7',
         strokeWidth: 2,
         strokeDasharray: edge.edge_type === 'phone_change' ? '5,5' : undefined,
       },
       markerEnd: {
         type: MarkerType.ArrowClosed,
-        color: edge.edge_type === 'phone_change' ? '#9333ea' : '#0284c7',
+        color: edge.edge_type === 'phone_change' ? '#9333ea' : edge.edge_type === 'credential' ? '#16a34a' : '#0284c7',
       },
     }))
-  }, [])
+  }, [edgesToRender])
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 h-[720px] w-full">

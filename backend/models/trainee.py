@@ -12,6 +12,10 @@ class TraineeBase(SQLModel):
     enrollment_date: date
     completion_date: Optional[date] = None
     status: str
+    date_of_birth: Optional[date] = None
+    gender: Optional[str] = None
+    district: Optional[str] = None
+    state: Optional[str] = None
 
 class Trainee(TraineeBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
