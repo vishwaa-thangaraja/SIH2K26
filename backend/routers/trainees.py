@@ -60,9 +60,11 @@ def get_trainee_dsig(trainee_id: str, db: Session = Depends(get_db)):
     nodes = list(db.exec(select(DSIGNode).where(DSIGNode.trainee_id == trainee_id)).all())
     edges = list(db.exec(select(DSIGEdge).where(DSIGEdge.trainee_id == trainee_id)).all())
 
-    # If nodes were not pre-generated, synthesize the 1:1 identity graph dynamically
-    if not nodes:
-        core_id = f"core-{trainee_id}"
+    # Synthesize complete anchor graph if nodes or edges are incomplete
+    core_id = f"core-{trainee_id}"
+    node_types = {n.node_type for n in nodes}
+
+    if "identity" not in node_types:
         nodes.append(DSIGNode(
             node_id=core_id,
             trainee_id=trainee_id,
@@ -75,55 +77,53 @@ def get_trainee_dsig(trainee_id: str, db: Session = Depends(get_db)):
             verification_method="platform_registration"
         ))
 
-        # Phone Node
-        if trainee.phone:
-            phone_node_id = f"phone-{trainee_id}"
-            nodes.append(DSIGNode(
-                node_id=phone_node_id,
-                trainee_id=trainee_id,
-                node_type="phone",
-                label="Primary Phone",
-                value=trainee.phone,
-                is_active=True,
-                valid_from=trainee.enrollment_date,
-                confidence=0.98,
-                verification_method="otp_verified"
-            ))
-            edges.append(DSIGEdge(
-                edge_id=f"edge-p-{trainee_id}",
-                trainee_id=trainee_id,
-                source_node_id=core_id,
-                target_node_id=phone_node_id,
-                edge_type="identity_link",
-                label="Registered Mobile",
-                valid_from=trainee.enrollment_date,
-                confidence=0.98
-            ))
+    # Phone Node
+    if "phone" not in node_types and trainee.phone:
+        phone_node_id = f"phone-{trainee_id}"
+        nodes.append(DSIGNode(
+            node_id=phone_node_id,
+            trainee_id=trainee_id,
+            node_type="phone",
+            label="Primary Phone",
+            value=trainee.phone,
+            is_active=True,
+            valid_from=trainee.enrollment_date,
+            confidence=0.98,
+            verification_method="otp_verified"
+        ))
+        edges.append(DSIGEdge(
+            edge_id=f"edge-p-{trainee_id}",
+            trainee_id=trainee_id,
+            source_node_id=core_id,
+            target_node_id=phone_node_id,
+            edge_type="identity_link",
+            label="Registered Mobile",
+            valid_from=trainee.enrollment_date,
+            confidence=0.98
+        ))
 
-        # Email Node
-        if trainee.email:
-            email_node_id = f"email-{trainee_id}"
-            nodes.append(DSIGNode(
-                node_id=email_node_id,
-                trainee_id=trainee_id,
-                node_type="email",
-                label="Primary Email",
-                value=trainee.email,
-                is_active=True,
-                valid_from=trainee.enrollment_date,
-                confidence=0.95,
-                verification_method="email_verified"
-            ))
-            edges.append(DSIGEdge(
-                edge_id=f"edge-e-{trainee_id}",
-                trainee_id=trainee_id,
-                source_node_id=core_id,
-                target_node_id=email_node_id,
-                edge_type="identity_link",
-                label="Institutional Contact",
-                valid_from=trainee.enrollment_date,
-                confidence=0.95
-            ))
+    # Email Node
+    if "email" not in node_types and trainee.email:
+        email_node_id = f"email-{trainee_id}"
+        nodes.append(DSIGNode(
+            node_id=email_node_id,
+            trainee_id=trainee_id,
+            node_type="email",
+            label="Primary Email",
+            value=trainee.email,
+            is_active=True,
+            valid_from=trainee.enrollment_date,
+            confidence=0.95,
+            verification_method="email_verified"
+        ))
+        edges.append(DSIGEdge(
+            edge_id=f"edge-e-{trainee_id}",
+            trainee_id=trainee_id,
+            source_node_id=core_id,
+            target_node_id=email_node_id,
+            edge_type="identity_link",
+            label="Institutional Contact",
+        ))
 
         # Training Node
         trn = db.exec(select(TrainingRecord).where(TrainingRecord.trainee_id == trainee_id)).first()

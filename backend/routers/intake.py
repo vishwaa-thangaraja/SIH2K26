@@ -29,7 +29,7 @@ def get_demo_csv():
     raise HTTPException(status_code=404, detail="Demo CSV file not found.")
 
 @router.post("/validate")
-async def validate_csv(request: Request):
+async def validate_csv(request: Request, db: Session = Depends(get_db)):
     """
     Validates training data CSV file without modifying database state.
     Accepts either multipart file upload or JSON payload with 'csv_content'.
@@ -60,7 +60,7 @@ async def validate_csv(request: Request):
     if not content or not content.strip():
         raise HTTPException(status_code=400, detail="No file or CSV content provided.")
 
-    validation_result = validate_training_csv(content)
+    validation_result = validate_training_csv(content, db=db)
     validation_result["filename"] = filename
     validation_result["valid_rows"] = validation_result.get("valid_rows_count", 0)
     validation_result["invalid_rows"] = validation_result.get("invalid_rows_count", 0)

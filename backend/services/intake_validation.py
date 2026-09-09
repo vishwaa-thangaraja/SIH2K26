@@ -45,10 +45,11 @@ def parse_date(date_str: str) -> Tuple[Optional[date], Optional[str]]:
 
     return None, f"Invalid date format or non-existent date '{clean}'. Expected DD-MM-YYYY or YYYY-MM-DD."
 
-def validate_training_csv(file_content: str) -> Dict[str, Any]:
+def validate_training_csv(file_content: str, db: Optional[Any] = None) -> Dict[str, Any]:
     """
     Validates a training intake CSV against CONTINUUM Module 1 ingestion rules.
     Returns summary metrics, categorized issues list, and record previews.
+    Automatically checks and flags duplicates within the file and against existing database trainees.
     """
     reader = csv.DictReader(io.StringIO(file_content.strip()))
     fieldnames = reader.fieldnames or []
@@ -67,6 +68,27 @@ def validate_training_csv(file_content: str) -> Dict[str, Any]:
             "issues": [],
             "records": [],
         }
+
+    # Fetch existing trainee IDs from DB to detect duplicates across uploads
+    existing_db_ids = set()
+    if db is not None:
+        try:
+            from models.trainee import Trainee
+            from sqlmodel import select
+            all_ids = db.exec(select(Trainee.trainee_id)).all()
+            existing_db_ids = set(str(i).strip() for i in all_ids if i)
+        except Exception:
+            pass
+    else:
+        try:
+            from database import engine
+            from sqlmodel import Session, select
+            from models.trainee import Trainee
+            with Session(engine) as db_sess:
+                all_ids = db_sess.exec(select(Trainee.trainee_id)).all()
+                existing_db_ids = set(str(i).strip() for i in all_ids if i)
+        except Exception:
+            pass
 
     seen_trainee_ids = {}
     issues: List[Dict[str, Any]] = []
@@ -120,7 +142,7 @@ def validate_training_csv(file_content: str) -> Dict[str, Any]:
                 row_issues.append(issue)
                 category_counts["missing"] += 1
 
-        # Check Duplicate trainee_id in file
+        # Check Duplicate trainee_id in file or existing in database
         is_duplicate = False
         if trainee_id:
             if trainee_id in seen_trainee_ids:
@@ -133,6 +155,21 @@ def validate_training_csv(file_content: str) -> Dict[str, Any]:
                     "current_value": trainee_id,
                     "category": "duplicates",
                     "problem": f"Duplicate Trainee ID '{trainee_id}' detected (first appeared on row {first_row}). Automatically dropped from ingestion.",
+                    "suggested_correction": "Automatically dropped to protect identity continuity.",
+                    "is_blocking": False,
+                    "auto_dropped": True,
+                }
+                row_issues.append(issue)
+                category_counts["duplicates"] += 1
+            elif trainee_id in existing_db_ids:
+                is_duplicate = True
+                issue = {
+                    "row_number": row_num,
+                    "trainee_id": trainee_id,
+                    "field": "trainee_id",
+                    "current_value": trainee_id,
+                    "category": "duplicates",
+                    "problem": f"Trainee ID '{trainee_id}' already exists in CONTINUUM database. Automatically dropped from ingestion.",
                     "suggested_correction": "Automatically dropped to protect identity continuity.",
                     "is_blocking": False,
                     "auto_dropped": True,
