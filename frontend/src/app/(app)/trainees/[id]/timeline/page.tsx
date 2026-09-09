@@ -8,7 +8,8 @@ import { MOCK_SEARCH_DATASET } from '@/lib/mockSearchData'
 import { 
   Building2, CheckCircle2, AlertCircle, ArrowLeft, 
   TrendingUp, ShieldCheck, FileCheck, Network, UserCheck, Search,
-  Send, Phone, Clock, MessageSquare, Check, X, RefreshCw, Zap, Mail
+  Send, Phone, Clock, MessageSquare, Check, X, RefreshCw, Zap, Mail,
+  Sparkles, ExternalLink, Loader2
 } from 'lucide-react'
 import { 
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, 
@@ -61,6 +62,40 @@ export default function LongitudinalTimelinePage() {
       setSendResult({ success: false, error: 'Connection failed to backend gateway.' })
     } finally {
       setIsSending(false)
+    }
+  }
+
+  // Batch Broadcast State
+  const [isBatchModalOpen, setIsBatchModalOpen] = React.useState(false)
+  const [broadcastMilestone, setBroadcastMilestone] = React.useState('3M')
+  const [isBroadcasting, setIsBroadcasting] = React.useState(false)
+  const [broadcastResult, setBroadcastResult] = React.useState<any>(null)
+
+  const handleTriggerBatchBroadcast = async () => {
+    setIsBroadcasting(true)
+    setIsBatchModalOpen(true)
+    setBroadcastResult(null)
+    try {
+      const res = await fetch('http://127.0.0.1:8000/communications/broadcast-unverified', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          milestone: broadcastMilestone,
+          sender: 'OFFICER_BULK_OUTREACH',
+        }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setBroadcastResult(data)
+        fetchHistory()
+      } else {
+        alert('Failed to trigger broadcast. Please check backend server status.')
+      }
+    } catch (e) {
+      console.error(e)
+      alert('Error connecting to communications service.')
+    } finally {
+      setIsBroadcasting(false)
     }
   }
 
@@ -155,6 +190,15 @@ export default function LongitudinalTimelinePage() {
             <Network size={14} />
             DSIG Tracker
           </Link>
+
+          <button
+            onClick={() => setIsBatchModalOpen(true)}
+            className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 text-xs font-black px-4 py-2.5 rounded-lg shadow-sm transition-all duration-150 active:scale-95 cursor-pointer"
+            title="Broadcast follow-up messages to all currently unupdated candidates in the registry"
+          >
+            <Zap size={14} className="fill-slate-950" />
+            <span>Broadcast to All Unverified</span>
+          </button>
 
           <button
             onClick={() => setIsFollowUpModalOpen(true)}
@@ -490,6 +534,185 @@ export default function LongitudinalTimelinePage() {
                     </>
                   )}
                 </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── BATCH BROADCAST MODAL (WHOLE COHORT OUTREACH) ── */}
+      {isBatchModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-blue-900 via-indigo-950 to-slate-900 text-white p-5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-black shadow-md">
+                  <Zap size={20} className="fill-slate-950" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-base tracking-tight text-white flex items-center gap-2">
+                    1-Click Batch Follow-Up Broadcast
+                  </h3>
+                  <p className="text-xs text-blue-200/90">
+                    Dispatches personalized follow-up SMS &amp; official email notices to all candidates with pending updates.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setIsBatchModalOpen(false)
+                  setBroadcastResult(null)
+                }}
+                className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto space-y-5 text-xs text-slate-700">
+              {isBroadcasting ? (
+                <div className="py-12 flex flex-col items-center justify-center text-center space-y-4">
+                  <div className="relative">
+                    <Loader2 size={44} className="animate-spin text-blue-600" />
+                    <Zap size={18} className="absolute inset-0 m-auto text-amber-500 fill-amber-500" />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="font-bold text-slate-900 text-sm">Transmitting Batch Longitudinal Follow-Ups...</h4>
+                    <p className="text-slate-500 text-xs max-w-sm">
+                      Connecting to telecom cellular gateways (SIM-AIRTEL / SIM-JIO) and sending authenticated Gmail notices with secure portal links.
+                    </p>
+                  </div>
+                </div>
+              ) : broadcastResult ? (
+                <div className="space-y-4">
+                  {/* Summary Bar */}
+                  <div className="grid grid-cols-3 gap-3 p-4 bg-slate-50 border border-slate-200 rounded-xl text-center">
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-slate-500 block">Total Cohort Targets</span>
+                      <span className="text-lg font-black text-slate-900">{broadcastResult.total_unverified_candidates}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-emerald-600 block">Successfully Dispatched</span>
+                      <span className="text-lg font-black text-emerald-600">{broadcastResult.dispatched_count}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-slate-500 block">Outreach Channels</span>
+                      <span className="inline-flex items-center gap-1 text-[10px] font-black text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full mt-1">
+                        SMS + Real Gmail SMTP
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-900 text-[11px] leading-relaxed flex items-start gap-2">
+                    <Sparkles size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                    <span>
+                      Each unupdated candidate received an official notification with their direct portal link. When they submit an employer/salary update, their status is automatically marked verified!
+                    </span>
+                  </div>
+
+                  {/* Dispatched candidates table */}
+                  <div className="border border-slate-200 rounded-xl overflow-hidden">
+                    <div className="bg-slate-100 px-3 py-2 border-b border-slate-200 font-bold text-slate-700 text-[11px] flex justify-between items-center">
+                      <span>Dispatched Follow-Up Audit Log</span>
+                      <span className="text-slate-500 text-[10px]">{broadcastResult.results?.length || 0} Records</span>
+                    </div>
+                    <div className="max-h-64 overflow-y-auto divide-y divide-slate-100">
+                      {broadcastResult.results && broadcastResult.results.length > 0 ? (
+                        broadcastResult.results.map((r: any, idx: number) => (
+                          <div key={idx} className="p-3 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                            <div className="space-y-0.5">
+                              <div className="flex items-center gap-2">
+                                <span className="font-extrabold text-slate-900">{r.trainee_name}</span>
+                                <span className="text-[10px] font-mono text-slate-500">({r.trainee_id})</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-[10px] text-slate-500 font-mono">
+                                <span>📱 {r.phone_number}</span>
+                                <span>•</span>
+                                <span>Ref: {r.delivery_reference}</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                <CheckCircle2 size={10} /> Dispatched
+                              </span>
+                              <a
+                                href={r.portal_link}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-600 hover:text-blue-800 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded hover:bg-blue-100 transition-colors"
+                              >
+                                Test Portal Link <ExternalLink size={9} />
+                              </a>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-6 text-center text-slate-500">
+                          All candidates in this cohort already have verified outcomes!
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="bg-slate-50 p-4 border border-slate-200 rounded-xl space-y-2">
+                    <span className="text-xs font-bold text-slate-900 block">Select Periodic Milestone:</span>
+                    <div className="grid grid-cols-4 gap-2">
+                      {['3M', '6M', '12M', '24M'].map((m) => (
+                        <button
+                          key={m}
+                          type="button"
+                          onClick={() => setBroadcastMilestone(m)}
+                          className={`py-2 text-xs font-bold rounded-lg border transition-all ${
+                            broadcastMilestone === m
+                              ? 'bg-gov-navy text-white border-gov-navy shadow-xs'
+                              : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                          }`}
+                        >
+                          {m} Check
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-sky-50 border border-sky-200 rounded-xl text-sky-900 text-xs leading-relaxed space-y-1">
+                    <strong>Autonomous Cohort Outreach:</strong>
+                    <p>
+                      This will transmit follow-up communications to all <strong>94 unverified candidates</strong> in the registry who have not yet submitted proof for the {broadcastMilestone} milestone.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="bg-slate-50 p-4 border-t border-slate-200 flex items-center justify-between">
+              <span className="text-[11px] text-slate-500">
+                Official MSDE Continuous Tracking System
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    setIsBatchModalOpen(false)
+                    setBroadcastResult(null)
+                  }}
+                  className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-lg transition-colors cursor-pointer"
+                >
+                  {broadcastResult ? 'Done' : 'Cancel'}
+                </button>
+                {!broadcastResult && (
+                  <button
+                    disabled={isBroadcasting}
+                    onClick={handleTriggerBatchBroadcast}
+                    className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 text-xs font-black px-4 py-2 rounded-lg shadow transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
+                  >
+                    <Zap size={14} className="fill-slate-950" />
+                    <span>Transmit Batch Broadcast to Cohort</span>
+                  </button>
+                )}
               </div>
             </div>
           </div>
