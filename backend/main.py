@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import create_db_and_tables
 from seed_data import seed_all
-from routers import trainees, outcomes, evidence, identity, attestation, intelligence, intake
+from routers import trainees, outcomes, evidence, identity, attestation, intelligence, intake, communications
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -33,6 +33,7 @@ app.include_router(identity.router, prefix="/identity", tags=["Identity"])
 app.include_router(attestation.router, prefix="/attestation", tags=["Attestation"])
 app.include_router(intelligence.router, prefix="/intelligence", tags=["Intelligence"])
 app.include_router(intake.router, prefix="/intake", tags=["Training Intake"])
+app.include_router(communications.router, prefix="/communications", tags=["Communications"])
 
 @app.get("/")
 async def root():

@@ -10,6 +10,7 @@ def create_db_and_tables():
     import models.provider
     import models.verification
     import models.training_intake
+    import models.communication
     SQLModel.metadata.create_all(engine)
 
     from sqlalchemy import text

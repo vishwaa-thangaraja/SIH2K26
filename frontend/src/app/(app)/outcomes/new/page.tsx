@@ -1,14 +1,39 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { 
   Building2, Sparkles, ArrowRight, ArrowLeft, 
-  Upload, CheckCircle2, ShieldCheck, FileCheck 
+  Upload, CheckCircle2, ShieldCheck, FileCheck,
+  MessageSquare, Phone, Check, RefreshCw
 } from 'lucide-react'
 
 export default function NewEmploymentEventPage() {
+  return (
+    <Suspense fallback={
+      <div className="bg-white border border-slate-200 rounded-xl p-12 text-center text-slate-500">
+        <div className="animate-spin w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full mx-auto mb-3" />
+        <p className="text-xs font-bold uppercase tracking-wider">Loading Outcome Form...</p>
+      </div>
+    }>
+      <NewEmploymentEventContent />
+    </Suspense>
+  )
+}
+
+function NewEmploymentEventContent() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const traineeId = searchParams.get('trainee_id') || 'T001'
+  const milestone = searchParams.get('milestone') || '3M'
+  const source = searchParams.get('source')
+
+  const [traineeName, setTraineeName] = useState<string>('')
   const [step, setStep] = useState<1 | 2 | 3>(1)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submissionSuccess, setSubmissionSuccess] = useState(false)
+
   const [formData, setFormData] = useState({
     employer_name: 'ABC Manufacturing Pvt Ltd',
     employer_gstn: '27AABCA1234B1Z5',
@@ -18,8 +43,72 @@ export default function NewEmploymentEventPage() {
     evidence_type: 'payslip',
   })
 
+  useEffect(() => {
+    if (traineeId) {
+      fetch(`http://127.0.0.1:8000/trainees/${traineeId}`)
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data && data.name) {
+            setTraineeName(data.name)
+          }
+        })
+        .catch(() => {})
+    }
+  }, [traineeId])
+
+  const handleSubmitAndVerify = async () => {
+    setIsSubmitting(true)
+    try {
+      if (traineeId) {
+        // Close the follow-up feedback loop on the backend
+        await fetch(`http://127.0.0.1:8000/communications/respond/${traineeId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            milestone: milestone,
+            notes: `Self-reported via SMS Follow-Up link: Employer=${formData.employer_name}, Wage=₹${formData.wage_monthly}`
+          })
+        })
+      }
+      setSubmissionSuccess(true)
+      setTimeout(() => {
+        router.push('/evidence/upload')
+      }, 1500)
+    } catch (err) {
+      console.error('Failed to notify communications backend', err)
+      router.push('/evidence/upload')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
     <div className="max-w-3xl mx-auto space-y-6">
+      {/* Follow-up SMS Outreach Arrival Banner */}
+      {source === 'sms' && (
+        <div className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-xl p-4 shadow-md flex items-start gap-3 border border-emerald-500 animate-in fade-in duration-200">
+          <div className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
+            <MessageSquare size={18} className="text-white" />
+          </div>
+          <div className="space-y-0.5">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] uppercase font-black bg-white text-emerald-800 px-2 py-0.5 rounded-full">
+                Periodic Outreach Link Active
+              </span>
+              <span className="text-xs font-medium text-emerald-100">
+                Milestone: {milestone}
+              </span>
+            </div>
+            <h3 className="text-sm font-extrabold text-white">
+              Trainee Self-Reporting Follow-Up Portal
+            </h3>
+            <p className="text-xs text-emerald-100/95 leading-relaxed">
+              Welcome {traineeName ? <strong>{traineeName}</strong> : ''} (ID: {traineeId}). Please confirm your current workplace and monthly earnings to fulfill your periodic outcome verification requirement.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex items-center justify-between">
         <div>
@@ -30,7 +119,7 @@ export default function NewEmploymentEventPage() {
             Register New Employment Event
           </h1>
           <p className="text-sm text-slate-600 mt-0.5">
-            Log livelihood event for Trainee T001 to begin autonomous multi-source verification.
+            Log livelihood event for Trainee <strong className="text-slate-900">{traineeName || traineeId}</strong> to begin autonomous multi-source verification.
           </p>
         </div>
 
@@ -182,6 +271,14 @@ export default function NewEmploymentEventPage() {
             <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-2 text-xs">
               <div className="grid grid-cols-2 gap-2">
                 <div>
+                  <span className="text-slate-500">Trainee Candidate:</span>
+                  <p className="font-bold text-slate-900">{traineeName ? `${traineeName} (${traineeId})` : traineeId}</p>
+                </div>
+                <div>
+                  <span className="text-slate-500">Outreach Milestone:</span>
+                  <p className="font-bold text-slate-900">{milestone} Longitudinal Follow-Up</p>
+                </div>
+                <div>
                   <span className="text-slate-500">Employer Organization:</span>
                   <p className="font-bold text-slate-900">{formData.employer_name}</p>
                 </div>
@@ -200,26 +297,57 @@ export default function NewEmploymentEventPage() {
               </div>
             </div>
 
-            <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-800 flex items-start gap-2">
-              <CheckCircle2 size={16} className="text-emerald-600 shrink-0 mt-0.5" />
-              <p>
-                Upon submission, OCR intelligence will extract entities from the attached payslip and trigger an automated mock attestation notification to the employer.
-              </p>
-            </div>
+            {source === 'sms' && (
+              <div className="p-3.5 bg-sky-50 border border-sky-200 rounded-lg text-xs text-sky-900 flex items-start gap-2">
+                <ShieldCheck size={16} className="text-sky-600 shrink-0 mt-0.5" />
+                <p>
+                  <strong>Longitudinal Loop Closure:</strong> Submitting will mark your {milestone} follow-up status as <strong>Responded &amp; Verified</strong> in the National Skills Registry for this period.
+                </p>
+              </div>
+            )}
+
+            {submissionSuccess ? (
+              <div className="p-4 bg-emerald-50 border border-emerald-300 rounded-lg text-xs text-emerald-900 flex items-center gap-2 animate-in fade-in">
+                <CheckCircle2 size={18} className="text-emerald-600 shrink-0" />
+                <div>
+                  <p className="font-extrabold text-sm">Outreach Response Recorded Successfully!</p>
+                  <p className="text-emerald-700">Follow-up ledger updated. Redirecting to evidence processing pipeline...</p>
+                </div>
+              </div>
+            ) : (
+              <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-800 flex items-start gap-2">
+                <CheckCircle2 size={16} className="text-emerald-600 shrink-0 mt-0.5" />
+                <p>
+                  Upon submission, OCR intelligence will extract entities from the attached payslip and trigger an automated mock attestation notification to the employer.
+                </p>
+              </div>
+            )}
 
             <div className="flex justify-between pt-4 border-t border-slate-100">
               <button
                 onClick={() => setStep(2)}
-                className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-semibold text-xs px-4 py-2 rounded-lg transition-colors"
+                disabled={isSubmitting || submissionSuccess}
+                className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-semibold text-xs px-4 py-2 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
               >
                 Back
               </button>
-              <Link
-                href="/evidence/upload"
-                className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-6 py-2.5 rounded-lg shadow transition-colors"
+              <button
+                onClick={handleSubmitAndVerify}
+                disabled={isSubmitting || submissionSuccess}
+                className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-6 py-2.5 rounded-lg shadow transition-colors disabled:opacity-50 cursor-pointer"
               >
-                Submit Event & Trigger OCR Pipeline <ArrowRight size={14} />
-              </Link>
+                {isSubmitting ? (
+                  <>
+                    <RefreshCw size={14} className="animate-spin" />
+                    <span>Recording Response...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Submit Event & Trigger OCR Pipeline</span>
+                    <ArrowRight size={14} />
+                  </>
+                )}
+              </button>
             </div>
           </div>
         )}

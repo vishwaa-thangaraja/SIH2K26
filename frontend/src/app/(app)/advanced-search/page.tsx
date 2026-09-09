@@ -9,7 +9,8 @@ import {
   ShieldCheck, AlertTriangle, Building2, Calendar,
   User, Download, ArrowUpDown, SlidersHorizontal,
   ExternalLink, Network, CheckCircle2, RotateCcw,
-  Sparkles, Landmark, BadgeCheck, FileText, ChevronDown
+  Sparkles, Landmark, BadgeCheck, FileText, ChevronDown,
+  Send, Zap, RefreshCw, Radio, Phone, MessageSquare, Clock
 } from 'lucide-react'
 
 export default function AdvancedFilterSearchPage() {
@@ -62,6 +63,55 @@ function AdvancedFilterSearchContent() {
   // Live database trainees state
   const [liveTrainees, setLiveTrainees] = useState<SearchTraineeRecord[]>([])
 
+  // Batch follow-up outreach state
+  const [isBatchModalOpen, setIsBatchModalOpen] = useState(false)
+  const [isBroadcasting, setIsBroadcasting] = useState(false)
+  const [broadcastResult, setBroadcastResult] = useState<any>(null)
+  const [broadcastMilestone, setBroadcastMilestone] = useState('3M')
+  const [summaryStats, setSummaryStats] = useState<{
+    total_sent: number
+    total_delivered: number
+    total_responded: number
+    response_rate_percent: number
+    unverified_candidates: number
+  } | null>(null)
+
+  const fetchSummaryStats = () => {
+    fetch('http://127.0.0.1:8000/communications/summary')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data) setSummaryStats(data)
+      })
+      .catch(() => {})
+  }
+
+  const handleTriggerBatchBroadcast = async () => {
+    setIsBroadcasting(true)
+    setIsBatchModalOpen(true)
+    try {
+      const res = await fetch('http://127.0.0.1:8000/communications/broadcast-unverified', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          milestone: broadcastMilestone,
+          sender: 'OFFICER_BULK_OUTREACH',
+        }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setBroadcastResult(data)
+        fetchSummaryStats()
+      } else {
+        alert('Failed to trigger broadcast. Please check backend server status.')
+      }
+    } catch (e) {
+      console.error(e)
+      alert('Error connecting to communications service.')
+    } finally {
+      setIsBroadcasting(false)
+    }
+  }
+
   useEffect(() => {
     fetch('http://127.0.0.1:8000/trainees')
       .then((res) => (res.ok ? res.json() : null))
@@ -99,6 +149,7 @@ function AdvancedFilterSearchContent() {
         }
       })
       .catch(() => {})
+    fetchSummaryStats()
   }, [])
 
   // Combined dataset: live database trainees take precedence
@@ -344,6 +395,69 @@ function AdvancedFilterSearchContent() {
               </button>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* ── AUTONOMOUS LONGITUDINAL OUTREACH BANNER ── */}
+      <div className="bg-gradient-to-r from-blue-900 via-indigo-950 to-slate-900 text-white rounded-xl p-4 sm:p-5 shadow-md border border-blue-800/60 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="space-y-1.5 max-w-2xl">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1 bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full">
+              <Zap size={10} className="fill-amber-300" /> Longitudinal Follow-Up Engine
+            </span>
+            <span className="inline-flex items-center gap-1 bg-blue-500/20 text-blue-300 text-[10px] font-bold px-2 py-0.5 rounded-full">
+              Telecom Cellular Gateway
+            </span>
+          </div>
+          <h2 className="text-base sm:text-lg font-extrabold tracking-tight text-white flex items-center gap-2">
+            1-Click Batch Follow-Up Broadcast
+          </h2>
+          <p className="text-xs text-blue-200/90 leading-relaxed">
+            Continuum automatically scans the outcome ledger for trainees with pending periodic verifications ({summaryStats ? summaryStats.unverified_candidates : '30+'} candidates) and dispatches a verified SMS follow-up with a direct self-reporting portal link.
+          </p>
+          {summaryStats && (
+            <div className="flex flex-wrap items-center gap-4 pt-1 text-xs text-blue-200/80 font-medium">
+              <span>Dispatched: <strong className="text-white">{summaryStats.total_sent}</strong></span>
+              <span>•</span>
+              <span>Delivered: <strong className="text-emerald-400">{summaryStats.total_delivered}</strong></span>
+              <span>•</span>
+              <span>Trainee Responses: <strong className="text-sky-300">{summaryStats.total_responded}</strong></span>
+              <span>•</span>
+              <span>Response Rate: <strong className="text-amber-300">{summaryStats.response_rate_percent}%</strong></span>
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full md:w-auto shrink-0">
+          <select
+            value={broadcastMilestone}
+            onChange={(e) => setBroadcastMilestone(e.target.value)}
+            disabled={isBroadcasting}
+            className="bg-blue-950/80 border border-blue-700 text-white text-xs font-bold rounded-lg px-3 py-2.5 outline-none cursor-pointer hover:border-blue-500"
+          >
+            <option value="3M">Milestone: 3-Month Follow-Up</option>
+            <option value="6M">Milestone: 6-Month Retention</option>
+            <option value="12M">Milestone: 1-Year Wage Increment</option>
+            <option value="24M">Milestone: 2-Year Long-Term</option>
+          </select>
+
+          <button
+            onClick={handleTriggerBatchBroadcast}
+            disabled={isBroadcasting}
+            className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs px-4 py-2.5 rounded-lg shadow-md transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
+          >
+            {isBroadcasting ? (
+              <>
+                <RefreshCw size={14} className="animate-spin text-slate-950" />
+                <span>Broadcasting Packets...</span>
+              </>
+            ) : (
+              <>
+                <Zap size={14} className="fill-slate-950" />
+                <span>⚡ Broadcast Follow-Up to All Due Trainees</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
 
@@ -947,6 +1061,134 @@ function AdvancedFilterSearchContent() {
           )}
         </div>
       </div>
+      {/* ── BATCH BROADCAST DISPATCH MODAL ── */}
+      {isBatchModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white border border-slate-200 rounded-2xl max-w-3xl w-full max-h-[85vh] shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="bg-slate-900 text-white p-5 flex items-center justify-between border-b border-slate-800">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30">
+                  <Zap size={18} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-extrabold text-white">
+                    Autonomous SMS Outreach Dispatcher
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Milestone: {broadcastMilestone} Follow-Up Outreach Engine
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsBatchModalOpen(false)}
+                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 overflow-y-auto space-y-4 text-xs">
+              {isBroadcasting ? (
+                <div className="py-12 text-center space-y-4">
+                  <div className="w-12 h-12 border-3 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto" />
+                  <div className="space-y-1">
+                    <p className="font-extrabold text-slate-900 text-sm">Transmitting Cellular SMS Follow-Ups...</p>
+                    <p className="text-slate-500 max-w-md mx-auto">
+                      Connecting to telecom cellular gateways (SIM-AIRTEL / SIM-JIO) and dispatching personalized magic update links to candidate registered phones.
+                    </p>
+                  </div>
+                </div>
+              ) : broadcastResult ? (
+                <div className="space-y-4">
+                  {/* Summary Bar */}
+                  <div className="grid grid-cols-3 gap-3 p-4 bg-slate-50 border border-slate-200 rounded-xl text-center">
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-slate-500 block">Total Target Candidates</span>
+                      <span className="text-lg font-black text-slate-900">{broadcastResult.total_unverified_candidates}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-emerald-600 block">Successfully Dispatched</span>
+                      <span className="text-lg font-black text-emerald-600">{broadcastResult.dispatched_count}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-slate-500 block">Gateway Status</span>
+                      <span className="inline-flex items-center gap-1 text-xs font-black text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full mt-1">
+                        Active (Simulated Gateway)
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-900 text-[11px] leading-relaxed flex items-start gap-2">
+                    <Sparkles size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                    <span>
+                      Each candidate receives an official SMS with a secure direct portal link. When a candidate uploads payslip/wage updates, the follow-up log automatically registers their response and marks them verified for this period!
+                    </span>
+                  </div>
+
+                  {/* Dispatched candidates table */}
+                  <div className="border border-slate-200 rounded-xl overflow-hidden">
+                    <div className="bg-slate-100 px-3 py-2 border-b border-slate-200 font-bold text-slate-700 text-[11px] flex justify-between items-center">
+                      <span>Dispatched SMS Audit Log</span>
+                      <span className="text-slate-500 text-[10px]">{broadcastResult.results?.length || 0} Records</span>
+                    </div>
+                    <div className="max-h-64 overflow-y-auto divide-y divide-slate-100">
+                      {broadcastResult.results && broadcastResult.results.length > 0 ? (
+                        broadcastResult.results.map((r: any, idx: number) => (
+                          <div key={idx} className="p-3 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                            <div className="space-y-0.5">
+                              <div className="flex items-center gap-2">
+                                <span className="font-extrabold text-slate-900">{r.trainee_name}</span>
+                                <span className="text-[10px] font-mono text-slate-500">({r.trainee_id})</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-[10px] text-slate-500 font-mono">
+                                <span>📱 {r.phone_number}</span>
+                                <span>•</span>
+                                <span>Ref: {r.delivery_reference}</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                <CheckCircle2 size={10} /> Delivered
+                              </span>
+                              <a
+                                href={r.portal_link}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-600 hover:text-blue-800 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded hover:bg-blue-100 transition-colors"
+                              >
+                                Test Portal Link <ExternalLink size={9} />
+                              </a>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-6 text-center text-slate-500">
+                          All candidates in this cohort already have verified outcomes!
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="bg-slate-50 p-4 border-t border-slate-200 flex items-center justify-between">
+              <span className="text-[11px] text-slate-500">
+                Logged to Ministry Audit Ledger with tamper-evident delivery reference.
+              </span>
+              <button
+                onClick={() => setIsBatchModalOpen(false)}
+                className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-4 py-2 rounded-lg transition-colors cursor-pointer"
+              >
+                Close & Review Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
