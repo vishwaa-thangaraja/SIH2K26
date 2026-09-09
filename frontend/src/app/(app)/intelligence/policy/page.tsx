@@ -20,10 +20,10 @@ export default function PolicyInsightsPage() {
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Policy Feedback System</span>
           </div>
           <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Autonomous Policy &amp; Program Interventions
+            Policy Directive &amp; Recommendation Engine
           </h1>
           <p className="text-sm text-slate-600 mt-1">
-            Data-driven recommendations generated from longitudinal 3M–24M outcome ledger trends and regional skill deficits.
+            Evidence-backed policy directives generated from longitudinal 3M–24M outcome trends and regional deficits. <span className="font-semibold text-slate-800">Human-in-the-loop: CONTINUUM recommends, authorized administrators decide.</span>
           </p>
         </div>
 

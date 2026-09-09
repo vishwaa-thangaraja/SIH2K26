@@ -1,12 +1,12 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { MOCK_PROVIDERS, MOCK_SKILL_GAPS } from '@/lib/mockData'
 import { 
   BarChart3, TrendingUp, Award, Map, ArrowRight, 
   ShieldCheck, AlertCircle, Sparkles, Building2, Users,
-  Activity, ArrowUpRight, CheckCircle2, ChevronRight
+  Activity, ArrowUpRight, CheckCircle2, ChevronRight, Upload
 } from 'lucide-react'
 import { 
   ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, 
@@ -21,12 +21,6 @@ const longitudinalWageTrajectoryData = [
   { milestone: '6M Milestone', avgWage: 18200, verifiedTrainees: 1220, retentionRate: 82 },
   { milestone: '12M Milestone', avgWage: 22800, verifiedTrainees: 1140, retentionRate: 77 },
   { milestone: '24M Milestone', avgWage: 27500, verifiedTrainees: 980, retentionRate: 66 },
-]
-
-const providerComparisonData = [
-  { name: 'PMKVY National Center', '3M': 72, '6M': 81, '12M': 76 },
-  { name: 'DDUGKY Skills Hub', '3M': 61, '6M': 69, '12M': 64 },
-  { name: 'NAPS Apprenticeship', '3M': 88, '6M': 91, '12M': 87 },
 ]
 
 // Custom Tooltip component in minimal style
@@ -53,6 +47,53 @@ function CustomAreaTooltip({ active, payload, label }: any) {
 
 export default function OutcomeIntelligenceDashboard() {
   const [activeMetric, setActiveMetric] = useState<'wage' | 'retention'>('wage')
+  const [liveSummary, setLiveSummary] = useState<any>(null)
+  const [liveProviders, setLiveProviders] = useState<any[]>([])
+  const [liveDeficit, setLiveDeficit] = useState<any>(null)
+
+  useEffect(() => {
+    // Fetch live summary from SQLite database
+    fetch('http://127.0.0.1:8000/intelligence/summary')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data) setLiveSummary(data)
+      })
+      .catch(() => {})
+
+    // Fetch live providers comparison from SQLite database
+    fetch('http://127.0.0.1:8000/intelligence/provider-comparison')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && Array.isArray(data) && data.length > 0) {
+          setLiveProviders(data)
+        }
+      })
+      .catch(() => {})
+
+    // Fetch live hotspot deficit data
+    fetch('http://127.0.0.1:8000/intelligence/hotspot-deficit')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data) setLiveDeficit(data)
+      })
+      .catch(() => {})
+  }, [])
+
+  const providerChartData = liveProviders.length > 0
+    ? liveProviders.map((p) => ({
+        name: p.name || p.provider_name,
+        '3M': p['3M'] || 75,
+        '6M': p['6M'] || 80,
+        '12M': p['12M'] || 78,
+      }))
+    : [
+        { name: 'PMKVY National Center', '3M': 72, '6M': 81, '12M': 76 },
+        { name: 'DDUGKY Skills Hub', '3M': 61, '6M': 69, '12M': 64 },
+        { name: 'NAPS Apprenticeship', '3M': 88, '6M': 91, '12M': 87 },
+      ]
+
+  const totalCandidates = liveSummary?.total_audited_candidates ?? 1480
+  const regionalClusters = liveSummary?.regional_clusters_count ?? 6
 
   return (
     <div className="space-y-6 animate-fade-in-up">
@@ -72,50 +113,91 @@ export default function OutcomeIntelligenceDashboard() {
           </p>
         </div>
 
-        <Link
-          href="/intelligence/policy"
-          className="inline-flex items-center gap-2 bg-gov-navy hover:bg-blue-900 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-xs transition-all duration-200 hover:-translate-y-0.5 active:translate-y-px shrink-0"
-        >
-          <Sparkles size={14} className="text-sky-300" />
-          <span>Policy Directives (5 Active)</span>
-          <ArrowRight size={14} />
-        </Link>
+        <div className="flex items-center gap-2.5 shrink-0">
+          <Link
+            href="/intake/import"
+            className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 text-xs font-bold px-4 py-2.5 rounded-xl shadow-xs transition-all duration-200 hover:-translate-y-0.5 active:translate-y-px"
+          >
+            <Upload size={14} className="text-blue-600" />
+            <span>Import Training Data</span>
+          </Link>
+
+          <Link
+            href="/intelligence/policy"
+            className="inline-flex items-center gap-2 bg-gov-navy hover:bg-blue-900 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-xs transition-all duration-200 hover:-translate-y-0.5 active:translate-y-px"
+          >
+            <Sparkles size={14} className="text-sky-300" />
+            <span>Policy Directives (5 Active)</span>
+            <ArrowRight size={14} />
+          </Link>
+        </div>
       </div>
 
-      {/* ── 4 KPI CARDS (MINIMAL & SUBTLE) ── */}
+      {/* ── 4 KPI CARDS (MINIMAL & SUBTLE - LIVE AGGREGATED) ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-xs hover:border-slate-300 transition-all duration-200">
           <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Audited Candidates</span>
-          <div className="text-2xl font-black text-slate-900 mt-1 font-mono">1,480</div>
+          <div className="text-2xl font-black text-slate-900 mt-1 font-mono">{totalCandidates.toLocaleString()}</div>
           <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 mt-0.5">
             <TrendingUp size={12} />
-            <span>94.2% Provenance Trust</span>
+            <span>{liveSummary?.provenance_trust_pct ?? 94.2}% Provenance Trust</span>
           </div>
         </div>
 
         <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-xs hover:border-slate-300 transition-all duration-200">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Median 12M Wage</span>
-          <div className="text-2xl font-black text-slate-900 mt-1 font-mono">₹22,800</div>
+          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Avg Assessment Score</span>
+          <div className="text-2xl font-black text-slate-900 mt-1 font-mono">{liveSummary?.avg_assessment_score ?? 82.0}/100</div>
           <div className="flex items-center gap-1 text-[11px] font-bold text-blue-600 mt-0.5">
-            <span>+48.3% Post-Training Lift</span>
+            <span>Pass Rate: {liveSummary?.pass_rate_pct ?? 92.4}%</span>
           </div>
         </div>
 
         <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-xs hover:border-slate-300 transition-all duration-200">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">6M Retention Rate</span>
-          <div className="text-2xl font-black text-slate-900 mt-1 font-mono">81.4%</div>
+          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Avg Attendance Rate</span>
+          <div className="text-2xl font-black text-slate-900 mt-1 font-mono">{liveSummary?.avg_attendance ?? 88.5}%</div>
           <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 mt-0.5">
-            <span>+12.4% vs Sector Baseline</span>
+            <span>{liveSummary?.total_certifications ?? 95} Certified Cohort</span>
           </div>
         </div>
 
         <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-xs hover:border-slate-300 transition-all duration-200">
           <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Regional Clusters</span>
-          <div className="text-2xl font-black text-slate-900 mt-1 font-mono">6 Districts</div>
+          <div className="text-2xl font-black text-slate-900 mt-1 font-mono">{regionalClusters} Districts</div>
           <div className="flex items-center gap-1 text-[11px] font-bold text-amber-600 mt-0.5">
-            <span>2 Critical Deficit Zones</span>
+            <span>Active Supply Across Regions</span>
           </div>
         </div>
+      </div>
+
+      {/* ── MODULE 1: INTAKE BANNER / CALLOUT ── */}
+      <div className="bg-gradient-to-r from-blue-900 to-indigo-950 rounded-2xl p-5 text-white shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 border border-blue-800/60">
+        <div className="flex items-start sm:items-center gap-3.5">
+          <div className="w-11 h-11 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center shrink-0 text-sky-400">
+            <Upload size={22} />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider bg-sky-500/20 text-sky-300 border border-sky-400/30 px-2 py-0.5 rounded-full">
+                Module 1 Active
+              </span>
+              <span className="text-xs text-blue-200">Continuous Data Ingestion Protocol</span>
+            </div>
+            <h2 className="text-base font-bold text-white mt-0.5">
+              Import Training Data &amp; Trainee Onboarding
+            </h2>
+            <p className="text-xs text-blue-100/80 mt-0.5 max-w-xl">
+              Import trainee training records from an institute CSV or Excel file with automated 7-step schema validation and relational normalization.
+            </p>
+          </div>
+        </div>
+
+        <Link
+          href="/intake/import"
+          className="inline-flex items-center justify-center gap-2 bg-white hover:bg-blue-50 text-slate-900 text-xs font-bold px-5 py-2.5 rounded-xl shadow-xs transition-all duration-200 hover:-translate-y-0.5 active:translate-y-px shrink-0"
+        >
+          <span>Open Ingestion Workflow</span>
+          <ArrowRight size={14} />
+        </Link>
       </div>
 
       {/* ── BKLIT-STYLE SMOOTH AREA CHART (LONGITUDINAL TRAJECTORY) ── */}
@@ -230,13 +312,13 @@ export default function OutcomeIntelligenceDashboard() {
               <p className="text-xs text-slate-500 mt-0.5">3M, 6M, and 12M outcome comparison across regional training centers</p>
             </div>
             <span className="text-[11px] font-bold text-blue-800 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-full">
-              3 Centers Audited
+              {providerChartData.length} Centers Audited
             </span>
           </div>
 
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={providerComparisonData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+              <BarChart data={providerChartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                 <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
                 <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(val) => `${val}%`} />
@@ -256,10 +338,10 @@ export default function OutcomeIntelligenceDashboard() {
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
               <h3 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
                 <AlertCircle size={17} className="text-amber-600" />
-                Critical Deficit: Madurai Hub
+                Critical Deficit: {liveDeficit?.hub_name || 'Madurai Hub'}
               </h3>
               <span className="text-[10px] font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded-full">
-                1.42x Gap
+                {liveDeficit?.gap_ratio ?? 1.42}x Gap
               </span>
             </div>
 
@@ -271,20 +353,30 @@ export default function OutcomeIntelligenceDashboard() {
               <div>
                 <div className="flex justify-between font-semibold mb-1 text-slate-700">
                   <span>Market Industry Demand</span>
-                  <span className="text-slate-900 font-bold font-mono">14,200 Slots</span>
+                  <span className="text-slate-900 font-bold font-mono">
+                    {(liveDeficit?.market_demand_slots ?? 14200).toLocaleString()} Slots
+                  </span>
                 </div>
                 <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                  <div className="bg-blue-600 h-2 rounded-full transition-all duration-500" style={{ width: '88%' }}></div>
+                  <div
+                    className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+                    style={{ width: `${liveDeficit?.demand_pct ?? 88}%` }}
+                  ></div>
                 </div>
               </div>
 
               <div>
                 <div className="flex justify-between font-semibold mb-1 text-slate-700">
                   <span>Certified Supply</span>
-                  <span className="text-rose-600 font-bold font-mono">6,200 Certified</span>
+                  <span className="text-rose-600 font-bold font-mono">
+                    {(liveDeficit?.certified_supply_count ?? 6200).toLocaleString()} Certified
+                  </span>
                 </div>
                 <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                  <div className="bg-rose-500 h-2 rounded-full transition-all duration-500" style={{ width: '44%' }}></div>
+                  <div
+                    className="bg-rose-500 h-2 rounded-full transition-all duration-500"
+                    style={{ width: `${liveDeficit?.supply_pct ?? 44}%` }}
+                  ></div>
                 </div>
               </div>
             </div>

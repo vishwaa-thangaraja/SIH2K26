@@ -2,47 +2,106 @@
 
 import React from 'react'
 import Link from 'next/link'
+import { useParams, useRouter } from 'next/navigation'
 import { TIMELINE_MILESTONES, MOCK_TRAINEE } from '@/lib/mockData'
+import { MOCK_SEARCH_DATASET } from '@/lib/mockSearchData'
 import { 
   Building2, CheckCircle2, AlertCircle, ArrowLeft, 
-  TrendingUp, ShieldCheck, FileCheck
+  TrendingUp, ShieldCheck, FileCheck, Network, UserCheck, Search
 } from 'lucide-react'
 import { 
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, 
   Tooltip, CartesianGrid 
 } from 'recharts'
 
-const wageTrendData = [
-  { milestone: 'Training', wage: 0, date: 'Apr 2023' },
-  { milestone: '3M', wage: 15000, date: 'Jul 2023' },
-  { milestone: '6M', wage: 18000, date: 'Oct 2023' },
-  { milestone: '12M', wage: 20000, date: 'Apr 2024' },
-]
-
 export default function LongitudinalTimelinePage() {
+  const params = useParams()
+  const router = useRouter()
+  const id = (params?.id as string) || 'T001'
+  const [liveTrainee, setLiveTrainee] = React.useState<any>(null)
+  const [allTrainees, setAllTrainees] = React.useState<{ trainee_id: string; name: string }[]>([])
+
+  React.useEffect(() => {
+    fetch(`http://127.0.0.1:8000/trainees/${id}`)
+      .then(res => (res.ok ? res.json() : null))
+      .then(data => {
+        if (data) setLiveTrainee(data)
+      })
+      .catch(() => {})
+  }, [id])
+
+  React.useEffect(() => {
+    fetch('http://127.0.0.1:8000/trainees?limit=100')
+      .then(res => (res.ok ? res.json() : []))
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setAllTrainees(data.map((t: any) => ({
+            trainee_id: t.trainee_id,
+            name: t.name,
+          })))
+        }
+      })
+      .catch(() => {})
+  }, [])
+
+  const found = MOCK_SEARCH_DATASET.find((t) => t.trainee_id === id || t.id === id)
+
+  const traineeName = liveTrainee ? liveTrainee.name : (found ? found.name : MOCK_TRAINEE.name)
+  const traineeWage = found ? found.monthly_wage : 21000
+
+  const wageTrendData = [
+    { milestone: 'Training', wage: 0, date: 'Apr 2023' },
+    { milestone: '3M', wage: Math.round(traineeWage * 0.75), date: 'Jul 2023' },
+    { milestone: '6M', wage: Math.round(traineeWage * 0.90), date: 'Oct 2023' },
+    { milestone: '12M', wage: traineeWage, date: 'Apr 2024' },
+  ]
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Link href="/dashboard" className="text-xs text-sky-700 font-semibold hover:underline flex items-center gap-1">
-              <ArrowLeft size={12} /> Dashboard
+            <Link href="/advanced-search" className="text-xs text-sky-700 font-semibold hover:underline flex items-center gap-1">
+              <Search size={12} /> Trainee Directory
             </Link>
             <span className="text-slate-300">/</span>
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Trainee T001</span>
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider font-mono">Trainee {id}</span>
           </div>
           <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
             Longitudinal Outcome Timeline
           </h1>
           <p className="text-sm text-slate-600 mt-1">
-            Multi-year trajectory tracking for <strong>{MOCK_TRAINEE.name}</strong> from certification to 24-month livelihood stability.
+            Multi-year trajectory tracking for <strong>{traineeName}</strong> from certification to 24-month livelihood stability.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs px-3 py-2 rounded-lg font-bold">
-          <ShieldCheck size={16} />
-          <span>Longitudinal Integrity Verified (0.86 Score)</span>
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Live Trainee Selector */}
+          <div className="flex items-center gap-2 bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5">
+            <UserCheck size={16} className="text-sky-700" />
+            <span className="text-xs font-semibold text-slate-700">Select:</span>
+            <select
+              value={id}
+              onChange={(e) => router.push(`/trainees/${e.target.value}/timeline`)}
+              className="text-xs font-semibold bg-transparent text-slate-900 focus:outline-none cursor-pointer max-w-[150px] truncate"
+            >
+              <option value={id}>{id} - {traineeName}</option>
+              {allTrainees.filter(t => t.trainee_id !== id).map(t => (
+                <option key={t.trainee_id} value={t.trainee_id}>
+                  {t.trainee_id} - {t.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <Link
+            href={`/dsig?trainee_id=${id}`}
+            className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors"
+          >
+            <Network size={14} />
+            DSIG Tracker
+          </Link>
         </div>
       </div>
 

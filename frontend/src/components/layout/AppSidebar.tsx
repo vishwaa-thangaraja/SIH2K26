@@ -50,6 +50,7 @@ const analystNav = [
   {
     group: 'Intelligence & Discovery',
     items: [
+      { label: 'Import Training Data', icon: Upload, href: '/intake/import' },
       { label: 'Advanced Filter Search', icon: FileSearch, href: '/advanced-search' },
       { label: 'Macro Intelligence', icon: BarChart3, href: '/intelligence' },
       { label: 'Policy Directives', icon: LineChart, href: '/intelligence/policy' },

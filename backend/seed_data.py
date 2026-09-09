@@ -26,6 +26,115 @@ def seed_all():
             db.commit()
             return
 
+        # Check if version-controlled initial_seed.json exists for seamless git clone / pull portability
+        import os
+        from models.training_intake import TrainingRecord, AssessmentRecord, CertificationRecord, TraineeSkill, ImportBatchLog
+        seed_path = os.path.join(os.path.dirname(__file__), "initial_seed.json")
+        if os.path.exists(seed_path):
+            try:
+                with open(seed_path, "r", encoding="utf-8") as f:
+                    seed_dict = json.load(f)
+                
+                # Helper date parser
+                def p_date(val):
+                    if not val:
+                        return None
+                    if isinstance(val, str):
+                        return datetime.strptime(val[:10], "%Y-%m-%d").date()
+                    return val
+
+                def p_dt(val):
+                    if not val:
+                        return None
+                    if isinstance(val, str):
+                        try:
+                            return datetime.fromisoformat(val)
+                        except Exception:
+                            return datetime.utcnow()
+                    return val
+
+                for tr in seed_dict.get("trainees", []):
+                    db.add(Trainee(
+                        trainee_id=tr["trainee_id"],
+                        name=tr["name"],
+                        email=tr["email"],
+                        phone=tr["phone"],
+                        program=tr["program"],
+                        provider=tr["provider"],
+                        enrollment_date=p_date(tr.get("enrollment_date")),
+                        completion_date=p_date(tr.get("completion_date")),
+                        status=tr["status"],
+                        date_of_birth=p_date(tr.get("date_of_birth")),
+                        gender=tr.get("gender"),
+                        district=tr.get("district"),
+                        state=tr.get("state"),
+                    ))
+
+                for r in seed_dict.get("training_records", []):
+                    db.add(TrainingRecord(
+                        record_id=r["record_id"],
+                        trainee_id=r["trainee_id"],
+                        course=r["course"],
+                        sector=r.get("sector"),
+                        training_provider=r["training_provider"],
+                        training_centre=r["training_centre"],
+                        batch_id=r["batch_id"],
+                        training_start_date=p_date(r["training_start_date"]),
+                        training_end_date=p_date(r["training_end_date"]),
+                        training_status=r["training_status"],
+                        attendance_percentage=float(r.get("attendance_percentage", 0)),
+                        created_at=p_dt(r.get("created_at")),
+                    ))
+
+                for a in seed_dict.get("assessment_records", []):
+                    db.add(AssessmentRecord(
+                        assessment_id=a["assessment_id"],
+                        trainee_id=a["trainee_id"],
+                        training_record_id=a.get("training_record_id"),
+                        course=a["course"],
+                        assessment_score=float(a.get("assessment_score", 0)),
+                        assessment_result=a["assessment_result"],
+                        assessment_date=p_date(a.get("assessment_date")),
+                    ))
+
+                for c in seed_dict.get("certification_records", []):
+                    db.add(CertificationRecord(
+                        certification_id=c["certification_id"],
+                        trainee_id=c["trainee_id"],
+                        training_record_id=c.get("training_record_id"),
+                        course=c["course"],
+                        certification_status=c["certification_status"],
+                        certification_date=p_date(c.get("certification_date")),
+                    ))
+
+                for s in seed_dict.get("skills", []):
+                    db.add(TraineeSkill(
+                        trainee_id=s["trainee_id"],
+                        skill_name=s["skill_name"],
+                        source=s.get("source", "training_intake"),
+                        acquired_date=p_date(s.get("acquired_date")),
+                    ))
+
+                for b in seed_dict.get("batch_logs", []):
+                    db.add(ImportBatchLog(
+                        batch_id=b["batch_id"],
+                        filename=b["filename"],
+                        total_rows=int(b.get("total_rows", 0)),
+                        valid_rows=int(b.get("valid_rows", 0)),
+                        imported_rows=int(b.get("imported_rows", 0)),
+                        skipped_rows=int(b.get("skipped_rows", 0)),
+                        failed_rows=int(b.get("failed_rows", 0)),
+                        warnings_count=int(b.get("warnings_count", 0)),
+                        status=b["status"],
+                        imported_at=p_dt(b.get("imported_at")),
+                    ))
+
+                db.commit()
+                print(f"[CONTINUUM INIT] Successfully initialized database from version-controlled initial_seed.json ({len(seed_dict.get('trainees', []))} trainees).")
+                return
+            except Exception as e:
+                print(f"[CONTINUUM INIT] Warning: Could not initialize from initial_seed.json: {e}")
+
         # Trainee
         t = Trainee(
             trainee_id="T001", name="Ravi Kumar", email="ravi.kumar@example.com",

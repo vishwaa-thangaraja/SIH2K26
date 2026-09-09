@@ -1,9 +1,47 @@
-import React from 'react'
+'use client'
+
+import React, { useState, useEffect, Suspense } from 'react'
 import DSIGGraph from '@/components/dsig/DSIGGraph'
 import Link from 'next/link'
-import { ShieldCheck, PhoneCall, RefreshCw } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
+import { ShieldCheck, PhoneCall, RefreshCw, UserCheck } from 'lucide-react'
 
-export default function DSIGPage() {
+interface TraineeOption {
+  trainee_id: string
+  name: string
+  program: string
+}
+
+function DSIGContent() {
+  const searchParams = useSearchParams()
+  const initialParamId = searchParams.get('trainee_id')
+  const [trainees, setTrainees] = useState<TraineeOption[]>([])
+  const [selectedTraineeId, setSelectedTraineeId] = useState<string>(initialParamId || 'T001')
+
+  useEffect(() => {
+    if (initialParamId) {
+      setSelectedTraineeId(initialParamId)
+    }
+  }, [initialParamId])
+
+  useEffect(() => {
+    fetch('http://127.0.0.1:8000/trainees?limit=100')
+      .then(res => {
+        if (!res.ok) return []
+        return res.json()
+      })
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setTrainees(data.map((t: any) => ({
+            trainee_id: t.trainee_id,
+            name: t.name,
+            program: t.program
+          })))
+        }
+      })
+      .catch(err => console.warn('Could not load trainees list:', err))
+  }, [])
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -12,7 +50,7 @@ export default function DSIGPage() {
           <div className="flex items-center gap-2 text-xs font-bold text-sky-700 uppercase tracking-wider mb-1">
             <span>Identity Architecture</span>
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-            <span>Trainee T001</span>
+            <span>Trainee {selectedTraineeId}</span>
           </div>
           <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
             Dynamic Skill Identity Graph (DSIG)
@@ -22,7 +60,25 @@ export default function DSIGPage() {
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Live Trainee Selector */}
+          <div className="flex items-center gap-2 bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5">
+            <UserCheck size={16} className="text-sky-700" />
+            <span className="text-xs font-semibold text-slate-700">Trainee:</span>
+            <select
+              value={selectedTraineeId}
+              onChange={(e) => setSelectedTraineeId(e.target.value)}
+              className="text-xs font-semibold bg-transparent text-slate-900 focus:outline-none cursor-pointer max-w-[160px] truncate"
+            >
+              <option value="T001">T001 (Demo Trainee)</option>
+              {trainees.map(t => (
+                <option key={t.trainee_id} value={t.trainee_id}>
+                  {t.trainee_id} - {t.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <Link
             href="/identity/update/phone"
             className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors"
@@ -41,7 +97,7 @@ export default function DSIGPage() {
       </div>
 
       {/* Interactive DSIG React Flow Canvas */}
-      <DSIGGraph />
+      <DSIGGraph traineeId={selectedTraineeId} />
 
       {/* Identity Evolution Chronology */}
       <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
@@ -85,5 +141,13 @@ export default function DSIGPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function DSIGPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-500 text-xs">Loading DSIG Explorer...</div>}>
+      <DSIGContent />
+    </Suspense>
   )
 }

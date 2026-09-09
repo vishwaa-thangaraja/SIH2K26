@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { MOCK_PROVIDERS } from '@/lib/mockData'
 import { 
@@ -9,6 +9,19 @@ import {
 } from 'lucide-react'
 
 export default function ProviderScorecardsPage() {
+  const [providers, setProviders] = useState<any[]>(MOCK_PROVIDERS)
+
+  useEffect(() => {
+    fetch('http://127.0.0.1:8000/intelligence/provider-comparison')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && Array.isArray(data) && data.length > 0) {
+          setProviders(data)
+        }
+      })
+      .catch(() => {})
+  }, [])
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -28,13 +41,13 @@ export default function ProviderScorecardsPage() {
         </div>
 
         <span className="bg-emerald-50 text-emerald-800 text-xs px-3.5 py-1.5 rounded-full font-bold border border-emerald-200 self-start md:self-auto">
-          {MOCK_PROVIDERS.length} Accredited Providers
+          {providers.length} Accredited Providers
         </span>
       </div>
 
       {/* Provider Detailed Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {MOCK_PROVIDERS.map((p) => {
+        {providers.map((p) => {
           return (
             <div
               key={p.provider_id}

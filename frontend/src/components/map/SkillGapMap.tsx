@@ -9,8 +9,20 @@ import { AlertCircle, TrendingUp, Users, MapPin } from 'lucide-react'
 export default function SkillGapMap() {
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<L.Map | null>(null)
-  // Default to Madurai (index 0)
-  const [selectedDistrict, setSelectedDistrict] = useState<RegionalSkillGap>(MOCK_SKILL_GAPS[0])
+  const [districts, setDistricts] = useState<any[]>(MOCK_SKILL_GAPS)
+  const [selectedDistrict, setSelectedDistrict] = useState<any>(MOCK_SKILL_GAPS[0])
+
+  useEffect(() => {
+    fetch('http://127.0.0.1:8000/intelligence/district-density')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && Array.isArray(data) && data.length > 0) {
+          setDistricts(data)
+          setSelectedDistrict(data[0])
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (!mapContainerRef.current) return
@@ -22,10 +34,10 @@ export default function SkillGapMap() {
     }
 
     try {
-      // Center directly on Madurai [9.9252, 78.1198]
+      // Center on Tamil Nadu / South India
       const map = L.map(mapContainerRef.current, {
-        center: [9.9252, 78.1198],
-        zoom: 8,
+        center: [10.5, 78.0],
+        zoom: 7,
         scrollWheelZoom: false,
       })
 
@@ -36,33 +48,29 @@ export default function SkillGapMap() {
         maxZoom: 18,
       }).addTo(map)
 
-      MOCK_SKILL_GAPS.forEach((district) => {
+      districts.forEach((district) => {
         const isHighGap = district.gap_ratio >= 0.27
-        const isMadurai = district.district_name === 'Madurai'
         const color = isHighGap ? '#dc2626' : district.gap_ratio >= 0.25 ? '#d97706' : '#16a34a'
+        const traineeCount = district.trainee_count || 0
 
         const marker = L.circleMarker([district.lat, district.lng], {
-          radius: isMadurai ? 28 : district.skill_demand_score / 3.4,
-          color: isMadurai ? '#0284c7' : color,
+          radius: Math.max(10, Math.min(28, 12 + traineeCount * 1.5)),
+          color: color,
           fillColor: color,
-          fillOpacity: isMadurai ? 0.75 : 0.6,
-          weight: isMadurai ? 3 : 2,
+          fillOpacity: 0.7,
+          weight: 2,
         }).addTo(map)
 
         const popupHtml = `
           <div style="font-family: Inter, system-ui, sans-serif; font-size: 12px; padding: 2px;">
             <strong style="font-size: 13px; color: #0f172a;">${district.district_name}, ${district.state}</strong><br/>
+            <span style="color: #0284c7; font-weight: bold;">Certified Trainees: ${traineeCount}</span><br/>
             <span style="color: #475569;">Industry Demand: <strong>${district.skill_demand_score}/100</strong></span><br/>
-            <span style="color: #475569;">Certified Supply: <strong>${district.skill_supply_score}/100</strong></span><br/>
+            <span style="color: #475569;">Certified Supply Score: <strong>${district.skill_supply_score}/100</strong></span><br/>
             <span style="color: ${color}; font-weight: bold;">Deficit Gap: ${Math.round(district.gap_ratio * 100)}%</span>
           </div>
         `
         marker.bindPopup(popupHtml)
-
-        // Open popup by default on Madurai
-        if (isMadurai) {
-          marker.openPopup()
-        }
 
         marker.on('click', () => {
           setSelectedDistrict(district)
@@ -84,7 +92,7 @@ export default function SkillGapMap() {
     } catch (err) {
       console.error('Leaflet initialization error:', err)
     }
-  }, [])
+  }, [districts])
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full items-start">
@@ -124,18 +132,21 @@ export default function SkillGapMap() {
 
             <div className="bg-slate-50 p-3.5 rounded-lg border border-slate-200">
               <span className="text-xs text-slate-500 flex items-center gap-1 font-medium"><Users size={14} className="text-emerald-600" /> Certified Supply</span>
-              <p className="text-2xl font-black text-slate-900 mt-1">{selectedDistrict.skill_supply_score}<span className="text-xs font-normal text-slate-500">/100</span></p>
+              <p className="text-2xl font-black text-slate-900 mt-1">
+                {selectedDistrict.trainee_count !== undefined ? selectedDistrict.trainee_count : 10}
+                <span className="text-xs font-normal text-slate-500 ml-1">Graduates</span>
+              </p>
             </div>
           </div>
 
           {/* Gap Status */}
           <div className="bg-red-50 border border-red-200 rounded-lg p-3.5 my-3">
             <div className="flex items-center justify-between text-xs font-bold text-red-800">
-              <span className="flex items-center gap-1.5"><AlertCircle size={15} /> Critical Skill Deficit</span>
+              <span className="flex items-center gap-1.5"><AlertCircle size={15} /> Regional Skill Deficit</span>
               <span>{Math.round(selectedDistrict.gap_ratio * 100)}% Gap</span>
             </div>
             <div className="w-full bg-red-200 rounded-full h-2 mt-2">
-              <div className="bg-red-600 h-2 rounded-full" style={{ width: `${selectedDistrict.gap_ratio * 100 * 2.5}%` }} />
+              <div className="bg-red-600 h-2 rounded-full transition-all duration-500" style={{ width: `${Math.min(100, selectedDistrict.gap_ratio * 100 * 2.5)}%` }} />
             </div>
           </div>
 
@@ -144,7 +155,7 @@ export default function SkillGapMap() {
             <div>
               <span className="font-bold text-slate-700 block mb-1.5">Top Demanded Skills (Unmet):</span>
               <div className="flex flex-wrap gap-1.5">
-                {selectedDistrict.top_demanded_skills.map((skill) => (
+                {selectedDistrict.top_demanded_skills.map((skill: string) => (
                   <span key={skill} className="bg-blue-50 text-blue-800 border border-blue-200 px-2.5 py-1 rounded font-semibold text-[11px]">
                     {skill}
                   </span>
@@ -155,7 +166,7 @@ export default function SkillGapMap() {
             <div>
               <span className="font-bold text-slate-700 block mb-1.5">Existing Training Supply:</span>
               <div className="flex flex-wrap gap-1.5">
-                {selectedDistrict.top_supplied_skills.map((skill) => (
+                {selectedDistrict.top_supplied_skills.map((skill: string) => (
                   <span key={skill} className="bg-slate-100 text-slate-700 border border-slate-200 px-2.5 py-1 rounded font-semibold text-[11px]">
                     {skill}
                   </span>

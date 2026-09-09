@@ -55,6 +55,79 @@ function AdvancedFilterSearchContent() {
   // Sort State
   const [sortBy, setSortBy] = useState<'confidence' | 'wage_desc' | 'wage_asc' | 'retention'>('confidence')
 
+  // Pagination State (10 items per page)
+  const [currentPage, setCurrentPage] = useState<number>(1)
+  const PAGE_SIZE = 10
+
+  // Live database trainees state
+  const [liveTrainees, setLiveTrainees] = useState<SearchTraineeRecord[]>([])
+
+  useEffect(() => {
+    fetch('http://127.0.0.1:8000/trainees')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && Array.isArray(data) && data.length > 0) {
+          const mapped: SearchTraineeRecord[] = data.map((t: any) => ({
+            id: t.trainee_id,
+            trainee_id: t.trainee_id,
+            name: t.name,
+            gender: (t.gender === 'Female' ? 'Female' : 'Male') as any,
+            social_category: 'OBC',
+            is_rural: true,
+            program: t.program || 'Vocational Training',
+            sector: (t.sector || 'Automotive & Precision Welding') as any,
+            nsqf_level: t.nsqf_level || 4,
+            provider: t.provider || 'Accredited Center',
+            district: (t.district || 'Madurai') as any,
+            state: t.state || 'Tamil Nadu',
+            current_employer: null,
+            current_role: null,
+            employment_type: 'wage_employed',
+            monthly_wage: 18000,
+            wage_growth_pct: 25.0,
+            milestone_progress: { training: true, m3: true, m6: false, m12: false, m24: false },
+            retention_months: 6,
+            confidence_score: 95,
+            verification_sources: ['Training Ingestion Protocol', 'Institutional Assessment'],
+            dsig_node_count: 4,
+            flagged_for_audit: false,
+            completion_date: t.completion_date || '2026-03-30',
+            uan_epfo_matched: false,
+            digilocker_verified: true,
+          }))
+          setLiveTrainees(mapped)
+        }
+      })
+      .catch(() => {})
+  }, [])
+
+  // Combined dataset: live database trainees take precedence
+  const effectiveDataset = useMemo(() => {
+    if (liveTrainees.length === 0) return MOCK_SEARCH_DATASET
+    const liveIds = new Set(liveTrainees.map((t) => t.trainee_id))
+    const existingFiltered = MOCK_SEARCH_DATASET.filter((t) => !liveIds.has(t.trainee_id))
+    return [...liveTrainees, ...existingFiltered]
+  }, [liveTrainees])
+
+  // Dynamically compute available filter facets from the effective dataset
+  const dynamicFilterFacets = useMemo(() => {
+    const sectors = new Set<string>()
+    const nsqfLevels = new Set<number>()
+    const districts = new Set<string>()
+
+    effectiveDataset.forEach((t) => {
+      if (t.sector) sectors.add(t.sector)
+      if (t.nsqf_level) nsqfLevels.add(t.nsqf_level)
+      if (t.district) districts.add(t.district)
+    })
+
+    return {
+      sectors: Array.from(sectors).sort(),
+      nsqfLevels: Array.from(nsqfLevels).sort((a, b) => a - b),
+      districts: Array.from(districts).sort(),
+    }
+  }, [effectiveDataset])
+
   // Update from URL params if changed
   useEffect(() => {
     if (initialQuery) setSearchTerm(initialQuery)
@@ -111,7 +184,7 @@ function AdvancedFilterSearchContent() {
 
   // Filter Algorithm
   const filteredResults = useMemo(() => {
-    return MOCK_SEARCH_DATASET.filter((item) => {
+    return effectiveDataset.filter((item) => {
       // Keyword search
       if (searchTerm.trim()) {
         const q = searchTerm.toLowerCase()
@@ -197,7 +270,19 @@ function AdvancedFilterSearchContent() {
       if (sortBy === 'retention') return b.retention_months - a.retention_months
       return 0
     })
+  }, [effectiveDataset, searchTerm, selectedMilestones, selectedVerification, selectedSectors, selectedNsqf, selectedDistricts, selectedProviders, selectedDemographics, wageMin, wageMax, sortBy])
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1)
   }, [searchTerm, selectedMilestones, selectedVerification, selectedSectors, selectedNsqf, selectedDistricts, selectedProviders, selectedDemographics, wageMin, wageMax, sortBy])
+
+  // Pagination calculation (10 per page)
+  const totalPages = Math.max(1, Math.ceil(filteredResults.length / PAGE_SIZE))
+  const paginatedResults = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE
+    return filteredResults.slice(start, start + PAGE_SIZE)
+  }, [filteredResults, currentPage])
 
   return (
     <div className="space-y-4">
@@ -273,7 +358,7 @@ function AdvancedFilterSearchContent() {
             <span>Filters</span>
           </button>
           <span>
-            Showing <strong>1-{filteredResults.length}</strong> of <strong>{filteredResults.length}</strong> outcome records
+            Showing <strong>{filteredResults.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filteredResults.length)}</strong> of <strong>{filteredResults.length}</strong> outcome records
           </span>
           {searchTerm && (
             <span> for <strong className="text-blue-700">"{searchTerm}"</strong></span>
@@ -492,15 +577,8 @@ function AdvancedFilterSearchContent() {
               <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider">
                 Sector &amp; Trade
               </h3>
-              <div className="space-y-1.5 text-xs text-slate-700">
-                {[
-                  'Automotive & Precision Welding',
-                  'CNC Machine Operation',
-                  'Electronics & IoT',
-                  'Healthcare & Nursing',
-                  'Renewable Energy',
-                  'Textiles & Apparel',
-                ].map(sector => (
+              <div className="space-y-1.5 text-xs text-slate-700 max-h-48 overflow-y-auto pr-1">
+                {dynamicFilterFacets.sectors.map(sector => (
                   <label key={sector} className="flex items-center gap-2.5 cursor-pointer hover:text-slate-900 group">
                     <input
                       type="checkbox"
@@ -508,7 +586,7 @@ function AdvancedFilterSearchContent() {
                       onChange={() => setSelectedSectors(toggleArrayItem(selectedSectors, sector))}
                       className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300"
                     />
-                    <span className="group-hover:translate-x-0.5 transition-transform">{sector}</span>
+                    <span className="group-hover:translate-x-0.5 transition-transform truncate">{sector}</span>
                   </label>
                 ))}
               </div>
@@ -520,7 +598,7 @@ function AdvancedFilterSearchContent() {
                 NSQF Qualification Level
               </h3>
               <div className="space-y-1.5 text-xs text-slate-700">
-                {[3, 4, 5, 6].map(lvl => (
+                {dynamicFilterFacets.nsqfLevels.map(lvl => (
                   <label key={lvl} className="flex items-center gap-2.5 cursor-pointer hover:text-slate-900 group">
                     <input
                       type="checkbox"
@@ -541,8 +619,8 @@ function AdvancedFilterSearchContent() {
               <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider">
                 District / Cluster
               </h3>
-              <div className="space-y-1.5 text-xs text-slate-700">
-                {['Madurai', 'Coimbatore', 'Chennai', 'Tiruchirappalli', 'Salem', 'Tirunelveli'].map(dist => (
+              <div className="space-y-1.5 text-xs text-slate-700 max-h-48 overflow-y-auto pr-1">
+                {dynamicFilterFacets.districts.map(dist => (
                   <label key={dist} className="flex items-center gap-2.5 cursor-pointer hover:text-slate-900 group">
                     <input
                       type="checkbox"
@@ -623,7 +701,7 @@ function AdvancedFilterSearchContent() {
             </div>
           ) : (
             <div className="space-y-3.5">
-              {filteredResults.map((trainee) => (
+              {paginatedResults.map((trainee) => (
                 <div
                   key={trainee.id}
                   className="bg-white border border-slate-200 hover:border-blue-300 rounded-xl p-4 sm:p-5 shadow-xs hover:shadow-md transition-all space-y-4 group"
@@ -779,27 +857,30 @@ function AdvancedFilterSearchContent() {
                       )}
                     </div>
 
-                    {/* Action Links */}
+                    {/* Action Links - Direct Per-Trainee DSIG Tracker & Timeline */}
                     <div className="flex items-center gap-2 self-end sm:self-auto">
                       <Link
                         href={`/trainees/${trainee.trainee_id}`}
                         className="inline-flex items-center gap-1 text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-300 font-bold text-xs px-3 py-1.5 rounded-lg transition-colors"
+                        title={`View 360° Profile for ${trainee.name}`}
                       >
                         <User size={13} />
-                        <span>360° Profile</span>
+                        <span>Profile</span>
                       </Link>
 
                       <Link
-                        href="/dsig"
-                        className="inline-flex items-center gap-1 text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-300 font-bold text-xs px-3 py-1.5 rounded-lg transition-colors"
+                        href={`/dsig?trainee_id=${trainee.trainee_id}`}
+                        className="inline-flex items-center gap-1.5 text-purple-700 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 border border-purple-200 font-bold text-xs px-3 py-1.5 rounded-lg transition-colors shadow-2xs"
+                        title={`Open dynamic 1:1 Skill Identity Graph for ${trainee.name}`}
                       >
                         <Network size={13} />
-                        <span>DSIG Graph</span>
+                        <span>DSIG Tracker</span>
                       </Link>
 
                       <Link
                         href={`/trainees/${trainee.trainee_id}/timeline`}
-                        className="inline-flex items-center gap-1 text-white bg-gov-navy hover:bg-blue-900 font-bold text-xs px-3 py-1.5 rounded-lg transition-colors"
+                        className="inline-flex items-center gap-1 text-white bg-gov-navy hover:bg-blue-900 font-bold text-xs px-3 py-1.5 rounded-lg transition-colors shadow-2xs"
+                        title={`Open longitudinal outcome timeline for ${trainee.name}`}
                       >
                         <Calendar size={13} />
                         <span>Timeline</span>
@@ -811,25 +892,57 @@ function AdvancedFilterSearchContent() {
             </div>
           )}
 
-          {/* Pagination Controls */}
+          {/* Interactive Pagination Controls (10 per page) */}
           {filteredResults.length > 0 && (
-            <div className="bg-white border border-slate-200 rounded-xl p-4 flex items-center justify-center gap-2 text-xs font-bold text-slate-700 shadow-xs">
-              <button className="px-3 py-1.5 rounded-md border border-slate-300 hover:bg-slate-50 disabled:opacity-40" disabled>
-                ‹ Previous
-              </button>
-              <button className="px-3 py-1.5 rounded-md bg-gov-navy text-white font-black shadow-xs">
-                1
-              </button>
-              <button className="px-3 py-1.5 rounded-md border border-slate-300 hover:bg-slate-50">
-                2
-              </button>
-              <button className="px-3 py-1.5 rounded-md border border-slate-300 hover:bg-slate-50">
-                3
-              </button>
-              <span className="px-1 text-slate-400">...</span>
-              <button className="px-3 py-1.5 rounded-md border border-slate-300 hover:bg-slate-50">
-                Next ›
-              </button>
+            <div className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-bold text-slate-700 shadow-xs">
+              <span className="text-slate-500 font-medium">
+                Page <strong className="text-slate-900">{currentPage}</strong> of <strong className="text-slate-900">{totalPages}</strong> ({filteredResults.length} total trainees)
+              </span>
+
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1.5 rounded-md border border-slate-300 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  ‹ Previous
+                </button>
+
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter(page => {
+                    if (totalPages <= 7) return true
+                    if (page === 1 || page === totalPages) return true
+                    return Math.abs(page - currentPage) <= 1
+                  })
+                  .map((page, idx, arr) => {
+                    const prevPage = arr[idx - 1]
+                    const showEllipsis = prevPage && page - prevPage > 1
+
+                    return (
+                      <React.Fragment key={page}>
+                        {showEllipsis && <span className="px-1 text-slate-400">...</span>}
+                        <button
+                          onClick={() => setCurrentPage(page)}
+                          className={`px-3 py-1.5 rounded-md transition-colors ${
+                            currentPage === page
+                              ? 'bg-gov-navy text-white font-black shadow-xs'
+                              : 'border border-slate-300 hover:bg-slate-50 text-slate-700'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      </React.Fragment>
+                    )
+                  })}
+
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1.5 rounded-md border border-slate-300 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  Next ›
+                </button>
+              </div>
             </div>
           )}
         </div>

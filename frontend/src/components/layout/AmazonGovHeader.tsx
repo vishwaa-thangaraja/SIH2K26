@@ -58,6 +58,7 @@ export default function AmazonGovHeader() {
   // ── Analyst Nav Items ──
   const analystNavItems: NavItem[] = [
     { label: 'Macro Intelligence', href: '/intelligence', icon: BarChart3 },
+    { label: 'Import Training Data', href: '/intake/import', icon: Upload },
     { label: 'Advanced Filter Search', href: '/advanced-search', icon: Filter, isFilter: true },
     { label: 'Policy Directives', href: '/intelligence/policy', icon: LineChart },
     { label: 'Provider Scorecards', href: '/scorecards', icon: Award },
