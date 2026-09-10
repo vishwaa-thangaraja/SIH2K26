@@ -58,7 +58,7 @@ pm -v |
 ## 🚀 Quick Start Guide
 
 ### 1. Clone the Repository
-`ash
+`
 git clone https://github.com/vishwaa-thangaraja/SIH2K26.git
 cd SIH2K26
 `
