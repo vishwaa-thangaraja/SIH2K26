@@ -60,3 +60,16 @@ class TraineeRead(TraineeBase):
 class DSIGGraphResponse(SQLModel):
     nodes: List[DSIGNode]
     edges: List[DSIGEdge]
+
+class TraineeUpdate(SQLModel):
+    name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    program: Optional[str] = None
+    provider: Optional[str] = None
+    status: Optional[str] = None
+    gender: Optional[str] = None
+    district: Optional[str] = None
+    state: Optional[str] = None
+    completion_date: Optional[date] = None
+

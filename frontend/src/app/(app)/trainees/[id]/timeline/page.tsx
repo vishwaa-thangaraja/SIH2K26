@@ -9,7 +9,7 @@ import {
   Building2, CheckCircle2, AlertCircle, ArrowLeft, 
   TrendingUp, ShieldCheck, FileCheck, Network, UserCheck, Search,
   Send, Phone, Clock, MessageSquare, Check, X, RefreshCw, Zap, Mail,
-  Sparkles, ExternalLink, Loader2
+  Sparkles, ExternalLink, Loader2, Edit3, Save
 } from 'lucide-react'
 import { 
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, 
@@ -99,6 +99,65 @@ export default function LongitudinalTimelinePage() {
     }
   }
 
+  // Admin Trainee Edit State
+  const [isEditModalOpen, setIsEditModalOpen] = React.useState(false)
+  const [editForm, setEditForm] = React.useState({
+    name: '',
+    email: '',
+    phone: '',
+    program: '',
+    provider: '',
+    district: '',
+    state: '',
+    status: 'completed'
+  })
+  const [isSavingEdit, setIsSavingEdit] = React.useState(false)
+  const [editSuccessMsg, setEditSuccessMsg] = React.useState<string | null>(null)
+
+  const handleOpenEditModal = () => {
+    setEditForm({
+      name: liveTrainee?.name || traineeName || '',
+      email: liveTrainee?.email || (found as any)?.email || '',
+      phone: liveTrainee?.phone || (found as any)?.phone || '',
+      program: liveTrainee?.program || (found as any)?.program || 'Vocational Training',
+      provider: liveTrainee?.provider || (found as any)?.provider || 'Accredited Center',
+      district: liveTrainee?.district || (found as any)?.district || 'Madurai',
+      state: liveTrainee?.state || (found as any)?.state || 'Tamil Nadu',
+      status: liveTrainee?.status || 'completed'
+    })
+    setEditSuccessMsg(null)
+    setIsEditModalOpen(true)
+  }
+
+  const handleSaveTraineeUpdates = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSavingEdit(true)
+    setEditSuccessMsg(null)
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/trainees/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editForm),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setLiveTrainee(data.trainee)
+        setEditSuccessMsg('Trainee record updated successfully in CONTINUUM registry.')
+        setTimeout(() => {
+          setIsEditModalOpen(false)
+          setEditSuccessMsg(null)
+        }, 1100)
+      } else {
+        alert('Failed to update trainee record. Please check backend server.')
+      }
+    } catch (err) {
+      console.error(err)
+      alert('Error updating trainee details.')
+    } finally {
+      setIsSavingEdit(false)
+    }
+  }
+
   React.useEffect(() => {
     fetch(`http://127.0.0.1:8000/trainees/${id}`)
       .then(res => (res.ok ? res.json() : null))
@@ -161,10 +220,23 @@ export default function LongitudinalTimelinePage() {
               <Mail size={11} className="text-blue-600" />
               {liveTrainee?.email || (found as any)?.email || `${id.toLowerCase()}@example.com`}
             </span>
+            {liveTrainee?.program && (
+              <span className="inline-flex items-center gap-1 font-medium bg-blue-50 text-blue-800 border border-blue-200 px-2 py-0.5 rounded">
+                Trade: {liveTrainee.program}
+              </span>
+            )}
+            {liveTrainee?.district && (
+              <span className="inline-flex items-center gap-1 font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded">
+                📍 {liveTrainee.district}, {liveTrainee.state || 'Tamil Nadu'}
+              </span>
+            )}
+            <span className="inline-flex items-center gap-1 font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded uppercase text-[10px]">
+              Status: {liveTrainee?.status || 'Active'}
+            </span>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
           {/* Live Trainee Selector */}
           <div className="flex items-center gap-2 bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5">
             <UserCheck size={16} className="text-sky-700" />
@@ -183,29 +255,39 @@ export default function LongitudinalTimelinePage() {
             </select>
           </div>
 
+          <button
+            type="button"
+            onClick={handleOpenEditModal}
+            className="inline-flex items-center gap-1.5 bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 text-xs font-bold px-3 py-2 rounded-lg shadow-2xs transition-colors cursor-pointer"
+            title="Edit trainee demographic, contact, and vocational records (Administrator / Officer Override)"
+          >
+            <Edit3 size={13} className="text-sky-700" />
+            <span>Edit Trainee Details</span>
+          </button>
+
           <Link
             href={`/dsig?trainee_id=${id}`}
-            className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors"
+            className="inline-flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow-sm transition-colors"
           >
-            <Network size={14} />
-            DSIG Tracker
+            <Network size={13} />
+            <span>DSIG Tracker</span>
           </Link>
 
           <button
             onClick={() => setIsBatchModalOpen(true)}
-            className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 text-xs font-black px-4 py-2.5 rounded-lg shadow-sm transition-all duration-150 active:scale-95 cursor-pointer"
+            className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 text-xs font-black px-3.5 py-2 rounded-lg shadow-sm transition-all duration-150 active:scale-95 cursor-pointer"
             title="Broadcast follow-up messages to all currently unupdated candidates in the registry"
           >
-            <Zap size={14} className="fill-slate-950" />
+            <Zap size={13} className="fill-slate-950" />
             <span>Broadcast to All Unverified</span>
           </button>
 
           <button
             onClick={() => setIsFollowUpModalOpen(true)}
-            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-all duration-150 active:scale-95"
+            className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3.5 py-2 rounded-lg shadow-sm transition-all duration-150 active:scale-95 cursor-pointer"
           >
-            <Send size={14} />
-            Follow-Up Outreach
+            <Send size={13} />
+            <span>Follow-Up Outreach</span>
           </button>
         </div>
       </div>
@@ -715,6 +797,208 @@ export default function LongitudinalTimelinePage() {
                 )}
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── ADMIN EDIT TRAINEE MODAL ── */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl max-w-xl w-full shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh]">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-gov-navy via-slate-900 to-indigo-950 text-white p-5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-black shadow-md">
+                  <Edit3 size={20} />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-base tracking-tight text-white flex items-center gap-2">
+                    Modify Trainee Record
+                  </h3>
+                  <p className="text-xs text-blue-200/90">
+                    Administrator console to update candidate particulars in CONTINUUM registry &amp; DSIG identity graph.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsEditModalOpen(false)
+                  setEditSuccessMsg(null)
+                }}
+                className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Modal Form */}
+            <form onSubmit={handleSaveTraineeUpdates} className="flex flex-col flex-1 overflow-hidden">
+              <div className="p-6 overflow-y-auto space-y-4 text-xs">
+                {editSuccessMsg && (
+                  <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-xl flex items-center gap-2 font-bold text-xs">
+                    <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                    <span>{editSuccessMsg}</span>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Trainee ID (Readonly) */}
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Trainee Identifier</label>
+                    <input
+                      type="text"
+                      disabled
+                      value={id}
+                      className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-lg text-slate-500 font-mono font-bold cursor-not-allowed text-xs"
+                    />
+                  </div>
+
+                  {/* Status Dropdown */}
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Registry Status *</label>
+                    <select
+                      value={editForm.status}
+                      onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
+                      className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 font-semibold text-xs focus:ring-2 focus:ring-gov-navy focus:outline-none"
+                    >
+                      <option value="completed">Completed</option>
+                      <option value="placed">Placed</option>
+                      <option value="verified">Verified</option>
+                      <option value="active">Active</option>
+                      <option value="dropout">Dropout</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Candidate Full Name */}
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Candidate Full Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={editForm.name}
+                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                    placeholder="e.g. Rahul Sharma"
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 font-semibold text-xs focus:ring-2 focus:ring-gov-navy focus:outline-none"
+                  />
+                </div>
+
+                {/* Email and Phone */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Email Address *</label>
+                    <input
+                      type="email"
+                      required
+                      value={editForm.email}
+                      onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                      placeholder="e.g. candidate@example.com"
+                      className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 font-semibold text-xs focus:ring-2 focus:ring-gov-navy focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Phone Number *</label>
+                    <input
+                      type="text"
+                      required
+                      value={editForm.phone}
+                      onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                      placeholder="e.g. +91 98765 43210"
+                      className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 font-semibold text-xs focus:ring-2 focus:ring-gov-navy focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Program & Provider */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Program / Course *</label>
+                    <input
+                      type="text"
+                      required
+                      value={editForm.program}
+                      onChange={(e) => setEditForm({ ...editForm, program: e.target.value })}
+                      placeholder="e.g. CNC Operator / Welder"
+                      className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 font-semibold text-xs focus:ring-2 focus:ring-gov-navy focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Training Provider *</label>
+                    <input
+                      type="text"
+                      required
+                      value={editForm.provider}
+                      onChange={(e) => setEditForm({ ...editForm, provider: e.target.value })}
+                      placeholder="e.g. NSTI Chennai"
+                      className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 font-semibold text-xs focus:ring-2 focus:ring-gov-navy focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* District & State */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">District</label>
+                    <input
+                      type="text"
+                      value={editForm.district}
+                      onChange={(e) => setEditForm({ ...editForm, district: e.target.value })}
+                      placeholder="e.g. Madurai"
+                      className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 font-semibold text-xs focus:ring-2 focus:ring-gov-navy focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">State</label>
+                    <input
+                      type="text"
+                      value={editForm.state}
+                      onChange={(e) => setEditForm({ ...editForm, state: e.target.value })}
+                      placeholder="e.g. Tamil Nadu"
+                      className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 font-semibold text-xs focus:ring-2 focus:ring-gov-navy focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="p-3 bg-blue-50/70 border border-blue-200 rounded-xl text-[11px] text-blue-900 space-y-1">
+                  <span className="font-bold block">🔒 Cryptographic DSIG Audit Sync:</span>
+                  <p>
+                    Saving changes immediately updates the candidate in SQLite and synchronizes their DSIG identity nodes (Phone &amp; Email) to maintain cryptographic auditability.
+                  </p>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="bg-slate-50 px-6 py-4 border-t border-slate-200 flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsEditModalOpen(false)
+                    setEditSuccessMsg(null)
+                  }}
+                  className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-lg transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSavingEdit}
+                  className="inline-flex items-center gap-1.5 bg-gov-navy hover:bg-blue-900 text-white text-xs font-bold px-5 py-2.5 rounded-lg shadow transition-all disabled:opacity-50 cursor-pointer"
+                >
+                  {isSavingEdit ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" />
+                      <span>Saving Updates...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save size={14} />
+                      <span>Save Modifications</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

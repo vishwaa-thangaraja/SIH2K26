@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from database import get_db
-from models.trainee import Trainee, TraineeRead, DSIGNode, DSIGEdge, DSIGGraphResponse, IdentityAnchor
+from models.trainee import Trainee, TraineeRead, TraineeUpdate, DSIGNode, DSIGEdge, DSIGGraphResponse, IdentityAnchor
 
 from typing import List, Optional
 from models.training_intake import TrainingRecord, AssessmentRecord, CertificationRecord, TraineeSkill
@@ -43,6 +43,56 @@ def get_all_trainees(limit: int = 500, db: Session = Depends(get_db)):
             "attendance_percentage": trn.attendance_percentage if trn else 85.0,
         })
     return results
+
+@router.patch("/{trainee_id}")
+@router.put("/{trainee_id}")
+def update_trainee(trainee_id: str, payload: TraineeUpdate, db: Session = Depends(get_db)):
+    trainee = db.exec(select(Trainee).where(Trainee.trainee_id == trainee_id)).first()
+    if not trainee:
+        raise HTTPException(status_code=404, detail="Trainee not found")
+
+    if payload.name is not None and payload.name.strip():
+        trainee.name = payload.name.strip()
+    if payload.email is not None and payload.email.strip():
+        trainee.email = payload.email.strip()
+    if payload.phone is not None and payload.phone.strip():
+        trainee.phone = payload.phone.strip()
+    if payload.program is not None and payload.program.strip():
+        trainee.program = payload.program.strip()
+    if payload.provider is not None and payload.provider.strip():
+        trainee.provider = payload.provider.strip()
+    if payload.district is not None and payload.district.strip():
+        trainee.district = payload.district.strip()
+    if payload.state is not None and payload.state.strip():
+        trainee.state = payload.state.strip()
+    if payload.status is not None and payload.status.strip():
+        trainee.status = payload.status.strip()
+    if payload.gender is not None and payload.gender.strip():
+        trainee.gender = payload.gender.strip()
+    if payload.completion_date is not None:
+        trainee.completion_date = payload.completion_date
+
+    # Synchronize DSIG nodes if phone or email was modified
+    if payload.phone:
+        phone_node = db.exec(select(DSIGNode).where(DSIGNode.trainee_id == trainee_id, DSIGNode.node_type == "phone")).first()
+        if phone_node:
+            phone_node.value = trainee.phone
+            db.add(phone_node)
+
+    if payload.email:
+        email_node = db.exec(select(DSIGNode).where(DSIGNode.trainee_id == trainee_id, DSIGNode.node_type == "email")).first()
+        if email_node:
+            email_node.value = trainee.email
+            db.add(email_node)
+
+    db.add(trainee)
+    db.commit()
+    db.refresh(trainee)
+    return {
+        "status": "success",
+        "message": f"Trainee {trainee_id} updated successfully by administrator.",
+        "trainee": trainee
+    }
 
 @router.get("/{trainee_id}", response_model=TraineeRead)
 def get_trainee(trainee_id: str, db: Session = Depends(get_db)):
