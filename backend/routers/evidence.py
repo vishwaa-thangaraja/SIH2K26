@@ -14,6 +14,26 @@ import os
 
 router = APIRouter()
 
+@router.get("/")
+def list_evidence(trainee_id: Optional[str] = None, db: Session = Depends(get_db)):
+    """
+    Returns all evidence records, optionally filtered by trainee_id.
+    """
+    query = select(EvidenceRecord)
+    if trainee_id:
+        query = query.where(EvidenceRecord.trainee_id == trainee_id)
+    return db.exec(query).all()
+
+@router.get("/{evidence_id}")
+def get_evidence(evidence_id: str, db: Session = Depends(get_db)):
+    """
+    Returns a single evidence record by ID.
+    """
+    record = db.exec(select(EvidenceRecord).where(EvidenceRecord.evidence_id == evidence_id)).first()
+    if not record:
+        raise HTTPException(status_code=404, detail="Evidence record not found.")
+    return record
+
 SAMPLE_PAYSLIP_PATH = os.path.join(os.path.dirname(__file__), "..", "test_payslip.png")
 UPLOADS_DIR = os.path.join(os.path.dirname(__file__), "..", "uploads")
 os.makedirs(UPLOADS_DIR, exist_ok=True)

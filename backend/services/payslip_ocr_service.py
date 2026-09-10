@@ -533,4 +533,11 @@ class PayslipOCRService:
             "verification": verification,
         }
 
+    def process_payslip_text(self, raw_text: str, trainee: Optional[Any] = None, candidate_name: Optional[str] = None) -> Dict[str, Any]:
+        """Convenience method to run full extraction and verification directly on raw text."""
+        if not trainee and candidate_name:
+            from types import SimpleNamespace
+            trainee = SimpleNamespace(name=candidate_name, trainee_id="T001", program="CNC Operator", completion_date=None)
+        return self.process_payslip(b"", trainee=trainee, fallback_raw_text=raw_text)
+
 payslip_ocr_service = PayslipOCRService()

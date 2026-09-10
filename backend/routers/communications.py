@@ -236,6 +236,11 @@ def get_trainee_communication_history(trainee_id: str, db: Session = Depends(get
     ).all()
     return logs
 
+@router.get("/logs")
+def get_communication_logs(limit: int = 50, db: Session = Depends(get_db)):
+    """Returns past communication logs."""
+    return db.exec(select(CommunicationLog).order_by(CommunicationLog.sent_at.desc()).limit(limit)).all()
+
 @router.get("/summary")
 def get_communications_summary(db: Session = Depends(get_db)):
     """Computes communication dashboard metrics."""
