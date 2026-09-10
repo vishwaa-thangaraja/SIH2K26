@@ -1,18 +1,18 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useRole } from '@/contexts/RoleContext'
 import {
   ShieldCheck, Database, LineChart, Award,
   User, BarChart3, Building2, Smartphone, Mail,
   ArrowRight, Sparkles, Lock, KeyRound, CheckCircle2,
-  ChevronRight, ArrowUpRight, Shield
+  ChevronRight, ArrowUpRight, Shield, Check
 } from 'lucide-react'
 
 export default function LandingPage() {
   const router = useRouter()
-  const { setRole } = useRole()
+  const { setRole, setActiveTraineeId } = useRole()
   const [activeTab, setActiveTab] = useState<'official' | 'employee'>('official')
 
   // Government Official State
@@ -22,11 +22,85 @@ export default function LandingPage() {
   const [govPasscode, setGovPasscode] = useState('••••••••••••')
   const [govLoading, setGovLoading] = useState(false)
 
-  // Trainee / Employee State
-  const [traineeId, setTraineeId] = useState('T001')
-  const [traineePhone, setTraineePhone] = useState('+91 98765 43210')
-  const [traineeOtp, setTraineeOtp] = useState('123456')
+  // Trainee Demo Showdown State
+  const [traineeList, setTraineeList] = useState<any[]>([
+    {
+      trainee_id: 'T002',
+      name: 'Priya S',
+      program: 'Web Development',
+      provider: 'Aspire Skills Foundation',
+      district: 'Madurai',
+      state: 'Tamil Nadu',
+      phone: '+91 93847 59007',
+      email: 'vishwaat27@gmail.com',
+      status: 'completed',
+    },
+    {
+      trainee_id: 'T001',
+      name: 'Aarav Kumar',
+      program: 'Data Analytics',
+      provider: 'SkillBridge Training Services',
+      district: 'Madurai',
+      state: 'Tamil Nadu',
+      phone: '+91 90000 01000',
+      email: 'sihcontinuum@gmail.com',
+      status: 'placed',
+    },
+    {
+      trainee_id: 'T003',
+      name: 'Arun Prakash',
+      program: 'Digital Marketing',
+      provider: 'Apex Technical Institute',
+      district: 'Coimbatore',
+      state: 'Tamil Nadu',
+      phone: '+91 94421 88320',
+      email: 'arun.prakash@example.com',
+      status: 'completed',
+    },
+    {
+      trainee_id: 'T004',
+      name: 'Meena R',
+      program: 'Electrical Technician',
+      provider: 'Tiruchirappalli Skills Hub',
+      district: 'Tiruchirappalli',
+      state: 'Tamil Nadu',
+      phone: '+91 98401 92837',
+      email: 'meena.r@example.com',
+      status: 'completed',
+    },
+    {
+      trainee_id: 'T005',
+      name: 'Rahul Kumar',
+      program: 'Tailoring & Apparel Design',
+      provider: 'Salem Vocational Institute',
+      district: 'Salem',
+      state: 'Tamil Nadu',
+      phone: '+91 97890 12345',
+      email: 'rahul.kumar@example.com',
+      status: 'placed',
+    },
+  ])
+  const [selectedTraineeId, setSelectedTraineeId] = useState('T002')
   const [traineeLoading, setTraineeLoading] = useState(false)
+
+  useEffect(() => {
+    fetch('http://127.0.0.1:8000/trainees?limit=100')
+      .then(res => res.ok ? res.json() : [])
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          // Normalize phone & email
+          const normalized = data.map((t: any) => ({
+            ...t,
+            phone: t.phone ? (t.phone.startsWith('+91') ? t.phone : `+91 ${t.phone}`) : '+91 90000 01000',
+            email: t.email || `${(t.name || 'trainee').toLowerCase().replace(/\s+/g, '.')}@example.com`
+          }))
+          setTraineeList(normalized)
+        }
+      })
+      .catch(() => {})
+  }, [])
+
+  const currentTrainee = traineeList.find(t => t.trainee_id === selectedTraineeId) || traineeList[0]
 
   const handleGovLogin = (e: React.FormEvent) => {
     e.preventDefault()
@@ -34,26 +108,24 @@ export default function LandingPage() {
     setTimeout(() => {
       setRole('analyst')
       router.push('/intelligence')
-    }, 250)
+    }, 200)
   }
 
-  const handleTraineeLogin = (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleTraineeLogin = (targetId?: string) => {
+    const idToUse = targetId || selectedTraineeId
     setTraineeLoading(true)
+    setRole('trainee')
+    setActiveTraineeId(idToUse)
+    localStorage.setItem('continuum_role', 'trainee')
+    localStorage.setItem('continuum_active_trainee_id', idToUse)
     setTimeout(() => {
-      setRole('trainee')
       router.push('/dashboard')
-    }, 250)
+    }, 200)
   }
 
   const handleQuickGovDemo = () => {
     setRole('analyst')
     router.push('/intelligence')
-  }
-
-  const handleQuickTraineeDemo = () => {
-    setRole('trainee')
-    router.push('/dashboard')
   }
 
   return (
@@ -210,69 +282,153 @@ export default function LandingPage() {
                 </div>
               </form>
             ) : (
-              /* ── TRAINEE / EMPLOYEE AUTH ── */
-              <form onSubmit={handleTraineeLogin} className="space-y-6 animate-fade-in-up">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div>
-                    <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
-                      Trainee Enrollment ID
-                    </label>
-                    <div className="relative">
-                      <User className="absolute left-4 top-3.5 text-slate-400" size={18} />
-                      <input
-                        type="text"
-                        value={traineeId}
-                        onChange={(e) => setTraineeId(e.target.value)}
-                        required
-                        className="w-full pl-12 pr-4 py-3 bg-slate-50/60 border border-slate-200 rounded-xl text-base text-slate-900 focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-all duration-200 font-mono font-medium"
-                      />
+              /* ── TRAINEE / EMPLOYEE DEMO SHOWDOWN AUTH ── */
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  handleTraineeLogin()
+                }}
+                className="space-y-6 animate-fade-in-up"
+              >
+                {/* Showdown notice banner */}
+                <div className="flex items-center justify-between bg-blue-50/90 border border-blue-200 rounded-2xl px-4 py-3 shadow-2xs">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                      <Sparkles size={16} />
+                    </div>
+                    <div>
+                      <span className="text-xs font-black text-blue-950 block">
+                        Demo Showdown Mode Active
+                      </span>
+                      <span className="text-[11px] text-blue-700 font-medium">
+                        Instant 1-click login with verified candidate biometric &amp; DSIG provenance
+                      </span>
                     </div>
                   </div>
+                  <span className="text-[11px] font-black uppercase tracking-wider bg-blue-600 text-white px-2.5 py-1 rounded-md shadow-2xs">
+                    Live Demo
+                  </span>
+                </div>
 
-                  <div>
-                    <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
-                      Registered Mobile Number
-                    </label>
-                    <div className="relative">
-                      <Smartphone className="absolute left-4 top-3.5 text-slate-400" size={18} />
-                      <input
-                        type="text"
-                        value={traineePhone}
-                        onChange={(e) => setTraineePhone(e.target.value)}
-                        required
-                        className="w-full pl-12 pr-4 py-3 bg-slate-50/60 border border-slate-200 rounded-xl text-base text-slate-900 focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-all duration-200 font-mono font-medium"
-                      />
-                    </div>
+                {/* Quick Switcher 1-Tap Candidate Pills */}
+                <div>
+                  <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2.5">
+                    Quick Select Demo Candidate:
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {traineeList.slice(0, 5).map((t) => {
+                      const isSelected = t.trainee_id === selectedTraineeId
+                      return (
+                        <button
+                          key={t.trainee_id}
+                          type="button"
+                          onClick={() => setSelectedTraineeId(t.trainee_id)}
+                          className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all border flex items-center gap-1.5 cursor-pointer ${
+                            isSelected
+                              ? 'bg-blue-600 text-white border-blue-600 shadow-sm ring-2 ring-blue-200'
+                              : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200/80 hover:border-slate-300'
+                          }`}
+                        >
+                          <span>{t.name}</span>
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${isSelected ? 'bg-blue-700 text-white' : 'bg-slate-200 text-slate-600'}`}>
+                            {t.trainee_id}
+                          </span>
+                        </button>
+                      )
+                    })}
                   </div>
                 </div>
 
+                {/* Trainee Dropdown Selector */}
                 <div>
                   <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
-                    Verified Trainee Credential
+                    Or Select from Registry Database ({traineeList.length} Candidates Available)
                   </label>
-                  <div className="w-full px-4 py-3 bg-slate-100/70 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 flex items-center justify-between">
-                    <span>Ravi Kumar • NSQF Level 5 (Welding) • Madurai Cluster</span>
-                    <span className="text-emerald-700 text-xs font-extrabold bg-emerald-100 px-2 py-0.5 rounded">Active</span>
+                  <div className="relative">
+                    <User className="absolute left-4 top-3.5 text-blue-600" size={18} />
+                    <select
+                      value={selectedTraineeId}
+                      onChange={(e) => setSelectedTraineeId(e.target.value)}
+                      className="w-full pl-12 pr-10 py-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-sm sm:text-base text-slate-900 font-extrabold focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-all cursor-pointer shadow-2xs"
+                    >
+                      {traineeList.map((t) => (
+                        <option key={t.trainee_id} value={t.trainee_id}>
+                          {t.trainee_id} — {t.name} ({t.program || 'Vocational Training'} · {t.district || 'Tamil Nadu'})
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
-                <div className="pt-3 flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <button
-                    type="button"
-                    onClick={handleQuickTraineeDemo}
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-xs font-extrabold text-blue-800 hover:text-blue-950 bg-blue-50 hover:bg-blue-100/80 px-5 py-3.5 rounded-xl transition-all duration-200"
-                  >
-                    <Sparkles size={15} className="text-blue-600" />
-                    <span>One-Click Demo Trainee Login (Ravi Kumar)</span>
-                  </button>
+                {/* Verified Trainee Dynamic Credential Card */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs font-extrabold text-slate-700 uppercase tracking-wider">
+                      Verified Identity Provenance Card
+                    </label>
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
+                      <ShieldCheck size={13} className="text-emerald-600" />
+                      DSIG Verified
+                    </span>
+                  </div>
 
+                  <div className="p-4 bg-gradient-to-br from-slate-50 via-white to-blue-50/50 border border-slate-200 rounded-2xl space-y-3 shadow-2xs">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-xl bg-blue-600 text-white font-black text-base flex items-center justify-center shadow-xs shrink-0">
+                          {currentTrainee.name
+                            ? currentTrainee.name
+                                .split(' ')
+                                .map((n: string) => n[0])
+                                .join('')
+                                .toUpperCase()
+                            : 'TR'}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-extrabold text-slate-900 text-base">
+                              {currentTrainee.name}
+                            </span>
+                            <span className="font-mono text-xs font-black text-blue-700 bg-blue-100/80 px-2 py-0.5 rounded">
+                              {currentTrainee.trainee_id}
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-500 font-medium">
+                            {currentTrainee.program || 'General Vocational Training'} · {currentTrainee.provider || 'Aspire Foundation'}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-emerald-700 text-xs font-black bg-emerald-100 border border-emerald-200 px-2.5 py-1 rounded-full uppercase shrink-0">
+                        {currentTrainee.status === 'placed' ? 'Placed in Industry' : 'Certified Learner'}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-3 border-t border-slate-200/80 text-xs">
+                      <div>
+                        <span className="text-slate-400 block font-medium">Cluster / District:</span>
+                        <span className="text-slate-700 font-bold">{currentTrainee.district || 'Madurai'}, {currentTrainee.state || 'Tamil Nadu'}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 block font-medium">Registered Contact:</span>
+                        <span className="text-slate-700 font-mono font-bold truncate block">{currentTrainee.phone}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 1-Click Launch Button */}
+                <div className="pt-2">
                   <button
                     type="submit"
                     disabled={traineeLoading}
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm sm:text-base px-8 py-3.5 rounded-xl shadow-sm hover:shadow transition-all duration-200 active:translate-y-px"
+                    className="w-full flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-base py-4 rounded-xl shadow-sm hover:shadow transition-all duration-200 active:translate-y-px cursor-pointer"
                   >
-                    <span>{traineeLoading ? 'Verifying OTP...' : 'Sign In as Trainee / Employee'}</span>
-                    <ArrowRight size={17} />
+                    <span>
+                      {traineeLoading
+                        ? `Launching Portal as ${currentTrainee.name}...`
+                        : `Launch Learner Portal as ${currentTrainee.name} (${currentTrainee.trainee_id})`}
+                    </span>
+                    <ArrowRight size={18} />
                   </button>
                 </div>
               </form>
