@@ -341,12 +341,14 @@ export default function OutcomeIntelligenceDashboard() {
                 Critical Deficit: {liveDeficit?.hub_name || 'Madurai Hub'}
               </h3>
               <span className="text-[10px] font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded-full">
-                {liveDeficit?.gap_ratio ?? 1.42}x Gap
+                {liveDeficit?.gap_ratio ? `${liveDeficit.gap_ratio}x Deficit` : 'Calculating...'}
               </span>
             </div>
 
             <p className="text-xs text-slate-600 mb-4 leading-relaxed">
-              Industrial corridors in Madurai &amp; Kappalur demonstrate high structural demand in CNC Machining and Precision Welding (NSQF L5).
+              {liveDeficit?.trades 
+                ? `Industrial corridors in ${liveDeficit.corridor || 'Madurai & Kappalur'} demonstrate high structural demand in ${liveDeficit.trades}.`
+                : 'Industrial corridors in Madurai & Kappalur demonstrate high structural demand in CNC Machining and Precision Welding (NSQF L5).'}
             </p>
 
             <div className="space-y-3 text-xs">
@@ -354,13 +356,13 @@ export default function OutcomeIntelligenceDashboard() {
                 <div className="flex justify-between font-semibold mb-1 text-slate-700">
                   <span>Market Industry Demand</span>
                   <span className="text-slate-900 font-bold font-mono">
-                    {(liveDeficit?.market_demand_slots ?? 14200).toLocaleString()} Slots
+                    {liveDeficit?.market_demand_slots ? `${liveDeficit.market_demand_slots.toLocaleString()} Slots` : 'Loading...'}
                   </span>
                 </div>
                 <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
                   <div
                     className="bg-blue-600 h-2 rounded-full transition-all duration-500"
-                    style={{ width: `${liveDeficit?.demand_pct ?? 88}%` }}
+                    style={{ width: `${liveDeficit?.demand_pct ?? 50}%` }}
                   ></div>
                 </div>
               </div>
@@ -369,15 +371,25 @@ export default function OutcomeIntelligenceDashboard() {
                 <div className="flex justify-between font-semibold mb-1 text-slate-700">
                   <span>Certified Supply</span>
                   <span className="text-rose-600 font-bold font-mono">
-                    {(liveDeficit?.certified_supply_count ?? 6200).toLocaleString()} Certified
+                    {liveDeficit?.certified_supply_count ? `${liveDeficit.certified_supply_count.toLocaleString()} Certified` : 'Loading...'}
                   </span>
                 </div>
                 <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
                   <div
                     className="bg-rose-500 h-2 rounded-full transition-all duration-500"
-                    style={{ width: `${liveDeficit?.supply_pct ?? 44}%` }}
+                    style={{ width: `${liveDeficit?.supply_pct ?? 40}%` }}
                   ></div>
                 </div>
+              </div>
+
+              <div className="pt-2 flex items-center justify-between text-[11px] text-slate-500 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-200/60">
+                <span className="flex items-center gap-1 font-medium text-slate-600">
+                  <ShieldCheck size={13} className="text-emerald-600" />
+                  Live Database Records
+                </span>
+                <span className="font-bold text-slate-800 font-mono">
+                  {liveDeficit?.live_trainees_in_db ?? 0} Trainees · {liveDeficit?.audited_certified ?? 0} Certified
+                </span>
               </div>
             </div>
           </div>

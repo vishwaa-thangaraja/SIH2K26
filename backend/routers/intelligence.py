@@ -5,6 +5,7 @@ from models.provider import ProviderScorecard, RegionalSkillGap
 from models.trainee import Trainee
 from models.training_intake import TrainingRecord, AssessmentRecord, CertificationRecord, TraineeSkill
 from typing import List, Dict, Any
+import json
 
 router = APIRouter()
 
@@ -112,23 +113,39 @@ def get_provider_comparison(db: Session = Depends(get_db)):
 @router.get("/district-density")
 def get_district_density(db: Session = Depends(get_db)):
     """
-    Computes real-time certified supply count per district from database trainees.
+    Computes real-time certified supply, demand, and skill gaps dynamically
+    by querying persisted RegionalSkillGap records and correlating with live Trainees & Certifications.
     """
-    trainees = db.exec(select(Trainee)).all()
+    # 1. Fetch persisted regional skill gaps from SQLite database
+    persisted_gaps = db.exec(select(RegionalSkillGap)).all()
     
-    district_counts: Dict[str, int] = {}
+    # 2. Fetch live trainees and certifications to compute actual database counts
+    trainees = db.exec(select(Trainee)).all()
+    certs = db.exec(select(CertificationRecord)).all()
+    
+    # Map trainee_id to district
+    trainee_district_map: Dict[str, str] = {}
+    district_trainee_counts: Dict[str, int] = {}
     for t in trainees:
         if t.district:
             d = t.district.strip()
-            district_counts[d] = district_counts.get(d, 0) + 1
+            trainee_district_map[t.trainee_id] = d
+            district_trainee_counts[d] = district_trainee_counts.get(d, 0) + 1
+            
+    # Count certified trainees per district
+    district_cert_counts: Dict[str, int] = {}
+    for c in certs:
+        dist = trainee_district_map.get(c.trainee_id)
+        if dist:
+            district_cert_counts[dist] = district_cert_counts.get(dist, 0) + 1
 
-    # Standard known district coordinates for map rendering
+    # Standard coordinates fallback for any newly added districts
     known_coords = {
         "Madurai": {"lat": 9.9252, "lng": 78.1198, "state": "Tamil Nadu", "demand": 88},
         "Coimbatore": {"lat": 11.0168, "lng": 76.9558, "state": "Tamil Nadu", "demand": 84},
         "Tiruchirappalli": {"lat": 10.7905, "lng": 78.7047, "state": "Tamil Nadu", "demand": 74},
         "Chennai": {"lat": 13.0827, "lng": 80.2707, "state": "Tamil Nadu", "demand": 92},
-        "Salem": {"lat": 11.6643, "lng": 78.1460, "state": "Tamil Nadu", "demand": 78},
+        "Salem": {"lat": 11.6643, "lng": 78.1460, "state": "Tamil Nadu", "demand": 66},
         "Tirunelveli": {"lat": 8.7139, "lng": 77.7567, "state": "Tamil Nadu", "demand": 72},
         "Virudhunagar": {"lat": 9.5680, "lng": 77.9624, "state": "Tamil Nadu", "demand": 80},
         "Bengaluru Urban": {"lat": 12.9716, "lng": 77.5946, "state": "Karnataka", "demand": 90},
@@ -138,46 +155,88 @@ def get_district_density(db: Session = Depends(get_db)):
     }
 
     results = []
-    for district_name, count in district_counts.items():
-        info = known_coords.get(district_name, {
-            "lat": 10.8 + (len(results) * 0.2),
-            "lng": 77.5 + (len(results) * 0.2),
+    seen_districts = set()
+
+    for gap in persisted_gaps:
+        d_name = gap.district_name.strip()
+        seen_districts.add(d_name)
+        trainee_count = district_trainee_counts.get(d_name, 0)
+        cert_count = district_cert_counts.get(d_name, 0)
+        
+        # Parse demanded & supplied skills safely from database JSON
+        demanded_skills = []
+        if gap.top_demanded_skills:
+            try:
+                demanded_skills = json.loads(gap.top_demanded_skills)
+            except Exception:
+                demanded_skills = [s.strip() for s in gap.top_demanded_skills.split(",") if s.strip()]
+        if not demanded_skills:
+            demanded_skills = ["CNC Machine Operation", "Precision Fabrication"]
+
+        supplied_skills = []
+        if gap.top_supplied_skills:
+            try:
+                supplied_skills = json.loads(gap.top_supplied_skills)
+            except Exception:
+                supplied_skills = [s.strip() for s in gap.top_supplied_skills.split(",") if s.strip()]
+        if not supplied_skills:
+            supplied_skills = ["Basic IT", "Customer Service", "Vocational Apprentices"]
+
+        # Dynamically calculate live certified supply score
+        live_supply_score = min(98, round(gap.skill_supply_score + (cert_count * 0.5), 1))
+        
+        # Deficit percentage: (demand - supply) / demand
+        gap_pct = max(0.05, round((gap.skill_demand_score - live_supply_score) / gap.skill_demand_score, 2))
+        # Gap ratio multiple: demand / supply
+        gap_ratio_multiple = round(gap.skill_demand_score / max(1, live_supply_score), 2)
+
+        results.append({
+            "id": gap.id,
+            "district_name": d_name,
+            "state": gap.state,
+            "lat": gap.lat,
+            "lng": gap.lng,
+            "trainee_count": trainee_count,
+            "certified_count": cert_count,
+            "skill_demand_score": gap.skill_demand_score,
+            "skill_supply_score": live_supply_score,
+            "gap_ratio": gap_pct,
+            "gap_ratio_multiple": gap_ratio_multiple,
+            "gap_percentage": int(gap_pct * 100),
+            "top_demanded_skills": demanded_skills,
+            "top_supplied_skills": supplied_skills,
+        })
+
+    # Also dynamically include any districts present in Trainee table not yet in RegionalSkillGap
+    for d_name, count in district_trainee_counts.items():
+        if d_name in seen_districts:
+            continue
+        info = known_coords.get(d_name, {
+            "lat": 10.8 + (len(results) * 0.1),
+            "lng": 77.5 + (len(results) * 0.1),
             "state": "Tamil Nadu",
             "demand": 75,
         })
-        
-        # Certified supply score (scale with count)
-        supply_score = min(95, 50 + count * 3)
-        gap_ratio = round(max(0.05, (info["demand"] - supply_score) / info["demand"]), 2)
+        cert_count = district_cert_counts.get(d_name, 0)
+        supply_score = min(95, round(50 + (cert_count * 1.5), 1))
+        gap_pct = max(0.05, round((info["demand"] - supply_score) / info["demand"], 2))
+        gap_ratio_multiple = round(info["demand"] / max(1, supply_score), 2)
 
         results.append({
-            "district_name": district_name,
+            "district_name": d_name,
             "state": info["state"],
             "lat": info["lat"],
             "lng": info["lng"],
             "trainee_count": count,
+            "certified_count": cert_count,
             "skill_demand_score": info["demand"],
             "skill_supply_score": supply_score,
-            "gap_ratio": gap_ratio,
-            "top_demanded_skills": ["CNC Precision", "Data Analytics", "Electrical Tech"],
-            "top_supplied_skills": ["Certified Graduates", "IT Skills", "Vocational Tech"],
+            "gap_ratio": gap_pct,
+            "gap_ratio_multiple": gap_ratio_multiple,
+            "gap_percentage": int(gap_pct * 100),
+            "top_demanded_skills": ["Industrial Tech", "Precision Fabrication"],
+            "top_supplied_skills": ["Certified Graduates", "Vocational Tech"],
         })
-
-    # Include benchmark cities if not in database yet
-    for name, info in known_coords.items():
-        if name not in district_counts and len(results) < 8:
-            results.append({
-                "district_name": name,
-                "state": info["state"],
-                "lat": info["lat"],
-                "lng": info["lng"],
-                "trainee_count": 0,
-                "skill_demand_score": info["demand"],
-                "skill_supply_score": 45,
-                "gap_ratio": 0.32,
-                "top_demanded_skills": ["Industrial Tech", "Machining"],
-                "top_supplied_skills": ["Basic Skills"],
-            })
 
     return results
 
@@ -197,30 +256,62 @@ def get_policy_insights():
     ]
 
 @router.get("/hotspot-deficit")
-def get_hotspot_deficit(db: Session = Depends(get_db)):
+def get_hotspot_deficit(district: str = "Madurai", db: Session = Depends(get_db)):
     """
-    Computes real-time deficit metrics for the primary monitoring hub (Madurai & Kappalur Corridor).
+    Computes real-time deficit metrics dynamically from persisted RegionalSkillGap and live Trainee & Certification records.
     """
-    trainees = db.exec(select(Trainee)).all()
-    madurai_count = sum(1 for t in trainees if t.district and "madurai" in t.district.lower())
+    # 1. Query persisted regional skill gap for the requested district / hub from DB
+    gap = db.exec(select(RegionalSkillGap).where(func.lower(RegionalSkillGap.district_name) == district.lower())).first()
+    if not gap:
+        gap = db.exec(select(RegionalSkillGap)).first()
     
-    # Baseline regional market demand slots
-    market_demand = 14200
+    demand_score = gap.skill_demand_score if gap else 88
+    base_supply_score = gap.skill_supply_score if gap else 62
+    dist_name = gap.district_name if gap else "Madurai"
     
-    # Scale certified supply dynamically: base 6200 + live database additions
-    certified_supply = 6200 + (madurai_count * 50)
-    gap_ratio = round(market_demand / (certified_supply or 1), 2)
+    # Parse demanded trades dynamically from DB JSON
+    trades = "CNC Machining and Precision Welding (NSQF L5)"
+    if gap and gap.top_demanded_skills:
+        try:
+            skills_list = json.loads(gap.top_demanded_skills)
+            if skills_list:
+                trades = ", ".join(skills_list)
+        except Exception:
+            trades = gap.top_demanded_skills
+
+    # 2. Live database queries for trainees in this district
+    trainees = db.exec(select(Trainee).where(func.lower(Trainee.district).like(f"%{dist_name.lower()}%"))).all()
+    trainee_ids = [t.trainee_id for t in trainees]
+    madurai_count = len(trainees)
     
+    # Live certifications
+    certified_count = 0
+    if trainee_ids:
+        certified_count = db.exec(
+            select(func.count(CertificationRecord.id))
+            .where(CertificationRecord.trainee_id.in_(trainee_ids))
+        ).one()
+
+    # 3. Dynamic macroeconomic calculation:
+    # Market demand slots derived from empirical demand index (e.g. demand_score * 150)
+    market_demand = int(demand_score * 150)
+    # Certified supply derived from base supply score index + live DB verified certifications
+    certified_supply = int(base_supply_score * 100) + (certified_count * 10)
+    
+    gap_ratio = round(market_demand / max(1, certified_supply), 2)
     demand_pct = min(100, int((market_demand / 16000) * 100))
     supply_pct = min(100, int((certified_supply / market_demand) * 100))
 
     return {
-        "hub_name": "Madurai Hub",
-        "corridor": "Madurai & Kappalur Industrial Corridor",
-        "trades": "CNC Machining and Precision Welding (NSQF L5)",
+        "hub_name": f"{dist_name} Hub",
+        "corridor": f"{dist_name} & Kappalur Industrial Corridor" if "madurai" in dist_name.lower() else f"{dist_name} Industrial Corridor",
+        "trades": trades,
         "market_demand_slots": market_demand,
         "certified_supply_count": certified_supply,
         "live_trainees_in_db": madurai_count,
+        "audited_certified": certified_count,
+        "demand_score": demand_score,
+        "supply_score": base_supply_score,
         "gap_ratio": gap_ratio,
         "demand_pct": demand_pct,
         "supply_pct": supply_pct,
