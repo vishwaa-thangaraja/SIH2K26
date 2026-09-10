@@ -108,6 +108,11 @@ class PayslipOCRService:
         if est_m:
             establishment_code = est_m.group(1).strip()
 
+        gstin = None
+        gstin_m = re.search(r"(?:GSTIN|GST[\s_]*N[o0a]|GST)[\s:.-]+([0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}[Zz][0-9A-Z]{1})", raw_text, re.I)
+        if gstin_m:
+            gstin = gstin_m.group(1).upper().strip()
+
         # ── 2. EMPLOYEE EXTRACTION ──
         employee_name = None
         employee_id = None
@@ -204,12 +209,24 @@ class PayslipOCRService:
         if net_m:
             net_payable_wage = self.parse_numeric(net_m.group(1))
 
+        # Bank Credit SMS fallback detection for Net Wage & Company
+        if not net_payable_wage:
+            sms_net_m = re.search(r"(?:credited[\s_]*(?:with|by)?|credit[\s_]*amount|salary[\s_]*of)[\s:.-]*(?:INR|Rs\.?|₹)?[\s]*([0-9,.]+)", raw_text, re.I)
+            if sms_net_m:
+                net_payable_wage = self.parse_numeric(sms_net_m.group(1))
+
+        if not company_name:
+            sms_comp_m = re.search(r"(?:by|from|info\/)[\s:.-]+([A-Za-z0-9\s.,&-]+?)(?:SALARY|PVT|LTD|\bon\b|\bfor\b)", raw_text, re.I)
+            if sms_comp_m:
+                company_name = sms_comp_m.group(1).strip()
+
         return {
             "employer": {
                 "company_name": company_name,
                 "address": address,
                 "registration_or_cin": cin,
                 "establishment_code": establishment_code,
+                "gstin": gstin,
             },
             "employee": {
                 "employee_name": employee_name,
@@ -251,35 +268,84 @@ class PayslipOCRService:
         period = extracted.get("pay_period", {})
         anomalies: List[str] = []
 
-        # ── 1. MATHEMATICAL CONSISTENCY ──
-        math_consistent = None
+        # ── 1. MATHEMATICAL CONSISTENCY (Gross - Deductions == Net) ──
         gross = fin.get("gross_earnings")
         deductions = fin.get("total_deductions")
         net = fin.get("net_payable_wage")
 
+        # Fallback derivations if gross or total deductions were not explicitly labeled
+        if gross is None and fin.get("basic_pay") is not None:
+            allowances = [fin.get("basic_pay"), fin.get("hra"), fin.get("conveyance"), fin.get("special_allowance")]
+            valid_allowances = [a for a in allowances if a is not None]
+            if len(valid_allowances) >= 1:
+                gross = sum(valid_allowances)
+                fin["gross_earnings"] = gross
+
+        if deductions is None:
+            ded_comp = [fin.get("provident_fund_pf"), fin.get("esi"), fin.get("professional_tax")]
+            valid_ded = [d for d in ded_comp if d is not None]
+            if len(valid_ded) >= 2:
+                deductions = sum(valid_ded)
+                fin["total_deductions"] = deductions
+
+        math_consistent: Optional[bool] = None
+        math_status = "unverified"  # "verified" | "mismatch" | "unverified"
+        math_message = ""
+
+        # Check if numbers are detected
         if gross is not None and deductions is not None and net is not None:
             expected_net = gross - deductions
             diff = abs(expected_net - net)
             if diff <= 2.0:
                 math_consistent = True
+                math_status = "verified"
+                math_message = f"Gross Pay (₹{gross:,.0f}) - Total Deductions (₹{deductions:,.0f}) = Stated Net Pay (₹{net:,.0f}) [Arithmetic Verified]"
             else:
                 math_consistent = False
+                math_status = "mismatch"
+                math_message = f"Arithmetic variance detected: Gross (₹{gross:,.0f}) - Deductions (₹{deductions:,.0f}) = ₹{expected_net:,.0f}, but stated Net Pay is ₹{net:,.0f} (Delta: ₹{diff:,.0f})."
                 anomalies.append(
                     f"Arithmetic variance: Gross (₹{gross}) - Deductions (₹{deductions}) = ₹{expected_net}, but stated Net Pay is ₹{net} (Delta: ₹{diff})."
                 )
+        else:
+            math_consistent = None
+            math_status = "unverified"
+            missing_parts = []
+            if gross is None:
+                missing_parts.append("Gross Pay")
+            if deductions is None:
+                missing_parts.append("Total Deductions")
+            if net is None:
+                missing_parts.append("Net Pay")
+            math_message = f"Mathematical report unverified: Required figure(s) ({', '.join(missing_parts)}) were not detected in document scan."
+            anomalies.append(
+                f"Financial figures unverified: Key figures ({', '.join(missing_parts)}) not detected in document scan."
+            )
 
-        deductions_consistent = None
+        # ── Deductions Component Summation ──
+        deductions_consistent: Optional[bool] = None
+        deductions_status = "unverified"  # "verified" | "mismatch" | "unverified"
+        deductions_message = ""
         ded_components = [fin.get("provident_fund_pf"), fin.get("esi"), fin.get("professional_tax")]
         valid_ded_components = [v for v in ded_components if v is not None]
+
         if deductions is not None and len(valid_ded_components) >= 2:
             sum_comp = sum(valid_ded_components)
             if abs(sum_comp - deductions) <= 2.0:
                 deductions_consistent = True
+                deductions_status = "verified"
+                deductions_message = f"Sum of statutory deduction components (₹{sum_comp:,.0f}) matches stated Total Deductions (₹{deductions:,.0f})."
             else:
                 deductions_consistent = False
+                deductions_status = "mismatch"
+                deductions_message = f"Deductions breakdown variance: Sum of components (₹{sum_comp:,.0f}) vs stated Total Deductions (₹{deductions:,.0f})."
                 anomalies.append(
                     f"Deductions breakdown variance: Sum of components (₹{sum_comp}) vs stated Total Deductions (₹{deductions})."
                 )
+        else:
+            deductions_consistent = None
+            deductions_status = "unverified"
+            deductions_message = "Statutory deduction breakdown components (EPF, ESI, PT) not itemized or detected in document."
 
         def get_field(obj: Any, *keys: str) -> Optional[Any]:
             if not obj:
@@ -374,38 +440,55 @@ class PayslipOCRService:
             employment_relevance = True
 
         # ── 5. COMPOSITE EVIDENCE SCORE ──
+        # Autonomous verification requires arithmetic verification AND candidate identity match
         weights = []
         scores = []
 
-        if math_consistent is not None:
-            weights.append(30)
-            scores.append(30 if math_consistent else 5)
-        else:
-            weights.append(15)
-            scores.append(12)
+        if math_status == "verified":
+            weights.append(35)
+            scores.append(35)
+        elif math_status == "mismatch":
+            weights.append(35)
+            scores.append(0)  # Heavy penalty for calculation discrepancy
+        else:  # "unverified" (figures not detected)
+            weights.append(35)
+            scores.append(10)  # Low neutral score; cannot reach autonomous 86-94% without verified figures
 
         if identity_match_score is not None:
-            weights.append(30)
-            scores.append(round((identity_match_score / 100.0) * 30, 1))
+            weights.append(35)
+            scores.append(round((identity_match_score / 100.0) * 35, 1))
         elif identity_match is True:
-            weights.append(30)
-            scores.append(28)
+            weights.append(35)
+            scores.append(32)
+        else:
+            weights.append(35)
+            scores.append(10)
 
         if timeline_consistent is not None:
-            weights.append(20)
-            scores.append(20 if timeline_consistent else 5)
+            weights.append(15)
+            scores.append(15 if timeline_consistent else 0)
+        else:
+            weights.append(15)
+            scores.append(10)
 
         if employment_relevance is not None:
-            weights.append(20)
-            scores.append(20 if employment_relevance else 10)
+            weights.append(15)
+            scores.append(15 if employment_relevance else 5)
+        else:
+            weights.append(15)
+            scores.append(10)
 
         total_weight = sum(weights) or 100
         raw_score = sum(scores)
         evidence_confidence = round((raw_score / total_weight) * 100)
 
         return {
+            "math_status": math_status,
             "math_consistent": math_consistent,
+            "math_message": math_message,
+            "deductions_status": deductions_status,
             "deductions_consistent": deductions_consistent,
+            "deductions_message": deductions_message,
             "identity_match": identity_match,
             "identity_match_score": identity_match_score or 90.0,
             "timeline_consistent": timeline_consistent,

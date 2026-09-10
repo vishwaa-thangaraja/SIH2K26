@@ -20,6 +20,7 @@ interface ExtractionData {
     address: string | null
     registration_or_cin: string | null
     establishment_code: string | null
+    gstin?: string | null
   }
   employee: {
     employee_name: string | null
@@ -46,8 +47,12 @@ interface ExtractionData {
     net_payable_wage: number | null
   }
   verification: {
+    math_status?: 'verified' | 'mismatch' | 'unverified'
     math_consistent: boolean | null
+    math_message?: string
+    deductions_status?: 'verified' | 'mismatch' | 'unverified'
     deductions_consistent: boolean | null
+    deductions_message?: string
     identity_match: boolean | null
     identity_match_score: number | null
     timeline_consistent: boolean | null
@@ -60,14 +65,15 @@ interface ExtractionData {
 const DEFAULT_EXTRACTION: ExtractionData = {
   document_type: 'payslip',
   ocr: {
-    raw_text: "ABC MANUFACTURING PVT LTD\nPlot 42, Industrial Area, MIDC Bhosari, Pune - 411028\nCIN: U29253PN2015PTC156789 | Est Code: MH/PUNIO 45231\n\nSALARY SLIP FOR OCTOBER 2028\n\nEmployee Name: Ravi Kumar\nEmployee ID: EMP-2028-8841\nDesignation: CNC Operator\n\nUAN: 100987854321\nPF No: MH/PUN/0045231/0001234\nPaid Days: 31\n\nEARNINGS\nBasic Pay: 18000\nHRA: 5000\nConveyance: 2000\nSpecial Allowance: 1000\nGross Earnings: 26000\n\nDEDUCTIONS\nProvident Fund: 2160\nESI: 195\nProfessional Tax: 200\nTotal Deductions: 2555\n\nNet Payable Wage: 23445",
+    raw_text: "ABC MANUFACTURING PVT LTD\nPlot 42, Industrial Area, MIDC Bhosari, Pune - 411028\nCIN: U29253PN2015PTC156789 | GSTIN: 27AAACA1234A1Z5 | Est Code: MH/PUNIO 45231\n\nSALARY SLIP FOR OCTOBER 2028\n\nEmployee Name: Ravi Kumar\nEmployee ID: EMP-2028-8841\nDesignation: CNC Operator\n\nUAN: 100987854321\nPF No: MH/PUN/0045231/0001234\nPaid Days: 31\n\nEARNINGS\nBasic Pay: 18000\nHRA: 5000\nConveyance: 2000\nSpecial Allowance: 1000\nGross Earnings: 26000\n\nDEDUCTIONS\nProvident Fund: 2160\nESI: 195\nProfessional Tax: 200\nTotal Deductions: 2555\n\nNet Payable Wage: 23445",
     text_clarity: 'high'
   },
   employer: {
     company_name: "ABC MANUFACTURING PVTLTD",
     address: "Plot 42, Industrial Area, MIDC Bhosari, Pune - 411028",
     registration_or_cin: "U29253PN2015PTC156789",
-    establishment_code: "MH/PUNIO 45231"
+    establishment_code: "MH/PUNIO 45231",
+    gstin: "27AAACA1234A1Z5"
   },
   employee: {
     employee_name: "Ravi Kumar",
@@ -94,14 +100,18 @@ const DEFAULT_EXTRACTION: ExtractionData = {
     net_payable_wage: 23445
   },
   verification: {
+    math_status: 'verified',
     math_consistent: true,
+    math_message: 'Gross Pay (₹26,000) - Total Deductions (₹2,555) = Stated Net Pay (₹23,445) [Arithmetic Verified]',
+    deductions_status: 'verified',
     deductions_consistent: true,
+    deductions_message: 'Sum of statutory deduction components (₹2,555) matches stated Total Deductions (₹2,555).',
     identity_match: true,
     identity_match_score: 90.0,
     timeline_consistent: true,
     employment_relevance: true,
     anomalies: [],
-    evidence_confidence: 96
+    evidence_confidence: 94
   }
 }
 
@@ -209,15 +219,37 @@ export default function EvidenceExtractionPage({
 
           <div className="flex items-center gap-4 bg-white/10 backdrop-blur-sm border border-white/15 px-6 py-4 rounded-xl shrink-0">
             <div className="text-right">
-              <div className="text-3xl font-black text-emerald-400">
+              <div className={`text-3xl font-black ${
+                ver.math_consistent === true && ver.evidence_confidence >= 85
+                  ? 'text-emerald-400'
+                  : ver.math_consistent === false
+                  ? 'text-red-400'
+                  : 'text-amber-400'
+              }`}>
                 {ver.evidence_confidence}%
               </div>
               <div className="text-[11px] uppercase tracking-wider font-semibold text-slate-300">
-                {ver.evidence_confidence >= 85 ? 'High Internal Consistency' : 'Advisory Review Required'}
+                {ver.math_consistent === true && ver.evidence_confidence >= 85
+                  ? 'Autonomous Verification Validated (86–94%)'
+                  : ver.math_consistent === false
+                  ? 'Discrepancy Flagged — Officer Review'
+                  : 'Advisory Review Required (Figures Unverified)'}
               </div>
             </div>
-            <div className="w-12 h-12 rounded-full border-4 border-emerald-400/80 flex items-center justify-center font-bold text-xs bg-emerald-500/20">
-              <CheckCircle2 className="text-emerald-400" size={24} />
+            <div className={`w-12 h-12 rounded-full border-4 flex items-center justify-center font-bold text-xs ${
+              ver.math_consistent === true && ver.evidence_confidence >= 85
+                ? 'border-emerald-400/80 bg-emerald-500/20 text-emerald-400'
+                : ver.math_consistent === false
+                ? 'border-red-400/80 bg-red-500/20 text-red-400'
+                : 'border-amber-400/80 bg-amber-500/20 text-amber-400'
+            }`}>
+              {ver.math_consistent === true && ver.evidence_confidence >= 85 ? (
+                <CheckCircle2 size={24} />
+              ) : ver.math_consistent === false ? (
+                <X size={24} />
+              ) : (
+                <AlertCircle size={24} />
+              )}
             </div>
           </div>
         </div>
@@ -323,46 +355,90 @@ export default function EvidenceExtractionPage({
 
             <div className="space-y-2.5 text-xs">
               {/* Check 1: Math */}
-              <div className="p-3 rounded-lg border flex items-start justify-between bg-slate-50 border-slate-200">
+              <div className={`p-3 rounded-lg border flex items-start justify-between ${
+                ver.math_consistent === true || ver.math_status === 'verified'
+                  ? 'bg-emerald-50/50 border-emerald-200'
+                  : ver.math_consistent === false || ver.math_status === 'mismatch'
+                  ? 'bg-red-50/50 border-red-200'
+                  : 'bg-amber-50/50 border-amber-200'
+              }`}>
                 <div className="space-y-1">
                   <div className="font-bold text-slate-900 flex items-center gap-1.5">
-                    {ver.math_consistent ? (
+                    {ver.math_consistent === true || ver.math_status === 'verified' ? (
                       <Check className="text-emerald-600" size={14} />
-                    ) : (
+                    ) : ver.math_consistent === false || ver.math_status === 'mismatch' ? (
                       <X className="text-red-600" size={14} />
+                    ) : (
+                      <AlertCircle className="text-amber-600" size={14} />
                     )}
-                    <span>Mathematical Balance Equation</span>
+                    <span>Mathematical Balance Equation (Gross - Deductions == Net)</span>
                   </div>
                   <p className="text-slate-600">
-                    Gross (₹{fin.gross_earnings || 26000}) - Total Deductions (₹{fin.total_deductions || 2555}) = Stated Net Pay (₹{fin.net_payable_wage || 23445})
+                    {ver.math_consistent === true || ver.math_status === 'verified' ? (
+                      `Gross Pay (₹${(fin.gross_earnings || 0).toLocaleString()}) - Total Deductions (₹${(fin.total_deductions || 0).toLocaleString()}) = Stated Net Pay (₹${(fin.net_payable_wage || 0).toLocaleString()}) [Arithmetic Verified]`
+                    ) : ver.math_consistent === false || ver.math_status === 'mismatch' ? (
+                      `Arithmetic Variance: Gross (₹${(fin.gross_earnings || 0).toLocaleString()}) - Deductions (₹${(fin.total_deductions || 0).toLocaleString()}) = ₹${((fin.gross_earnings || 0) - (fin.total_deductions || 0)).toLocaleString()}, but stated Net Pay is ₹${(fin.net_payable_wage || 0).toLocaleString()}`
+                    ) : (
+                      ver.math_message || 'Unverified: Key salary figures (Gross Pay, Total Deductions, Net Pay) were not detected in the document scan.'
+                    )}
                   </p>
                 </div>
-                <span className={`px-2 py-0.5 rounded font-bold uppercase text-[10px] ${
-                  ver.math_consistent ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'
+                <span className={`px-2.5 py-0.5 rounded font-bold uppercase text-[10px] whitespace-nowrap ${
+                  ver.math_consistent === true || ver.math_status === 'verified'
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : ver.math_consistent === false || ver.math_status === 'mismatch'
+                    ? 'bg-red-100 text-red-800'
+                    : 'bg-amber-100 text-amber-800'
                 }`}>
-                  {ver.math_consistent ? 'Passed' : 'Variance'}
+                  {ver.math_consistent === true || ver.math_status === 'verified'
+                    ? 'Passed'
+                    : ver.math_consistent === false || ver.math_status === 'mismatch'
+                    ? 'Variance'
+                    : 'Unverified'}
                 </span>
               </div>
 
               {/* Check 2: Deductions */}
-              <div className="p-3 rounded-lg border flex items-start justify-between bg-slate-50 border-slate-200">
+              <div className={`p-3 rounded-lg border flex items-start justify-between ${
+                ver.deductions_consistent === true || ver.deductions_status === 'verified'
+                  ? 'bg-emerald-50/50 border-emerald-200'
+                  : ver.deductions_consistent === false || ver.deductions_status === 'mismatch'
+                  ? 'bg-red-50/50 border-red-200'
+                  : 'bg-slate-50 border-slate-200'
+              }`}>
                 <div className="space-y-1">
                   <div className="font-bold text-slate-900 flex items-center gap-1.5">
-                    {ver.deductions_consistent ? (
+                    {ver.deductions_consistent === true || ver.deductions_status === 'verified' ? (
                       <Check className="text-emerald-600" size={14} />
-                    ) : (
+                    ) : ver.deductions_consistent === false || ver.deductions_status === 'mismatch' ? (
                       <X className="text-red-600" size={14} />
+                    ) : (
+                      <AlertCircle className="text-slate-400" size={14} />
                     )}
                     <span>Deduction Component Summation</span>
                   </div>
                   <p className="text-slate-600">
-                    EPF (₹{fin.provident_fund_pf || 2160}) + ESI (₹{fin.esi || 195}) + PT (₹{fin.professional_tax || 200}) = ₹{fin.total_deductions || 2555}
+                    {ver.deductions_consistent === true || ver.deductions_status === 'verified' ? (
+                      `EPF (₹${(fin.provident_fund_pf || 0).toLocaleString()}) + ESI (₹${(fin.esi || 0).toLocaleString()}) + PT (₹${(fin.professional_tax || 0).toLocaleString()}) = Stated Deductions (₹${(fin.total_deductions || 0).toLocaleString()})`
+                    ) : ver.deductions_consistent === false || ver.deductions_status === 'mismatch' ? (
+                      `Component Sum Variance: Stated deductions do not equal sum of itemized statutory deductions.`
+                    ) : (
+                      ver.deductions_message || 'Unverified: Breakdown components (EPF, ESI, PT) not itemized or detected in document.'
+                    )}
                   </p>
                 </div>
-                <span className={`px-2 py-0.5 rounded font-bold uppercase text-[10px] ${
-                  ver.deductions_consistent ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'
+                <span className={`px-2.5 py-0.5 rounded font-bold uppercase text-[10px] whitespace-nowrap ${
+                  ver.deductions_consistent === true || ver.deductions_status === 'verified'
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : ver.deductions_consistent === false || ver.deductions_status === 'mismatch'
+                    ? 'bg-red-100 text-red-800'
+                    : 'bg-slate-100 text-slate-600'
                 }`}>
-                  {ver.deductions_consistent ? 'Passed' : 'Variance'}
+                  {ver.deductions_consistent === true || ver.deductions_status === 'verified'
+                    ? 'Passed'
+                    : ver.deductions_consistent === false || ver.deductions_status === 'mismatch'
+                    ? 'Variance'
+                    : 'Unverified'}
                 </span>
               </div>
 
@@ -453,8 +529,9 @@ export default function EvidenceExtractionPage({
                 <p className="font-bold text-slate-900 text-sm">{data.employer.company_name || 'N/A'}</p>
                 <p className="text-slate-600 text-[11px]">{data.employer.address || 'Pune, Maharashtra'}</p>
                 <div className="pt-1 text-[11px] text-slate-500 space-y-0.5">
-                  <p>CIN: <span className="font-mono text-slate-700 font-semibold">{data.employer.registration_or_cin || 'U29253PN2015PTC156789'}</span></p>
-                  <p>Est Code: <span className="font-mono text-slate-700 font-semibold">{data.employer.establishment_code || 'MH/PUNIO 45231'}</span></p>
+                  <p>CIN: <span className="font-mono text-slate-700 font-semibold">{data.employer.registration_or_cin || 'N/A'}</span></p>
+                  <p>GSTIN: <span className="font-mono text-slate-700 font-semibold">{data.employer.gstin || 'Not detected'}</span></p>
+                  <p>Est Code: <span className="font-mono text-slate-700 font-semibold">{data.employer.establishment_code || 'N/A'}</span></p>
                 </div>
               </div>
 
@@ -466,9 +543,9 @@ export default function EvidenceExtractionPage({
                 <p className="font-bold text-slate-900 text-sm">{data.employee.employee_name || activeTrainee?.name || 'Candidate'}</p>
                 <p className="text-slate-600 text-[11px]">Role: <strong className="text-slate-800">{data.employee.designation || activeTrainee?.program || 'Specialist'}</strong></p>
                 <div className="pt-1 text-[11px] text-slate-500 space-y-0.5">
-                  <p>Employee ID: <span className="font-mono text-slate-700 font-semibold">{data.employee.employee_id || `EMP-2026-${activeTrainee?.trainee_id || 'T001'}`}</span></p>
-                  <p>UAN: <span className="font-mono text-slate-700 font-semibold">{data.employee.uan_number || '100987854321'}</span></p>
-                  <p>PF Ref: <span className="font-mono text-slate-700 font-semibold">{data.employee.pf_number || 'MH/PUN/0045231'}</span></p>
+                  <p>Employee ID: <span className="font-mono text-slate-700 font-semibold">{data.employee.employee_id || 'Not detected'}</span></p>
+                  <p>UAN: <span className="font-mono text-slate-700 font-semibold">{data.employee.uan_number || 'Not detected'}</span></p>
+                  <p>PF Ref: <span className="font-mono text-slate-700 font-semibold">{data.employee.pf_number || 'Not detected'}</span></p>
                 </div>
               </div>
             </div>
@@ -478,7 +555,7 @@ export default function EvidenceExtractionPage({
               <div className="bg-slate-100 p-2.5 font-bold text-slate-800 flex justify-between items-center">
                 <span>Extracted Financial Components</span>
                 <span className="text-slate-500 font-normal">
-                  Period: <strong>{data.pay_period.month} {data.pay_period.year}</strong> • Paid Days: <strong>{data.pay_period.paid_days || 31}</strong>
+                  Period: <strong>{data.pay_period.month || 'Unspecified'} {data.pay_period.year || ''}</strong> • Paid Days: <strong>{data.pay_period.paid_days || '—'}</strong>
                 </span>
               </div>
 
@@ -487,13 +564,13 @@ export default function EvidenceExtractionPage({
                 <div className="p-3 space-y-2">
                   <p className="font-bold text-[11px] text-slate-700 uppercase tracking-wider">Gross Earnings</p>
                   <div className="space-y-1 text-slate-600">
-                    <div className="flex justify-between"><span>Basic Pay:</span><span className="font-mono font-semibold">₹{fin.basic_pay?.toLocaleString() || '18,000'}</span></div>
-                    <div className="flex justify-between"><span>HRA:</span><span className="font-mono font-semibold">₹{fin.hra?.toLocaleString() || '5,000'}</span></div>
-                    <div className="flex justify-between"><span>Conveyance:</span><span className="font-mono font-semibold">₹{fin.conveyance?.toLocaleString() || '2,000'}</span></div>
-                    <div className="flex justify-between"><span>Special Allowance:</span><span className="font-mono font-semibold">₹{fin.special_allowance?.toLocaleString() || '1,000'}</span></div>
+                    <div className="flex justify-between"><span>Basic Pay:</span><span className="font-mono font-semibold">{fin.basic_pay != null ? `₹${fin.basic_pay.toLocaleString()}` : '—'}</span></div>
+                    <div className="flex justify-between"><span>HRA:</span><span className="font-mono font-semibold">{fin.hra != null ? `₹${fin.hra.toLocaleString()}` : '—'}</span></div>
+                    <div className="flex justify-between"><span>Conveyance:</span><span className="font-mono font-semibold">{fin.conveyance != null ? `₹${fin.conveyance.toLocaleString()}` : '—'}</span></div>
+                    <div className="flex justify-between"><span>Special Allowance:</span><span className="font-mono font-semibold">{fin.special_allowance != null ? `₹${fin.special_allowance.toLocaleString()}` : '—'}</span></div>
                     <div className="border-t border-slate-200 pt-1 flex justify-between font-bold text-slate-900">
                       <span>Total Gross:</span>
-                      <span className="font-mono text-blue-700">₹{fin.gross_earnings?.toLocaleString() || '26,000'}</span>
+                      <span className="font-mono text-blue-700">{fin.gross_earnings != null ? `₹${fin.gross_earnings.toLocaleString()}` : '— (Not detected)'}</span>
                     </div>
                   </div>
                 </div>
@@ -502,12 +579,12 @@ export default function EvidenceExtractionPage({
                 <div className="p-3 space-y-2">
                   <p className="font-bold text-[11px] text-slate-700 uppercase tracking-wider">Statutory Deductions</p>
                   <div className="space-y-1 text-slate-600">
-                    <div className="flex justify-between"><span>Provident Fund (12%):</span><span className="font-mono font-semibold">₹{fin.provident_fund_pf?.toLocaleString() || '2,160'}</span></div>
-                    <div className="flex justify-between"><span>ESI (0.75%):</span><span className="font-mono font-semibold">₹{fin.esi?.toLocaleString() || '195'}</span></div>
-                    <div className="flex justify-between"><span>Professional Tax:</span><span className="font-mono font-semibold">₹{fin.professional_tax?.toLocaleString() || '200'}</span></div>
+                    <div className="flex justify-between"><span>Provident Fund (12%):</span><span className="font-mono font-semibold">{fin.provident_fund_pf != null ? `₹${fin.provident_fund_pf.toLocaleString()}` : '—'}</span></div>
+                    <div className="flex justify-between"><span>ESI (0.75%):</span><span className="font-mono font-semibold">{fin.esi != null ? `₹${fin.esi.toLocaleString()}` : '—'}</span></div>
+                    <div className="flex justify-between"><span>Professional Tax:</span><span className="font-mono font-semibold">{fin.professional_tax != null ? `₹${fin.professional_tax.toLocaleString()}` : '—'}</span></div>
                     <div className="border-t border-slate-200 pt-1 flex justify-between font-bold text-red-700">
                       <span>Total Deductions:</span>
-                      <span className="font-mono">₹{fin.total_deductions?.toLocaleString() || '2,555'}</span>
+                      <span className="font-mono">{fin.total_deductions != null ? `₹${fin.total_deductions.toLocaleString()}` : '— (Not detected)'}</span>
                     </div>
                   </div>
                 </div>
@@ -517,7 +594,7 @@ export default function EvidenceExtractionPage({
               <div className="bg-emerald-50 border-t border-emerald-200 p-3 flex justify-between items-center text-xs">
                 <span className="font-bold text-emerald-900">NET PAYABLE COMPENSATION:</span>
                 <span className="font-black text-emerald-900 text-sm font-mono bg-emerald-200/60 px-3 py-1 rounded">
-                  ₹{fin.net_payable_wage?.toLocaleString() || '23,445'}.00
+                  {fin.net_payable_wage != null ? `₹${fin.net_payable_wage.toLocaleString()}.00` : '— (Not detected)'}
                 </span>
               </div>
             </div>
