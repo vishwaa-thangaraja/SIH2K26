@@ -14,14 +14,26 @@ export default async function TraineeProfilePage({
 }) {
   const { id } = await params
   
-  // Try fetching live trainee from database
+  // Fetch live trainee and outcomes from database
   let liveTrainee: any = null
+  let liveOutcomes: any[] = []
   try {
-    const res = await fetch(`http://127.0.0.1:8000/trainees/${id}`, { cache: 'no-store' })
-    if (res.ok) liveTrainee = await res.json()
+    const [tRes, oRes] = await Promise.all([
+      fetch(`http://127.0.0.1:8000/trainees/${id}`, { cache: 'no-store' }),
+      fetch(`http://127.0.0.1:8000/outcomes?trainee_id=${id}`, { cache: 'no-store' })
+    ])
+    if (tRes.ok) liveTrainee = await tRes.json()
+    if (oRes.ok) {
+      const oData = await oRes.json()
+      if (oData && Array.isArray(oData.events)) {
+        liveOutcomes = oData.events
+      }
+    }
   } catch (err) {}
 
   const found = MOCK_SEARCH_DATASET.find((t) => t.trainee_id === id || t.id === id)
+  const latestOutcome = liveOutcomes.length > 0 ? liveOutcomes[liveOutcomes.length - 1] : null
+  const totalEvidenceCount = liveOutcomes.reduce((acc, ev) => acc + (ev.evidence_count || 0), 0)
 
   const trainee = liveTrainee ? {
     trainee_id: liveTrainee.trainee_id,
@@ -33,10 +45,10 @@ export default async function TraineeProfilePage({
     enrollment_date: liveTrainee.enrollment_date || '2023-01-15',
     completion_date: liveTrainee.completion_date || '2023-04-30',
     status: liveTrainee.status || 'completed',
-    monthly_wage: 18000,
-    current_employer: 'Accredited Industry Partner',
-    current_role: 'Certified Associate',
-    confidence_score: 95,
+    monthly_wage: latestOutcome?.wage_monthly || (found?.monthly_wage ?? 18000),
+    current_employer: latestOutcome?.employer_name || found?.current_employer || 'Accredited Industry Partner',
+    current_role: latestOutcome?.role || found?.current_role || 'Certified Associate',
+    confidence_score: latestOutcome?.confidence_score ? Math.round(latestOutcome.confidence_score * 100) : (found?.confidence_score ?? 95),
   } : (found ? {
     trainee_id: found.trainee_id,
     name: found.name,
@@ -128,7 +140,9 @@ export default async function TraineeProfilePage({
 
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
           <span className="text-xs text-slate-500 font-medium">Verified Evidence</span>
-          <p className="text-base font-bold text-slate-900 mt-1">{MOCK_EVIDENCE.length} Records</p>
+          <p className="text-base font-bold text-slate-900 mt-1">
+            {totalEvidenceCount > 0 ? `${totalEvidenceCount} Records` : (found ? '1 Record' : `${MOCK_EVIDENCE.length} Records`)}
+          </p>
           <p className="text-[11px] text-purple-600 font-semibold mt-0.5">Payslips + Attestations</p>
         </div>
       </div>
@@ -183,29 +197,41 @@ export default async function TraineeProfilePage({
           </div>
 
           <div className="space-y-3">
-            {MOCK_OUTCOMES.map((ev) => (
-              <div key={ev.event_id} className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs flex items-center justify-between">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-slate-900">{ev.employer_name || 'Unrecorded Period'}</span>
-                    <span className="bg-blue-100 text-blue-800 text-[10px] px-1.5 py-0.5 rounded font-bold">{ev.milestone}</span>
-                  </div>
-                  <p className="text-slate-600 mt-0.5">
-                    {ev.role ? `${ev.role} • ₹${ev.wage_monthly?.toLocaleString()} / mo` : 'Unknown status (awaiting signal)'}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                    ev.verification_status === 'verified' 
-                      ? 'bg-emerald-100 text-emerald-800' 
-                      : 'bg-amber-100 text-amber-800'
-                  }`}>
-                    {ev.verification_status.toUpperCase()}
-                  </span>
-                  <p className="text-slate-400 text-[10px] mt-1">{ev.start_date}</p>
-                </div>
+            {((liveOutcomes && liveOutcomes.length > 0) ? liveOutcomes : (found ? [] : MOCK_OUTCOMES)).length === 0 ? (
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg text-center text-xs text-slate-500">
+                <p className="font-medium">No verified outcome events recorded yet for this candidate.</p>
+                <Link
+                  href={`/outcomes/new?trainee_id=${trainee.trainee_id}&milestone=3M`}
+                  className="inline-flex items-center gap-1 text-sky-700 font-bold hover:underline mt-2"
+                >
+                  Record Verified Milestone <ArrowRight size={12} />
+                </Link>
               </div>
-            ))}
+            ) : (
+              ((liveOutcomes && liveOutcomes.length > 0) ? liveOutcomes : MOCK_OUTCOMES).map((ev: any) => (
+                <div key={ev.event_id} className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-slate-900">{ev.employer_name || 'Unrecorded Period'}</span>
+                      <span className="bg-blue-100 text-blue-800 text-[10px] px-1.5 py-0.5 rounded font-bold">{ev.milestone}</span>
+                    </div>
+                    <p className="text-slate-600 mt-0.5">
+                      {ev.role ? `${ev.role} • ₹${ev.wage_monthly?.toLocaleString()} / mo` : (ev.event_type === 'training' ? 'Training Program Milestone' : 'Verified Livelihood Period')}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                      ev.verification_status === 'verified' 
+                        ? 'bg-emerald-100 text-emerald-800' 
+                        : 'bg-amber-100 text-amber-800'
+                    }`}>
+                      {(ev.verification_status || 'verified').toUpperCase()}
+                    </span>
+                    <p className="text-slate-400 text-[10px] mt-1">{ev.start_date}</p>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
