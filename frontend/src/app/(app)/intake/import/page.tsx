@@ -519,7 +519,7 @@ export default function TrainingIntakeImportPage() {
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs text-slate-600 space-y-2">
               <div className="flex items-center gap-2 font-bold text-slate-800">
                 <Info size={15} className="text-blue-600 shrink-0" />
-                <span>CONTINUUM Modular Workflow Context</span>
+                <span>CONTINUUM Data Ingestion Protocol</span>
               </div>
               <p className="leading-relaxed">
                 This intake step creates foundational records across 5 normalized relational entities:

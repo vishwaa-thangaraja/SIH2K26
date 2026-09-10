@@ -195,7 +195,7 @@ export default function OutcomeIntelligenceDashboard() {
           href="/intake/import"
           className="inline-flex items-center justify-center gap-2 bg-white hover:bg-blue-50 text-slate-900 text-xs font-bold px-5 py-2.5 rounded-xl shadow-xs transition-all duration-200 hover:-translate-y-0.5 active:translate-y-px shrink-0"
         >
-          <span>Open Ingestion Workflow</span>
+          <span>Data Ingestion</span>
           <ArrowRight size={14} />
         </Link>
       </div>
