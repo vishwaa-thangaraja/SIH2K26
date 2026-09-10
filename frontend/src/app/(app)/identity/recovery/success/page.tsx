@@ -1,11 +1,19 @@
+'use client'
+
 import React from 'react'
 import Link from 'next/link'
+import { useRole } from '@/contexts/RoleContext'
 import { 
   CheckCircle2, ArrowRight, ShieldCheck, 
   Network, LayoutDashboard, History, Phone 
 } from 'lucide-react'
 
 export default function RecoveryApprovedPage() {
+  const { activeTrainee } = useRole()
+  const traineeId = activeTrainee.trainee_id || 'T002'
+  const traineeName = activeTrainee.name || 'Priya S'
+  const currentPhone = activeTrainee.phone || '+91 93847 59007'
+
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Success Card */}
@@ -22,7 +30,7 @@ export default function RecoveryApprovedPage() {
             Identity Recovery Approved &amp; DSIG Updated
           </h1>
           <p className="text-xs text-slate-600 mt-1 max-w-md mx-auto">
-            Autonomous verification ladder approved attachment of new mobile anchor to Trainee Core <strong>T001</strong>.
+            Autonomous verification ladder approved attachment of new mobile anchor to Trainee Core <strong>{traineeId}</strong>.
           </p>
         </div>
 
@@ -30,12 +38,12 @@ export default function RecoveryApprovedPage() {
         <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 text-left text-xs space-y-3">
           <div className="flex items-center justify-between pb-2 border-b border-slate-200">
             <span className="text-slate-500 font-medium">Target Identity Record</span>
-            <span className="font-bold text-slate-900">Ravi Kumar (T001)</span>
+            <span className="font-bold text-slate-900">{traineeName} ({traineeId})</span>
           </div>
 
           <div className="flex items-center justify-between pb-2 border-b border-slate-200">
             <span className="text-slate-500 font-medium">New Active Phone Anchor</span>
-            <span className="font-bold text-emerald-700 font-mono">+91 98765 43210</span>
+            <span className="font-bold text-emerald-700 font-mono">{currentPhone}</span>
           </div>
 
           <div className="flex items-center justify-between pb-2 border-b border-slate-200">

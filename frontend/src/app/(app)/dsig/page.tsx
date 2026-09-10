@@ -6,6 +6,8 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { ShieldCheck, PhoneCall, RefreshCw, UserCheck } from 'lucide-react'
 
+import { useRole } from '@/contexts/RoleContext'
+
 interface TraineeOption {
   trainee_id: string
   name: string
@@ -15,14 +17,19 @@ interface TraineeOption {
 function DSIGContent() {
   const searchParams = useSearchParams()
   const initialParamId = searchParams.get('trainee_id')
+  const { role, activeTrainee } = useRole()
   const [trainees, setTrainees] = useState<TraineeOption[]>([])
-  const [selectedTraineeId, setSelectedTraineeId] = useState<string>(initialParamId || 'T001')
+  const [selectedTraineeId, setSelectedTraineeId] = useState<string>(
+    initialParamId || (role === 'trainee' ? activeTrainee.trainee_id : 'T002')
+  )
 
   useEffect(() => {
     if (initialParamId) {
       setSelectedTraineeId(initialParamId)
+    } else if (role === 'trainee' && activeTrainee.trainee_id) {
+      setSelectedTraineeId(activeTrainee.trainee_id)
     }
-  }, [initialParamId])
+  }, [initialParamId, role, activeTrainee.trainee_id])
 
   useEffect(() => {
     fetch('http://127.0.0.1:8000/trainees?limit=100')
@@ -56,7 +63,7 @@ function DSIGContent() {
             Dynamic Skill Identity Graph (DSIG)
           </h1>
           <p className="text-sm text-slate-600 mt-1">
-            Continuous graph representation of verified anchors across temporal phone, location & employer migrations.
+            Continuous graph representation of verified anchors across temporal phone, location &amp; employer migrations.
           </p>
         </div>
 
@@ -65,18 +72,25 @@ function DSIGContent() {
           <div className="flex items-center gap-2 bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5">
             <UserCheck size={16} className="text-sky-700" />
             <span className="text-xs font-semibold text-slate-700">Trainee:</span>
-            <select
-              value={selectedTraineeId}
-              onChange={(e) => setSelectedTraineeId(e.target.value)}
-              className="text-xs font-semibold bg-transparent text-slate-900 focus:outline-none cursor-pointer max-w-[160px] truncate"
-            >
-              <option value="T001">T001 (Demo Trainee)</option>
-              {trainees.map(t => (
-                <option key={t.trainee_id} value={t.trainee_id}>
-                  {t.trainee_id} - {t.name}
-                </option>
-              ))}
-            </select>
+            {role === 'trainee' ? (
+              <span className="text-xs font-bold text-blue-900 font-mono">
+                {selectedTraineeId} ({activeTrainee.name})
+              </span>
+            ) : (
+              <select
+                value={selectedTraineeId}
+                onChange={(e) => setSelectedTraineeId(e.target.value)}
+                className="text-xs font-semibold bg-transparent text-slate-900 focus:outline-none cursor-pointer max-w-[160px] truncate"
+              >
+                <option value="T002">T002 - Priya S</option>
+                <option value="T001">T001 - Aarav Kumar</option>
+                {trainees.map(t => (
+                  <option key={t.trainee_id} value={t.trainee_id}>
+                    {t.trainee_id} - {t.name}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           <Link

@@ -2,12 +2,18 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
+import { useRole } from '@/contexts/RoleContext'
 import { 
   Phone, ArrowRight, ArrowLeft, ShieldCheck, 
   CheckCircle2, AlertTriangle, RefreshCw 
 } from 'lucide-react'
 
 export default function PhoneChangePage() {
+  const { activeTrainee } = useRole()
+  const traineeId = activeTrainee.trainee_id || 'T002'
+  const traineeName = activeTrainee.name || 'Priya S'
+  const currentPhone = activeTrainee.phone || '+91 93847 59007'
+
   const [oldPhoneAccess, setOldPhoneAccess] = useState<'yes' | 'no'>('no')
   const [newPhone, setNewPhone] = useState('+91 98765 43210')
 
@@ -22,7 +28,7 @@ export default function PhoneChangePage() {
           Update Active Phone Anchor
         </h1>
         <p className="text-sm text-slate-600 mt-1">
-          Migrate mobile number anchor for Trainee T001 while preserving continuity history.
+          Migrate mobile number anchor for {traineeName} ({traineeId}) while preserving continuity history.
         </p>
       </div>
 
@@ -30,8 +36,8 @@ export default function PhoneChangePage() {
       <div className="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm space-y-6">
         <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg text-xs space-y-2">
           <span className="text-slate-500 font-semibold">Current Primary Phone Anchor:</span>
-          <p className="font-mono text-base font-bold text-slate-900">+91 91234 56780</p>
-          <span className="text-[10px] text-slate-400">Attached: 15 Jan 2023 • Verification: OTP Verified</span>
+          <p className="font-mono text-base font-bold text-slate-900">{currentPhone}</p>
+          <span className="text-[10px] text-slate-400">Attached: Active • Verification: Telecom OTP Verified</span>
         </div>
 
         <div className="space-y-3">

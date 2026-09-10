@@ -1,11 +1,18 @@
+'use client'
+
 import React from 'react'
 import Link from 'next/link'
+import { useRole } from '@/contexts/RoleContext'
 import { 
   ShieldCheck, ArrowRight, ArrowLeft, RefreshCw, 
   Smartphone, CheckCircle2, Lock 
 } from 'lucide-react'
 
 export default function IdentityRecoveryInitialPage() {
+  const { activeTrainee } = useRole()
+  const traineeId = activeTrainee.trainee_id || 'T002'
+  const traineeName = activeTrainee.name || 'Priya S'
+
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Header */}
@@ -13,13 +20,13 @@ export default function IdentityRecoveryInitialPage() {
         <div className="flex items-center gap-2 text-xs font-bold text-sky-700 uppercase tracking-wider mb-1">
           <span>Identity Recovery Ladder • Step 1</span>
           <span className="inline-block w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-          <span>Trainee T001</span>
+          <span>Trainee {traineeId}</span>
         </div>
         <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
           Initiate Autonomous Identity Recovery
         </h1>
         <p className="text-sm text-slate-600 mt-1">
-          Recover control of trainee profile after SIM loss, phone change or device failure without creating a duplicate record.
+          Recover control of {traineeName}&apos;s profile after SIM loss, phone change or device failure without creating a duplicate record.
         </p>
       </div>
 
@@ -39,7 +46,7 @@ export default function IdentityRecoveryInitialPage() {
 
         <div className="p-4 bg-white border border-slate-200 rounded-xl opacity-60">
           <span className="w-5 h-5 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-[10px] font-bold mb-2">3</span>
-          <h3 className="font-bold text-slate-900 text-sm">Attach & Update DSIG</h3>
+          <h3 className="font-bold text-slate-900 text-sm">Attach &amp; Update DSIG</h3>
           <p className="text-slate-500 mt-1">New active anchor attached with continuity preserved.</p>
         </div>
       </div>
@@ -51,11 +58,11 @@ export default function IdentityRecoveryInitialPage() {
           <div className="grid grid-cols-2 gap-4 mt-3 text-xs">
             <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg">
               <span className="text-slate-500">Registered Name</span>
-              <p className="font-bold text-slate-900 mt-0.5">Ravi Kumar</p>
+              <p className="font-bold text-slate-900 mt-0.5">{traineeName}</p>
             </div>
             <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg">
               <span className="text-slate-500">Trainee Core ID</span>
-              <p className="font-bold text-slate-900 mt-0.5 font-mono">T001</p>
+              <p className="font-bold text-slate-900 mt-0.5 font-mono">{traineeId}</p>
             </div>
           </div>
         </div>
