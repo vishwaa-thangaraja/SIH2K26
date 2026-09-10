@@ -1,17 +1,37 @@
 'use client'
 
-import React, { useState, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import React, { useState, useRef, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { useRole } from '@/contexts/RoleContext'
 import { 
   Upload, FileText, CheckCircle2, ArrowRight, 
-  ShieldCheck, Sparkles, AlertCircle, Loader2, Image as ImageIcon, Eye
+  ShieldCheck, Sparkles, AlertCircle, Loader2, Image as ImageIcon, Eye,
+  Lock
 } from 'lucide-react'
 
 export default function EvidenceUploadPage() {
+  return (
+    <Suspense fallback={
+      <div className="bg-white border border-slate-200 rounded-xl p-12 text-center text-slate-500">
+        <div className="animate-spin w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full mx-auto mb-3" />
+        <p className="text-xs font-bold uppercase tracking-wider">Loading Ingestion Form...</p>
+      </div>
+    }>
+      <EvidenceUploadContent />
+    </Suspense>
+  )
+}
+
+function EvidenceUploadContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const { role, activeTrainee, setActiveTraineeId } = useRole()
+  const isGovernmentOfficial = role === 'analyst'
+
+  const paramTraineeId = searchParams.get('trainee_id')
   const [selectedType, setSelectedType] = useState('payslip')
-  const [traineeId, setTraineeId] = useState('T001')
+  const [traineeId, setTraineeId] = useState(paramTraineeId || activeTrainee?.trainee_id || 'T001')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [useSample, setUseSample] = useState(true)
   const [previewUrl, setPreviewUrl] = useState<string>('/sample_payslip.png')
@@ -19,6 +39,18 @@ export default function EvidenceUploadPage() {
   const [processingStage, setProcessingStage] = useState<string>('')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (paramTraineeId) {
+      setTraineeId(paramTraineeId.toUpperCase())
+      setActiveTraineeId(paramTraineeId.toUpperCase())
+    } else if (activeTrainee?.trainee_id) {
+      setTraineeId(activeTrainee.trainee_id)
+    }
+  }, [paramTraineeId, activeTrainee?.trainee_id, setActiveTraineeId])
+
+  const effectiveTraineeId = traineeId || activeTrainee?.trainee_id || 'T001'
+  const isLockedToTrainee = !isGovernmentOfficial || !!paramTraineeId
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -47,7 +79,7 @@ export default function EvidenceUploadPage() {
 
       setProcessingStage('Stage 2: Parsing Layout & Extracting Financial Entities...')
       const formData = new FormData()
-      formData.append('trainee_id', traineeId)
+      formData.append('trainee_id', effectiveTraineeId)
       formData.append('doc_type', selectedType)
       formData.append('use_sample', useSample ? 'true' : 'false')
 
@@ -69,7 +101,7 @@ export default function EvidenceUploadPage() {
       setProcessingStage('Completed! Navigating to Explainable Assessment...')
       await new Promise(r => setTimeout(r, 400))
 
-      router.push(`/evidence/${data.evidence_id || 'DOC001'}/extraction`)
+      router.push(`/evidence/${data.evidence_id || 'DOC001'}/extraction?trainee_id=${effectiveTraineeId}`)
     } catch (err: any) {
       console.error(err)
       setErrorMsg(err.message || 'Failed to process document through OCR pipeline')
@@ -124,17 +156,44 @@ export default function EvidenceUploadPage() {
             <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-2">
               Target CONTINUUM Trainee
             </label>
-            <select
-              value={traineeId}
-              onChange={(e) => setTraineeId(e.target.value)}
-              className="w-full text-xs font-semibold p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="T001">T001 — Aarav Kumar (Data Analytics)</option>
-              <option value="T002">T002 — Priya S (Web Development)</option>
-              <option value="T003">T003 — Arun Prakash (Digital Marketing)</option>
-              <option value="T004">T004 — Meena R (Electrical Technician)</option>
-              <option value="T005">T005 — Rahul Kumar (Tailoring & Apparel Design)</option>
-            </select>
+            {isLockedToTrainee ? (
+              <div>
+                <div className="bg-slate-50 border border-slate-200 rounded-lg p-2.5 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-black text-xs flex items-center justify-center uppercase">
+                      {activeTrainee?.initials || 'TR'}
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold text-slate-900 block">
+                        {activeTrainee?.name || 'Trainee'} ({effectiveTraineeId})
+                      </span>
+                      <span className="text-[10px] text-slate-500 font-medium">
+                        {activeTrainee?.program || 'Vocational Training'} • Verified Learner Session
+                      </span>
+                    </div>
+                  </div>
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded-full">
+                    <Lock size={10} /> Authenticated
+                  </span>
+                </div>
+                <p className="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
+                  <ShieldCheck size={11} className="text-blue-600 shrink-0" />
+                  <span>Privacy Safeguard: Submissions are cryptographically bound to your identity only.</span>
+                </p>
+              </div>
+            ) : (
+              <select
+                value={traineeId}
+                onChange={(e) => setTraineeId(e.target.value)}
+                className="w-full text-xs font-semibold p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="T001">T001 — Aarav Kumar (Data Analytics)</option>
+                <option value="T002">T002 — Priya S (Web Development)</option>
+                <option value="T003">T003 — Arun Prakash (Digital Marketing)</option>
+                <option value="T004">T004 — Meena R (Electrical Technician)</option>
+                <option value="T005">T005 — Rahul Kumar (Tailoring & Apparel Design)</option>
+              </select>
+            )}
           </div>
 
           <div>
@@ -201,7 +260,7 @@ export default function EvidenceUploadPage() {
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
                   {useSample 
-                    ? 'Sample payslip with ABC Manufacturing, Ravi Kumar, ₹26,000 Gross / ₹23,445 Net' 
+                    ? `Sample payslip with ABC Manufacturing, ${activeTrainee?.name || 'Candidate'}, ₹26,000 Gross / ₹23,445 Net` 
                     : (selectedFile ? `Size: ${(selectedFile.size / 1024).toFixed(1)} KB` : 'Supports PNG, JPG, JPEG payslip scans')}
                 </p>
               </div>

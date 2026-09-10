@@ -3,6 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useRole } from '@/contexts/RoleContext'
 import { 
   Building2, Sparkles, ArrowRight, ArrowLeft, 
   Upload, CheckCircle2, ShieldCheck, FileCheck,
@@ -25,6 +26,7 @@ export default function NewEmploymentEventPage() {
 function NewEmploymentEventContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { setActiveTraineeId } = useRole()
   const traineeId = searchParams.get('trainee_id') || 'T001'
   const milestone = searchParams.get('milestone') || '3M'
   const source = searchParams.get('source')
@@ -45,16 +47,20 @@ function NewEmploymentEventContent() {
 
   useEffect(() => {
     if (traineeId) {
+      setActiveTraineeId(traineeId)
       fetch(`http://127.0.0.1:8000/trainees/${traineeId}`)
         .then(res => res.ok ? res.json() : null)
         .then(data => {
           if (data && data.name) {
             setTraineeName(data.name)
+            if (data.program) {
+              setFormData(prev => ({ ...prev, role: data.program }))
+            }
           }
         })
         .catch(() => {})
     }
-  }, [traineeId])
+  }, [traineeId, setActiveTraineeId])
 
   const handleSubmitAndVerify = async () => {
     setIsSubmitting(true)
@@ -72,11 +78,11 @@ function NewEmploymentEventContent() {
       }
       setSubmissionSuccess(true)
       setTimeout(() => {
-        router.push('/evidence/upload')
+        router.push(`/evidence/upload?trainee_id=${traineeId}`)
       }, 1500)
     } catch (err) {
       console.error('Failed to notify communications backend', err)
-      router.push('/evidence/upload')
+      router.push(`/evidence/upload?trainee_id=${traineeId}`)
     } finally {
       setIsSubmitting(false)
     }

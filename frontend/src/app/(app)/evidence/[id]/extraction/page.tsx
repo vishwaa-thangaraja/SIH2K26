@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, use } from 'react'
 import Link from 'next/link'
+import { useRole } from '@/contexts/RoleContext'
 import { 
   FileText, CheckCircle2, ArrowRight, ArrowLeft, 
   Sparkles, ZoomIn, ZoomOut, ShieldCheck, AlertCircle,
@@ -111,6 +112,7 @@ export default function EvidenceExtractionPage({
 }) {
   const unwrappedParams = use(params)
   const id = unwrappedParams?.id || 'DOC001'
+  const { activeTrainee, setActiveTraineeId } = useRole()
 
   const [data, setData] = useState<ExtractionData>(DEFAULT_EXTRACTION)
   const [loading, setLoading] = useState(true)
@@ -121,6 +123,11 @@ export default function EvidenceExtractionPage({
   const [docFilename, setDocFilename] = useState<string>('Uploaded Payslip Document')
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const p = new URLSearchParams(window.location.search).get('trainee_id')
+      if (p) setActiveTraineeId(p)
+    }
+
     async function loadExtraction() {
       try {
         const res = await fetch(`http://localhost:8000/evidence/${id}/extraction`)
@@ -137,7 +144,7 @@ export default function EvidenceExtractionPage({
       }
     }
     loadExtraction()
-  }, [id])
+  }, [id, setActiveTraineeId])
 
   const copyOcrText = () => {
     navigator.clipboard.writeText(data.ocr.raw_text)
@@ -371,7 +378,7 @@ export default function EvidenceExtractionPage({
                     <span>Candidate Identity Match</span>
                   </div>
                   <p className="text-slate-600">
-                    Extracted: <strong>{data.employee.employee_name || 'Ravi Kumar'}</strong> • Fuzzy match confidence: <strong>{ver.identity_match_score || 90}%</strong>
+                    Extracted: <strong>{data.employee.employee_name || activeTrainee?.name || 'Candidate'}</strong> • Fuzzy match confidence: <strong>{ver.identity_match_score || 90}%</strong>
                   </p>
                 </div>
                 <span className={`px-2 py-0.5 rounded font-bold uppercase text-[10px] ${
@@ -389,7 +396,7 @@ export default function EvidenceExtractionPage({
                     <span>Temporal Sequence Consistency</span>
                   </div>
                   <p className="text-slate-600">
-                    Pay Period ({data.pay_period.month || 'October'} {data.pay_period.year || 2028}) occurs chronologically post training completion.
+                    Pay Period ({data.pay_period.month || 'October'} {data.pay_period.year || 2026}) occurs chronologically post training completion.
                   </p>
                 </div>
                 <span className="px-2 py-0.5 rounded font-bold uppercase text-[10px] bg-emerald-100 text-emerald-800">
@@ -405,7 +412,7 @@ export default function EvidenceExtractionPage({
                     <span>Occupational Trade Correlation</span>
                   </div>
                   <p className="text-slate-600">
-                    Designation (<strong>{data.employee.designation || 'CNC Operator'}</strong>) matches vocational skill domain.
+                    Designation (<strong>{data.employee.designation || activeTrainee?.program || 'Vocational Specialist'}</strong>) matches vocational skill domain.
                   </p>
                 </div>
                 <span className="px-2 py-0.5 rounded font-bold uppercase text-[10px] bg-emerald-100 text-emerald-800">
@@ -456,10 +463,10 @@ export default function EvidenceExtractionPage({
                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
                   Candidate Credentials
                 </span>
-                <p className="font-bold text-slate-900 text-sm">{data.employee.employee_name || 'Ravi Kumar'}</p>
-                <p className="text-slate-600 text-[11px]">Role: <strong className="text-slate-800">{data.employee.designation || 'CNC Operator'}</strong></p>
+                <p className="font-bold text-slate-900 text-sm">{data.employee.employee_name || activeTrainee?.name || 'Candidate'}</p>
+                <p className="text-slate-600 text-[11px]">Role: <strong className="text-slate-800">{data.employee.designation || activeTrainee?.program || 'Specialist'}</strong></p>
                 <div className="pt-1 text-[11px] text-slate-500 space-y-0.5">
-                  <p>Employee ID: <span className="font-mono text-slate-700 font-semibold">{data.employee.employee_id || 'EMP-2028-8841'}</span></p>
+                  <p>Employee ID: <span className="font-mono text-slate-700 font-semibold">{data.employee.employee_id || `EMP-2026-${activeTrainee?.trainee_id || 'T001'}`}</span></p>
                   <p>UAN: <span className="font-mono text-slate-700 font-semibold">{data.employee.uan_number || '100987854321'}</span></p>
                   <p>PF Ref: <span className="font-mono text-slate-700 font-semibold">{data.employee.pf_number || 'MH/PUN/0045231'}</span></p>
                 </div>

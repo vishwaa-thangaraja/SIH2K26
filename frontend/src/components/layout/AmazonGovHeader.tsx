@@ -22,7 +22,7 @@ interface NavItem {
 export default function AmazonGovHeader() {
   const pathname = usePathname()
   const router = useRouter()
-  const { role } = useRole()
+  const { role, activeTrainee } = useRole()
   const isGovernmentOfficial = role === 'analyst'
 
   const [searchQuery, setSearchQuery] = useState('')
@@ -52,6 +52,7 @@ export default function AmazonGovHeader() {
 
   const handleLogout = () => {
     localStorage.removeItem('continuum_role')
+    localStorage.removeItem('continuum_active_trainee_id')
     router.push('/')
   }
 
@@ -68,16 +69,16 @@ export default function AmazonGovHeader() {
     { label: 'Evidence OCR Engine', href: '/evidence/DOC001/extraction', icon: FileSearch },
   ]
 
-  // ── Trainee Nav Items ──
+  // ── Trainee Nav Items (Anchored to authenticated active trainee) ──
   const traineeNavItems: NavItem[] = [
     { label: 'My Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { label: 'My 360° Profile', href: '/trainees/T001', icon: User },
+    { label: 'My 360° Profile', href: `/trainees/${activeTrainee?.trainee_id || 'T001'}`, icon: User },
     { label: 'Identity Graph (DSIG)', href: '/dsig', icon: Network },
     { label: 'Manage Identity', href: '/identity/update', icon: Shield },
     { label: 'Identity Recovery', href: '/identity/recovery', icon: RefreshCw },
     { label: 'Outcome Ledger & Wages', href: '/outcomes', icon: ClipboardList },
-    { label: 'Claim New Outcome', href: '/outcomes/new', icon: BookOpen },
-    { label: 'Upload Evidence', href: '/evidence/upload', icon: Upload },
+    { label: 'Claim New Outcome', href: `/outcomes/new?trainee_id=${activeTrainee?.trainee_id || 'T001'}`, icon: BookOpen },
+    { label: 'Upload Evidence', href: `/evidence/upload?trainee_id=${activeTrainee?.trainee_id || 'T001'}`, icon: Upload },
     { label: 'Employer Attestation', href: '/attestation', icon: CheckSquare },
   ]
 
@@ -142,28 +143,42 @@ export default function AmazonGovHeader() {
           </Link>
         </div>
 
-        {/* Center Search Bar: Dedicated for Trainee ID or Location */}
-        <form onSubmit={handleSearchSubmit} className="hidden md:flex flex-1 max-w-xl mx-2 items-center h-11 rounded-xl overflow-hidden bg-white shadow-inner focus-within:ring-2 focus-within:ring-sky-400 border border-slate-300">
-          <div className="flex items-center gap-1.5 pl-3.5 pr-2 text-slate-500 shrink-0">
-            <Search size={16} className="text-slate-400" />
+        {/* Center Search Bar for Officials, or Privacy Verification Banner for Learners */}
+        {isGovernmentOfficial ? (
+          <form onSubmit={handleSearchSubmit} className="hidden md:flex flex-1 max-w-xl mx-2 items-center h-11 rounded-xl overflow-hidden bg-white shadow-inner focus-within:ring-2 focus-within:ring-sky-400 border border-slate-300">
+            <div className="flex items-center gap-1.5 pl-3.5 pr-2 text-slate-500 shrink-0">
+              <Search size={16} className="text-slate-400" />
+            </div>
+
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by Trainee ID (e.g. T001) or Location (e.g. Madurai, Coimbatore)..."
+              className="flex-1 px-2 py-2 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 outline-none font-medium h-full"
+            />
+
+            <button
+              type="submit"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-5 h-full flex items-center justify-center transition-colors shrink-0 font-bold text-xs"
+              title="Search by Trainee ID or Location"
+            >
+              <span>Search</span>
+            </button>
+          </form>
+        ) : (
+          <div className="hidden md:flex flex-1 max-w-xl mx-4 items-center justify-center">
+            <div className="flex items-center gap-2.5 bg-white/10 border border-white/20 px-4 py-2 rounded-xl text-blue-100 text-xs shadow-inner">
+              <ShieldCheck size={16} className="text-emerald-400 shrink-0" />
+              <span>
+                Authenticated Learner: <strong className="text-white font-bold">{activeTrainee?.name || 'Candidate'}</strong> ({activeTrainee?.trainee_id || 'T001'})
+              </span>
+              <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 px-2 py-0.5 rounded font-bold">
+                Private Session
+              </span>
+            </div>
           </div>
-
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by Trainee ID (e.g. T001) or Location (e.g. Madurai, Coimbatore)..."
-            className="flex-1 px-2 py-2 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 outline-none font-medium h-full"
-          />
-
-          <button
-            type="submit"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-5 h-full flex items-center justify-center transition-colors shrink-0 font-bold text-xs"
-            title="Search by Trainee ID or Location"
-          >
-            <span>Search</span>
-          </button>
-        </form>
+        )}
 
         {/* Right Action & Profile Area */}
         <div className="flex items-center gap-3 shrink-0">
@@ -181,12 +196,16 @@ export default function AmazonGovHeader() {
             </div>
           ) : (
             <div className="hidden xl:flex items-center gap-3 bg-white/10 border border-white/15 px-3.5 py-2 rounded-xl">
-              <div className="w-8 h-8 rounded-lg bg-blue-600 border border-white/20 flex items-center justify-center text-white font-black text-xs">
-                RK
+              <div className="w-8 h-8 rounded-lg bg-blue-600 border border-white/20 flex items-center justify-center text-white font-black text-xs uppercase">
+                {activeTrainee?.initials || 'TR'}
               </div>
               <div className="flex flex-col text-left leading-tight">
-                <span className="text-[10px] text-slate-300 font-medium">Trainee T001 • NSQF Level 5</span>
-                <span className="font-bold text-white text-xs">Ravi Kumar (Madurai)</span>
+                <span className="text-[10px] text-slate-300 font-medium">
+                  Trainee {activeTrainee?.trainee_id || 'T001'} • {activeTrainee?.program || 'NSQF Level 5'}
+                </span>
+                <span className="font-bold text-white text-xs">
+                  {activeTrainee?.name || 'Candidate'} ({activeTrainee?.district || 'India'})
+                </span>
               </div>
             </div>
           )}
