@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRole } from '@/contexts/RoleContext'
 import { MOCK_OUTCOMES } from '@/lib/mockData'
 import { OutcomeEvent } from '@/types'
 import { 
@@ -11,6 +12,7 @@ import {
 } from 'lucide-react'
 
 export default function OutcomeLedgerPage() {
+  const { activeTrainee } = useRole()
   const [outcomes, setOutcomes] = useState<OutcomeEvent[]>(MOCK_OUTCOMES)
   const [filter, setFilter] = useState<'all' | 'verified' | 'pending'>('all')
   const [selectedEvent, setSelectedEvent] = useState<OutcomeEvent>(MOCK_OUTCOMES[2])
@@ -73,18 +75,18 @@ export default function OutcomeLedgerPage() {
           <div className="flex items-center gap-2 text-xs font-bold text-sky-700 uppercase tracking-wider mb-1">
             <span>Outcome Provenance Ledger</span>
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-            <span>Trainee T001 (Ravi Kumar)</span>
+            <span>Trainee {activeTrainee?.trainee_id || 'T001'} ({activeTrainee?.name || 'Candidate'})</span>
           </div>
           <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
             Verified Livelihood Event Ledger
           </h1>
           <p className="text-sm text-slate-600 mt-1">
-            Cryptographic outcome chain logging employment start, transitions, wage updates & corroborating evidence.
+            Cryptographic outcome chain logging employment start, transitions, wage updates &amp; corroborating evidence.
           </p>
         </div>
 
         <Link
-          href="/outcomes/new"
+          href={`/outcomes/new?trainee_id=${activeTrainee?.trainee_id || 'T001'}`}
           className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors"
         >
           <Plus size={16} />
