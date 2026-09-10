@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useRole } from '@/contexts/RoleContext'
@@ -28,6 +28,18 @@ export default function AmazonGovHeader() {
   const [searchQuery, setSearchQuery] = useState('')
   const [allDrawerOpen, setAllDrawerOpen] = useState(false)
   const [filterFlyoutOpen, setFilterFlyoutOpen] = useState(false)
+
+  // Dynamic Scroll & Hover states
+  const [isScrolled, setIsScrolled] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 80)
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -85,12 +97,39 @@ export default function AmazonGovHeader() {
   const activeNavItems = isGovernmentOfficial ? analystNavItems : traineeNavItems
 
   return (
-    <div className="w-full shrink-0 flex flex-col font-sans z-40 relative shadow-sm">
-      
-      {/* ──────────────────────────────────────────────────────────
-          ROW 1: UNIQUE PRIMARY HEADER FOR EACH PORTAL (GOV NAVY #0B2545)
-         ────────────────────────────────────────────────────────── */}
-      <div className="bg-[#0B2545] text-white px-4 sm:px-8 py-3.5 flex items-center justify-between gap-4 border-b border-white/10">
+    <>
+      {/* Top Hover Sensor: Invisible trigger strip fixed at top when scrolled down */}
+      {isScrolled && (
+        <div
+          onMouseEnter={() => setIsHovered(true)}
+          className="fixed top-0 left-0 right-0 h-4 z-50 pointer-events-auto cursor-pointer"
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Main Header Container with Auto-Hide and Hover-to-Open */}
+      <div
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        className={`w-full shrink-0 flex flex-col font-sans z-40 transition-all duration-300 ease-in-out ${
+          isScrolled
+            ? `fixed top-0 left-0 right-0 shadow-2xl ${
+                isHovered
+                  ? 'translate-y-0 opacity-100'
+                  : '-translate-y-[calc(100%-8px)] opacity-95 hover:translate-y-0 hover:opacity-100'
+              }`
+            : 'relative translate-y-0 opacity-100 shadow-sm'
+        }`}
+      >
+        {/* Visual cue strip visible at top when header is tucked away */}
+        {isScrolled && !isHovered && (
+          <div className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-blue-500 via-amber-400 to-sky-400 cursor-pointer animate-pulse" />
+        )}
+
+        {/* ──────────────────────────────────────────────────────────
+            ROW 1: UNIQUE PRIMARY HEADER FOR EACH PORTAL (GOV NAVY #0B2545)
+           ────────────────────────────────────────────────────────── */}
+        <div className="bg-[#0B2545] text-white px-4 sm:px-8 py-3.5 flex items-center justify-between gap-4 border-b border-white/10">
         
         {/* Portal Branding & Emblem */}
         <div className="flex items-center gap-4 shrink-0">
@@ -365,6 +404,7 @@ export default function AmazonGovHeader() {
           <div className="flex-1" onClick={() => setAllDrawerOpen(false)}></div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   )
 }
