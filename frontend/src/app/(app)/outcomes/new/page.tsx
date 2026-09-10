@@ -1,13 +1,13 @@
 'use client'
 
-import React, { useState, useEffect, Suspense } from 'react'
+import React, { useState, useEffect, useRef, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useRole } from '@/contexts/RoleContext'
 import { 
   Building2, Sparkles, ArrowRight, ArrowLeft, 
   Upload, CheckCircle2, ShieldCheck, FileCheck,
-  MessageSquare, Phone, Check, RefreshCw
+  MessageSquare, Phone, Check, RefreshCw, Eye, AlertCircle, FileText, Lock
 } from 'lucide-react'
 
 export default function NewEmploymentEventPage() {
@@ -26,8 +26,8 @@ export default function NewEmploymentEventPage() {
 function NewEmploymentEventContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { setActiveTraineeId } = useRole()
-  const traineeId = searchParams.get('trainee_id') || 'T001'
+  const { setActiveTraineeId, activeTrainee } = useRole()
+  const traineeId = searchParams.get('trainee_id') || activeTrainee?.trainee_id || 'T001'
   const milestone = searchParams.get('milestone') || '3M'
   const source = searchParams.get('source')
 
@@ -35,6 +35,15 @@ function NewEmploymentEventContent() {
   const [step, setStep] = useState<1 | 2 | 3>(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submissionSuccess, setSubmissionSuccess] = useState(false)
+
+  // Evidence upload & OCR states
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [useSample, setUseSample] = useState<boolean>(true)
+  const [previewUrl, setPreviewUrl] = useState<string>('/sample_payslip.png')
+  const [ocrRunning, setOcrRunning] = useState<boolean>(false)
+  const [ocrStage, setOcrStage] = useState<string>('')
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [formData, setFormData] = useState({
     employer_name: 'ABC Manufacturing Pvt Ltd',
@@ -62,27 +71,62 @@ function NewEmploymentEventContent() {
     }
   }, [traineeId, setActiveTraineeId])
 
-  const handleSubmitAndVerify = async () => {
-    setIsSubmitting(true)
+  const uploadAndRunOCR = async () => {
+    setOcrRunning(true)
+    setErrorMsg(null)
     try {
+      setOcrStage('Stage 1: Connecting to Tesseract 5.5.3 OCR Engine...')
+      await new Promise(r => setTimeout(r, 450))
+
+      // Also notify communications backend to record response
       if (traineeId) {
-        // Close the follow-up feedback loop on the backend
-        await fetch(`http://127.0.0.1:8000/communications/respond/${traineeId}`, {
+        fetch(`http://127.0.0.1:8000/communications/respond/${traineeId}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             milestone: milestone,
-            notes: `Self-reported via SMS Follow-Up link: Employer=${formData.employer_name}, Wage=₹${formData.wage_monthly}`
+            notes: `Self-reported via Outreach link: Employer=${formData.employer_name}, Wage=₹${formData.wage_monthly}`
           })
-        })
+        }).catch(() => {})
       }
-      setSubmissionSuccess(true)
-      setTimeout(() => {
-        router.push(`/evidence/upload?trainee_id=${traineeId}`)
-      }, 1500)
+
+      setOcrStage('Stage 2: Parsing Layout & Extracting Financial Entities...')
+      const body = new FormData()
+      body.append('trainee_id', traineeId)
+      body.append('doc_type', formData.evidence_type || 'payslip')
+      body.append('use_sample', useSample ? 'true' : 'false')
+      if (selectedFile && !useSample) {
+        body.append('file', selectedFile)
+      }
+
+      setOcrStage('Stage 3: Running Deterministic Consistency Checks...')
+      const res = await fetch('http://localhost:8000/evidence/upload', {
+        method: 'POST',
+        body: body,
+      })
+
+      if (!res.ok) {
+        throw new Error(`OCR processing failed with HTTP ${res.status}`)
+      }
+
+      const resData = await res.json()
+      setOcrStage('Extraction Completed! Navigating to Verification Dossier...')
+      await new Promise(r => setTimeout(r, 400))
+
+      router.push(`/evidence/${resData.evidence_id || 'DOC001'}/extraction?trainee_id=${traineeId}`)
+    } catch (err: any) {
+      console.error(err)
+      setErrorMsg(err.message || 'Failed to process document through OCR engine.')
+      setOcrRunning(false)
+    }
+  }
+
+  const handleSubmitAndVerify = async () => {
+    setIsSubmitting(true)
+    try {
+      await uploadAndRunOCR()
     } catch (err) {
-      console.error('Failed to notify communications backend', err)
-      router.push(`/evidence/upload?trainee_id=${traineeId}`)
+      console.error(err)
     } finally {
       setIsSubmitting(false)
     }
@@ -231,39 +275,143 @@ function NewEmploymentEventContent() {
         )}
 
         {step === 2 && (
-          <div className="space-y-4">
-            <h2 className="text-lg font-bold text-slate-900 pb-2 border-b border-slate-100">
-              Step 2: Attach Primary Corroborating Evidence
-            </h2>
-
-            <div className="border-2 border-dashed border-slate-300 hover:border-sky-500 rounded-xl p-8 text-center bg-slate-50 cursor-pointer transition-colors space-y-2">
-              <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center mx-auto">
-                <Upload size={24} />
+          <div className="space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-slate-100 gap-2">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900">
+                  Step 2: Attach Primary Corroborating Evidence
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Upload an authentic payslip, contract, or offer letter to verify employment and compensation.
+                </p>
               </div>
-              <h3 className="font-bold text-slate-900 text-sm">Upload Payslip, Offer Letter or Apprenticeship Contract</h3>
-              <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                Supports PDF, PNG, JPG up to 10MB. Mock OCR will automatically extract field values and run consistency checks.
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedFile(null)
+                  setUseSample(true)
+                  setPreviewUrl('/sample_payslip.png')
+                  setErrorMsg(null)
+                }}
+                className={`text-xs font-bold px-3 py-1.5 rounded-lg border transition-colors cursor-pointer shrink-0 ${
+                  useSample
+                    ? 'bg-blue-50 text-blue-800 border-blue-300 shadow-xs'
+                    : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
+                }`}
+              >
+                ⚡ Use CONTINUUM Benchmark Payslip
+              </button>
+            </div>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*,.pdf"
+              className="hidden"
+              onChange={(e) => {
+                if (e.target.files && e.target.files[0]) {
+                  const f = e.target.files[0]
+                  setSelectedFile(f)
+                  setUseSample(false)
+                  setPreviewUrl(URL.createObjectURL(f))
+                  setErrorMsg(null)
+                }
+              }}
+            />
+
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              className={`border-2 border-dashed rounded-xl p-7 text-center cursor-pointer transition-all ${
+                useSample
+                  ? 'border-blue-300 bg-blue-50/40 hover:bg-blue-50/70'
+                  : 'border-sky-400 bg-sky-50/40 hover:bg-sky-50/70'
+              }`}
+            >
+              <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center mx-auto shadow-sm">
+                {useSample ? <FileCheck size={24} /> : <Upload size={24} />}
+              </div>
+              <h3 className="font-bold text-slate-900 text-sm mt-3">
+                {useSample ? 'benchmark_sample_payslip.png (Preloaded)' : (selectedFile ? selectedFile.name : 'Click to Browse / Upload Document Image')}
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5 max-w-md mx-auto">
+                {useSample
+                  ? `Official continuous tracking benchmark with ABC Manufacturing, ${traineeName || 'Priya S'}, ₹26,000 Gross / ₹23,445 Net pay.`
+                  : (selectedFile ? `File size: ${(selectedFile.size / 1024).toFixed(1)} KB • Image loaded and ready for OCR analysis.` : 'Supports PNG, JPG, JPEG, and PDF documents up to 10MB.')}
               </p>
               <div className="pt-2">
-                <span className="bg-white border border-slate-300 text-slate-700 text-xs px-3 py-1.5 rounded-md font-semibold shadow-sm inline-block">
-                  Selected File: payslip_oct2023.pdf
+                <span className="bg-white border border-slate-200 text-emerald-800 text-xs px-3 py-1.5 rounded-md font-bold shadow-xs inline-flex items-center gap-1.5">
+                  <CheckCircle2 size={13} className="text-emerald-600" />
+                  {useSample ? 'Benchmark Document Ready for OCR' : (selectedFile ? 'Custom Document Attached' : 'Click to Select Document')}
                 </span>
               </div>
             </div>
 
-            <div className="flex justify-between pt-4 border-t border-slate-100">
+            {/* Visual Preview */}
+            {previewUrl && (
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-200 text-xs font-bold text-slate-700">
+                  <span className="flex items-center gap-1.5">
+                    <Eye size={14} className="text-blue-600" />
+                    Document Visual Preview
+                  </span>
+                  <span className="text-[11px] font-normal text-slate-500">Passed directly to Tesseract OCR engine</span>
+                </div>
+                <div className="max-h-56 overflow-hidden rounded-lg border border-slate-200 flex justify-center bg-white p-2">
+                  <img
+                    src={previewUrl}
+                    alt="Evidence document preview"
+                    className="max-h-52 object-contain w-auto rounded"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* OCR Progress State */}
+            {ocrRunning && (
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl space-y-2">
+                <div className="flex items-center gap-2 text-blue-900 font-bold text-xs">
+                  <RefreshCw size={16} className="animate-spin text-blue-600" />
+                  <span>{ocrStage}</span>
+                </div>
+                <div className="w-full bg-blue-200 h-1.5 rounded-full overflow-hidden">
+                  <div className="bg-blue-600 h-full w-2/3 animate-pulse"></div>
+                </div>
+              </div>
+            )}
+
+            {errorMsg && (
+              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs font-semibold flex items-center gap-2">
+                <AlertCircle size={15} className="text-rose-600 shrink-0" />
+                <span>{errorMsg}</span>
+              </div>
+            )}
+
+            <div className="flex flex-col sm:flex-row items-center justify-between pt-4 border-t border-slate-100 gap-3">
               <button
                 onClick={() => setStep(1)}
-                className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-semibold text-xs px-4 py-2 rounded-lg transition-colors"
+                disabled={ocrRunning}
+                className="w-full sm:w-auto bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-semibold text-xs px-4 py-2.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
               >
-                Back
+                ← Back to Role Details
               </button>
-              <button
-                onClick={() => setStep(3)}
-                className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs px-5 py-2.5 rounded-lg shadow transition-colors"
-              >
-                Review & Confirm <ArrowRight size={14} />
-              </button>
+              <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+                <button
+                  type="button"
+                  disabled={ocrRunning}
+                  onClick={uploadAndRunOCR}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs px-5 py-2.5 rounded-lg shadow transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+                >
+                  <Sparkles size={14} className="fill-slate-950" />
+                  <span>{ocrRunning ? 'Running OCR Engine...' : 'Run Tesseract OCR & Verify Now'}</span>
+                </button>
+                <button
+                  onClick={() => setStep(3)}
+                  disabled={ocrRunning}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs px-5 py-2.5 rounded-lg shadow transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  Review &amp; Submit <ArrowRight size={14} />
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -271,7 +419,7 @@ function NewEmploymentEventContent() {
         {step === 3 && (
           <div className="space-y-4">
             <h2 className="text-lg font-bold text-slate-900 pb-2 border-b border-slate-100">
-              Step 3: Review & Initiate Verification Pipeline
+              Step 3: Review &amp; Initiate Verification Pipeline
             </h2>
 
             <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-2 text-xs">
@@ -300,6 +448,12 @@ function NewEmploymentEventContent() {
                   <span className="text-slate-500">Start Date:</span>
                   <p className="font-bold text-slate-900">{formData.start_date}</p>
                 </div>
+                <div className="col-span-2 pt-1 border-t border-slate-200 flex items-center justify-between">
+                  <span className="text-slate-500">Corroborating Evidence:</span>
+                  <span className="font-bold text-slate-800">
+                    {useSample ? 'CONTINUUM Benchmark Payslip (Preloaded)' : (selectedFile ? selectedFile.name : 'Document Attached')}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -312,44 +466,46 @@ function NewEmploymentEventContent() {
               </div>
             )}
 
-            {submissionSuccess ? (
-              <div className="p-4 bg-emerald-50 border border-emerald-300 rounded-lg text-xs text-emerald-900 flex items-center gap-2 animate-in fade-in">
-                <CheckCircle2 size={18} className="text-emerald-600 shrink-0" />
-                <div>
-                  <p className="font-extrabold text-sm">Outreach Response Recorded Successfully!</p>
-                  <p className="text-emerald-700">Follow-up ledger updated. Redirecting to evidence processing pipeline...</p>
+            {ocrRunning && (
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl space-y-2">
+                <div className="flex items-center gap-2 text-blue-900 font-bold text-xs">
+                  <RefreshCw size={16} className="animate-spin text-blue-600" />
+                  <span>{ocrStage}</span>
+                </div>
+                <div className="w-full bg-blue-200 h-1.5 rounded-full overflow-hidden">
+                  <div className="bg-blue-600 h-full w-2/3 animate-pulse"></div>
                 </div>
               </div>
-            ) : (
-              <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-800 flex items-start gap-2">
-                <CheckCircle2 size={16} className="text-emerald-600 shrink-0 mt-0.5" />
-                <p>
-                  Upon submission, OCR intelligence will extract entities from the attached payslip and trigger an automated mock attestation notification to the employer.
-                </p>
+            )}
+
+            {errorMsg && (
+              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs font-semibold flex items-center gap-2">
+                <AlertCircle size={15} className="text-rose-600 shrink-0" />
+                <span>{errorMsg}</span>
               </div>
             )}
 
             <div className="flex justify-between pt-4 border-t border-slate-100">
               <button
                 onClick={() => setStep(2)}
-                disabled={isSubmitting || submissionSuccess}
+                disabled={ocrRunning}
                 className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-semibold text-xs px-4 py-2 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
               >
                 Back
               </button>
               <button
                 onClick={handleSubmitAndVerify}
-                disabled={isSubmitting || submissionSuccess}
+                disabled={ocrRunning}
                 className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-6 py-2.5 rounded-lg shadow transition-colors disabled:opacity-50 cursor-pointer"
               >
-                {isSubmitting ? (
+                {ocrRunning ? (
                   <>
                     <RefreshCw size={14} className="animate-spin" />
-                    <span>Recording Response...</span>
+                    <span>Executing OCR Pipeline...</span>
                   </>
                 ) : (
                   <>
-                    <span>Submit Event & Trigger OCR Pipeline</span>
+                    <span>Submit Event &amp; Launch OCR Pipeline</span>
                     <ArrowRight size={14} />
                   </>
                 )}
