@@ -1,5 +1,6 @@
 'use client'
 
+import { API_BASE } from '@/lib/api'
 import React, { useState, useEffect, Suspense } from 'react'
 import DSIGGraph from '@/components/dsig/DSIGGraph'
 import Link from 'next/link'
@@ -33,7 +34,7 @@ function DSIGContent() {
   }, [initialParamId, role, effectiveId])
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/trainees?limit=100')
+    fetch(`${API_BASE}/trainees?limit=100`)
       .then(res => {
         if (!res.ok) return []
         return res.json()

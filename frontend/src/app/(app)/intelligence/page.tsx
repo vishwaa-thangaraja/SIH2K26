@@ -1,5 +1,6 @@
 'use client'
 
+import { API_BASE } from '@/lib/api'
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { 
@@ -44,7 +45,7 @@ export default function OutcomeIntelligenceDashboard() {
 
   useEffect(() => {
     // Fetch live summary from SQLite database
-    fetch('http://127.0.0.1:8000/intelligence/summary')
+    fetch(`${API_BASE}/intelligence/summary`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data) setLiveSummary(data)
@@ -52,7 +53,7 @@ export default function OutcomeIntelligenceDashboard() {
       .catch(() => {})
 
     // Fetch live wage trajectory curve from SQLite database
-    fetch('http://127.0.0.1:8000/intelligence/wage-trajectory')
+    fetch(`${API_BASE}/intelligence/wage-trajectory`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data && Array.isArray(data) && data.length > 0) {
@@ -62,7 +63,7 @@ export default function OutcomeIntelligenceDashboard() {
       .catch(() => {})
 
     // Fetch live providers comparison from SQLite database
-    fetch('http://127.0.0.1:8000/intelligence/provider-comparison')
+    fetch(`${API_BASE}/intelligence/provider-comparison`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data && Array.isArray(data) && data.length > 0) {
@@ -72,7 +73,7 @@ export default function OutcomeIntelligenceDashboard() {
       .catch(() => {})
 
     // Fetch live hotspot deficit data
-    fetch('http://127.0.0.1:8000/intelligence/hotspot-deficit')
+    fetch(`${API_BASE}/intelligence/hotspot-deficit`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data) setLiveDeficit(data)
@@ -80,7 +81,7 @@ export default function OutcomeIntelligenceDashboard() {
       .catch(() => {})
 
     // Fetch live cohort anomalies from Isolation Forest engine
-    fetch('http://127.0.0.1:8000/intelligence/cohort-anomalies')
+    fetch(`${API_BASE}/intelligence/cohort-anomalies`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data) setCohortAnomaly(data)

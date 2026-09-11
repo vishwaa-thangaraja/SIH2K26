@@ -8,6 +8,7 @@ import {
   Upload, Network, AlertCircle, Clock, MapPin, User, Sparkles
 } from 'lucide-react'
 import { useRole } from '@/contexts/RoleContext'
+import { API_BASE } from '@/lib/api'
 
 interface OutcomeEvent {
   event_id: string
@@ -37,7 +38,7 @@ export default function DashboardPage() {
     setLoading(true)
 
     // 1. Fetch Trainee Metadata
-    const fetchTrainee = fetch(`http://127.0.0.1:8000/trainees/${traineeId}`)
+    const fetchTrainee = fetch(`${API_BASE}/trainees/${traineeId}`)
       .then(res => res.ok ? res.json() : null)
       .then(data => {
         if (data) setLiveTrainee(data)
@@ -45,7 +46,7 @@ export default function DashboardPage() {
       .catch(() => {})
 
     // 2. Fetch Trainee Outcome Events
-    const fetchOutcomes = fetch(`http://127.0.0.1:8000/outcomes?trainee_id=${traineeId}`)
+    const fetchOutcomes = fetch(`${API_BASE}/outcomes?trainee_id=${traineeId}`)
       .then(res => res.ok ? res.json() : { events: [] })
       .then(data => {
         if (data && Array.isArray(data.events)) {
@@ -55,7 +56,7 @@ export default function DashboardPage() {
       .catch(() => {})
 
     // 3. Fetch Trainee Communication / Activity History
-    const fetchComm = fetch(`http://127.0.0.1:8000/communications/history/${traineeId}`)
+    const fetchComm = fetch(`${API_BASE}/communications/history/${traineeId}`)
       .then(res => res.ok ? res.json() : [])
       .then(data => {
         if (Array.isArray(data)) setRecentComm(data)

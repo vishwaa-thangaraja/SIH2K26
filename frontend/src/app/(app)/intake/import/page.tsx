@@ -1,5 +1,6 @@
 'use client'
 
+import { API_BASE } from '@/lib/api'
 import React, { useState, useMemo, ChangeEvent } from 'react'
 import Link from 'next/link'
 import {
@@ -209,7 +210,7 @@ export default function TrainingIntakeImportPage() {
     setCurrentStep(2)
 
     try {
-      const res = await fetch('http://127.0.0.1:8000/intake/validate', {
+      const res = await fetch(`${API_BASE}/intake/validate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -242,7 +243,7 @@ export default function TrainingIntakeImportPage() {
     setValidationError(null)
 
     try {
-      const res = await fetch('http://127.0.0.1:8000/intake/confirm', {
+      const res = await fetch(`${API_BASE}/intake/confirm`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -1,5 +1,6 @@
 'use client'
 
+import { API_BASE } from '@/lib/api'
 import React, { useState, useEffect, use } from 'react'
 import Link from 'next/link'
 import { useRole } from '@/contexts/RoleContext'
@@ -129,7 +130,7 @@ export default function EvidenceExtractionPage({
   const [zoomLevel, setZoomLevel] = useState(100)
   const [showRawOcr, setShowRawOcr] = useState(false)
   const [copied, setCopied] = useState(false)
-  const [docImageSrc, setDocImageSrc] = useState<string>(`http://127.0.0.1:8000/evidence/${id}/file`)
+  const [docImageSrc, setDocImageSrc] = useState<string>(`${API_BASE}/evidence/${id}/file`)
   const [docFilename, setDocFilename] = useState<string>('Uploaded Payslip Document')
 
   useEffect(() => {
@@ -140,7 +141,7 @@ export default function EvidenceExtractionPage({
 
     async function loadExtraction() {
       try {
-        const res = await fetch(`http://localhost:8000/evidence/${id}/extraction`)
+        const res = await fetch(`${API_BASE}/evidence/${id}/extraction`)
         if (res.ok) {
           const json = await res.json()
           setData(json)

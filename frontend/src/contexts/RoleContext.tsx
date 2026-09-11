@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
+import { API_BASE } from '@/lib/api'
 
 export type AppRole = 'trainee' | 'analyst'
 
@@ -119,7 +120,7 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
   const fetchTraineeFromBackend = useCallback(async (id: string) => {
     const formattedId = id.toUpperCase()
     try {
-      const res = await fetch(`http://127.0.0.1:8000/trainees/${formattedId}`)
+      const res = await fetch(`${API_BASE}/trainees/${formattedId}`)
       if (res.ok) {
         const data = await res.json()
         const initials = getInitials(data.name || formattedId)

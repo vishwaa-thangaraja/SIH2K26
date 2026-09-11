@@ -1,5 +1,6 @@
 'use client'
 
+import { API_BASE } from '@/lib/api'
 import React from 'react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
@@ -29,7 +30,7 @@ export default function LongitudinalTimelinePage() {
   const [commHistory, setCommHistory] = React.useState<any[]>([])
 
   const fetchHistory = React.useCallback(() => {
-    fetch(`http://127.0.0.1:8000/communications/history/${id}`)
+    fetch(`${API_BASE}/communications/history/${id}`)
       .then(res => (res.ok ? res.json() : []))
       .then(data => {
         if (Array.isArray(data)) setCommHistory(data)
@@ -45,7 +46,7 @@ export default function LongitudinalTimelinePage() {
     setIsSending(true)
     setSendResult(null)
     try {
-      const res = await fetch('http://127.0.0.1:8000/communications/send', {
+      const res = await fetch(`${API_BASE}/communications/send`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -74,7 +75,7 @@ export default function LongitudinalTimelinePage() {
     setIsBatchModalOpen(true)
     setBroadcastResult(null)
     try {
-      const res = await fetch('http://127.0.0.1:8000/communications/broadcast-unverified', {
+      const res = await fetch(`${API_BASE}/communications/broadcast-unverified`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -132,7 +133,7 @@ export default function LongitudinalTimelinePage() {
     setIsSavingEdit(true)
     setEditSuccessMsg(null)
     try {
-      const res = await fetch(`http://127.0.0.1:8000/trainees/${id}`, {
+      const res = await fetch(`${API_BASE}/trainees/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editForm),
@@ -159,14 +160,14 @@ export default function LongitudinalTimelinePage() {
   const [liveTimeline, setLiveTimeline] = React.useState<any[]>([])
 
   React.useEffect(() => {
-    fetch(`http://127.0.0.1:8000/trainees/${id}`)
+    fetch(`${API_BASE}/trainees/${id}`)
       .then(res => (res.ok ? res.json() : null))
       .then(data => {
         if (data) setLiveTrainee(data)
       })
       .catch(() => {})
 
-    fetch(`http://127.0.0.1:8000/trainees/${id}/timeline`)
+    fetch(`${API_BASE}/trainees/${id}/timeline`)
       .then(res => (res.ok ? res.json() : []))
       .then(data => {
         if (Array.isArray(data) && data.length > 0) {
@@ -177,7 +178,7 @@ export default function LongitudinalTimelinePage() {
   }, [id])
 
   React.useEffect(() => {
-    fetch('http://127.0.0.1:8000/trainees?limit=100')
+    fetch(`${API_BASE}/trainees?limit=100`)
       .then(res => (res.ok ? res.json() : []))
       .then(data => {
         if (Array.isArray(data) && data.length > 0) {

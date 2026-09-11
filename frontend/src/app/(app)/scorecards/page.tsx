@@ -1,5 +1,6 @@
 'use client'
 
+import { API_BASE } from '@/lib/api'
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { 
@@ -11,7 +12,7 @@ export default function ProviderScorecardsPage() {
   const [providers, setProviders] = useState<any[]>([])
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/intelligence/provider-comparison')
+    fetch(`${API_BASE}/intelligence/provider-comparison`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data && Array.isArray(data) && data.length > 0) {

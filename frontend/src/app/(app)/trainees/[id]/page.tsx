@@ -1,3 +1,4 @@
+import { API_BASE } from '@/lib/api'
 import React from 'react'
 import Link from 'next/link'
 import { 
@@ -21,10 +22,10 @@ export default async function TraineeProfilePage({
 
   try {
     const [tRes, oRes, aRes, sRes] = await Promise.all([
-      fetch(`http://127.0.0.1:8000/trainees/${id}`, { cache: 'no-store' }),
-      fetch(`http://127.0.0.1:8000/outcomes?trainee_id=${id}`, { cache: 'no-store' }),
-      fetch(`http://127.0.0.1:8000/trainees/${id}/anomaly`, { cache: 'no-store' }),
-      fetch(`http://127.0.0.1:8000/trainees/${id}/skill-recommendations`, { cache: 'no-store' })
+      fetch(`${API_BASE}/trainees/${id}`, { cache: 'no-store' }),
+      fetch(`${API_BASE}/outcomes?trainee_id=${id}`, { cache: 'no-store' }),
+      fetch(`${API_BASE}/trainees/${id}/anomaly`, { cache: 'no-store' }),
+      fetch(`${API_BASE}/trainees/${id}/skill-recommendations`, { cache: 'no-store' })
     ])
     if (tRes.ok) liveTrainee = await tRes.json()
     if (oRes.ok) {

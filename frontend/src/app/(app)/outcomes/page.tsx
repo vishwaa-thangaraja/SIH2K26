@@ -1,5 +1,6 @@
 'use client'
 
+import { API_BASE } from '@/lib/api'
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRole } from '@/contexts/RoleContext'
@@ -23,7 +24,7 @@ export default function OutcomeLedgerPage() {
   useEffect(() => {
     setLoading(true)
     // Fetch live outcomes strictly for the active trainee from SQLite database
-    fetch(`http://127.0.0.1:8000/outcomes?trainee_id=${traineeId}`)
+    fetch(`${API_BASE}/outcomes?trainee_id=${traineeId}`)
       .then(res => res.ok ? res.json() : null)
       .then(data => {
         if (data && Array.isArray(data.events)) {

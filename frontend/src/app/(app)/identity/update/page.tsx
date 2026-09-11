@@ -1,5 +1,6 @@
 'use client'
 
+import { API_BASE } from '@/lib/api'
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRole } from '@/contexts/RoleContext'
@@ -18,7 +19,7 @@ export default function IdentityUpdatePage() {
 
   useEffect(() => {
     setLoading(true)
-    fetch(`http://127.0.0.1:8000/trainees/${traineeId}/dsig`)
+    fetch(`${API_BASE}/trainees/${traineeId}/dsig`)
       .then(res => res.ok ? res.json() : { nodes: [] })
       .then(data => {
         if (data && Array.isArray(data.nodes) && data.nodes.length > 0) {

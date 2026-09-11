@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useRole } from '@/contexts/RoleContext'
+import { API_BASE } from '@/lib/api'
 import {
   ShieldCheck, Database, LineChart, Award,
   User, BarChart3, Building2, Smartphone, Mail,
@@ -84,7 +85,7 @@ export default function LandingPage() {
   const [traineeLoading, setTraineeLoading] = useState(false)
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/trainees?limit=100')
+    fetch(`${API_BASE}/trainees?limit=100`)
       .then(res => res.ok ? res.json() : [])
       .then(data => {
         if (Array.isArray(data) && data.length > 0) {

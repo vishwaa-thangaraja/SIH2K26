@@ -1,5 +1,6 @@
 'use client'
 
+import { API_BASE } from '@/lib/api'
 import React, { useState, useRef, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
@@ -88,7 +89,7 @@ function EvidenceUploadContent() {
       }
 
       setProcessingStage('Stage 3: Running Deterministic Consistency & Identity Verification...')
-      const res = await fetch('http://localhost:8000/evidence/upload', {
+      const res = await fetch(`${API_BASE}/evidence/upload`, {
         method: 'POST',
         body: formData,
       })

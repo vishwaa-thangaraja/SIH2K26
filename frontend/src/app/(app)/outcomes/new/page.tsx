@@ -1,5 +1,6 @@
 'use client'
 
+import { API_BASE } from '@/lib/api'
 import React, { useState, useEffect, useRef, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -57,7 +58,7 @@ function NewEmploymentEventContent() {
   useEffect(() => {
     if (traineeId) {
       setActiveTraineeId(traineeId)
-      fetch(`http://127.0.0.1:8000/trainees/${traineeId}`)
+      fetch(`${API_BASE}/trainees/${traineeId}`)
         .then(res => res.ok ? res.json() : null)
         .then(data => {
           if (data && data.name) {
@@ -80,7 +81,7 @@ function NewEmploymentEventContent() {
 
       // Also notify communications backend to record response
       if (traineeId) {
-        fetch(`http://127.0.0.1:8000/communications/respond/${traineeId}`, {
+        fetch(`${API_BASE}/communications/respond/${traineeId}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -100,7 +101,7 @@ function NewEmploymentEventContent() {
       }
 
       setOcrStage('Stage 3: Running Deterministic Consistency Checks...')
-      const res = await fetch('http://localhost:8000/evidence/upload', {
+      const res = await fetch(`${API_BASE}/evidence/upload`, {
         method: 'POST',
         body: body,
       })

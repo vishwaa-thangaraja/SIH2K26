@@ -1,5 +1,6 @@
 'use client'
 
+import { API_BASE } from '@/lib/api'
 import React, { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
@@ -19,7 +20,7 @@ export default function RegionalAnalyticsPage() {
   const [districts, setDistricts] = useState<any[]>([])
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/intelligence/district-density')
+    fetch(`${API_BASE}/intelligence/district-density`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data && Array.isArray(data) && data.length > 0) {

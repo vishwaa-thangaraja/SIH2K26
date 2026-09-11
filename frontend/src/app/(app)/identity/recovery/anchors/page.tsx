@@ -1,5 +1,6 @@
 'use client'
 
+import { API_BASE } from '@/lib/api'
 import React, { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { 
@@ -30,7 +31,7 @@ export default function TrustedAnchorsPage() {
 
   React.useEffect(() => {
     if (activeTrainee.trainee_id) {
-      fetch(`http://127.0.0.1:8000/trainees/${activeTrainee.trainee_id}/dsig`)
+      fetch(`${API_BASE}/trainees/${activeTrainee.trainee_id}/dsig`)
         .then(res => res.ok ? res.json() : null)
         .then(data => {
           if (data && data.nodes) {

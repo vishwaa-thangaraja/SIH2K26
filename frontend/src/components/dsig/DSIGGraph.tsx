@@ -1,5 +1,6 @@
 'use client'
 
+import { API_BASE } from '@/lib/api'
 import React, { useState, useMemo } from 'react'
 import {
   ReactFlow,
@@ -104,7 +105,7 @@ export default function DSIGGraph({ traineeId }: DSIGGraphProps) {
     }
 
     setLoading(true)
-    fetch(`http://127.0.0.1:8000/trainees/${traineeId}/dsig`)
+    fetch(`${API_BASE}/trainees/${traineeId}/dsig`)
       .then(res => {
         if (!res.ok) throw new Error('Failed to fetch DSIG')
         return res.json()

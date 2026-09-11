@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRole } from '@/contexts/RoleContext'
+import { API_BASE } from '@/lib/api'
 import { 
   Building2, CheckCircle2, XCircle, ShieldCheck, 
   ArrowRight, AlertTriangle, Send, User, Calendar, Loader2 
@@ -28,10 +29,10 @@ export default function EmployerAttestationPage() {
   useEffect(() => {
     setLoading(true)
     Promise.all([
-      fetch(`http://127.0.0.1:8000/trainees/${traineeId}`)
+      fetch(`${API_BASE}/trainees/${traineeId}`)
         .then(r => r.ok ? r.json() : null)
         .catch(() => null),
-      fetch(`http://127.0.0.1:8000/outcomes?trainee_id=${traineeId}`)
+      fetch(`${API_BASE}/outcomes?trainee_id=${traineeId}`)
         .then(r => r.ok ? r.json() : null)
         .catch(() => null)
     ]).then(([t, o]) => {

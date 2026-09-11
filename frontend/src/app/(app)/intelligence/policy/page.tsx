@@ -1,3 +1,4 @@
+import { API_BASE } from '@/lib/api'
 import React from 'react'
 import Link from 'next/link'
 import { 
@@ -8,7 +9,7 @@ import {
 export default async function PolicyInsightsPage() {
   let liveDirectives: any[] = []
   try {
-    const res = await fetch('http://127.0.0.1:8000/intelligence/policy-insights', { cache: 'no-store' })
+    const res = await fetch(`${API_BASE}/intelligence/policy-insights`, { cache: 'no-store' })
     if (res.ok) {
       const data = await res.json()
       if (Array.isArray(data)) {

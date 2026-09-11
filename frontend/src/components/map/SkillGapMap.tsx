@@ -1,5 +1,6 @@
 'use client'
 
+import { API_BASE } from '@/lib/api'
 import React, { useEffect, useRef, useState } from 'react'
 import L from 'leaflet'
 import { RegionalSkillGap } from '@/types'
@@ -12,7 +13,7 @@ export default function SkillGapMap() {
   const [selectedDistrict, setSelectedDistrict] = useState<any>(null)
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/intelligence/district-density')
+    fetch(`${API_BASE}/intelligence/district-density`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data && Array.isArray(data) && data.length > 0) {

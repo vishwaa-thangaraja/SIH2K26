@@ -1,5 +1,6 @@
 'use client'
 
+import { API_BASE } from '@/lib/api'
 import React, { useState, useMemo, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
@@ -77,7 +78,7 @@ function AdvancedFilterSearchContent() {
   } | null>(null)
 
   const fetchSummaryStats = () => {
-    fetch('http://127.0.0.1:8000/communications/summary')
+    fetch(`${API_BASE}/communications/summary`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data) setSummaryStats(data)
@@ -89,7 +90,7 @@ function AdvancedFilterSearchContent() {
     setIsBroadcasting(true)
     setIsBatchModalOpen(true)
     try {
-      const res = await fetch('http://127.0.0.1:8000/communications/broadcast-unverified', {
+      const res = await fetch(`${API_BASE}/communications/broadcast-unverified`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -113,7 +114,7 @@ function AdvancedFilterSearchContent() {
   }
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/trainees')
+    fetch(`${API_BASE}/trainees`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data && Array.isArray(data) && data.length > 0) {
