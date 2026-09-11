@@ -35,7 +35,7 @@
     {
       "trainee_id": "T003",
       "name": "Arun Prakash",
-      "email": "trainee003@example.com",
+      "email": "jeffinachristy@gmail.com",
       "phone": "9000001002",
       "program": "Digital Marketing",
       "provider": "National Digital Skills Institute",
@@ -51,7 +51,7 @@
     {
       "trainee_id": "T004",
       "name": "Meena R",
-      "email": "trainee004@example.com",
+      "email": "heerajsk2007@gmail.com",
       "phone": "9000001003",
       "program": "Electrical Technician",
       "provider": "FutureReady Training Network",
@@ -1518,6 +1518,22 @@
       "date_of_birth": null,
       "gender": "Male",
       "district": "Chennai",
+      "state": "Tamil Nadu"
+    },
+    {
+      "trainee_id": "T100",
+      "name": "Heeraj S K",
+      "email": "heeraj.sk@example.com",
+      "phone": "9840123456",
+      "program": "Data Analytics",
+      "provider": "SkillBridge Training Services",
+      "enrollment_date": "2026-01-05",
+      "completion_date": "2026-03-06",
+      "status": "completed",
+      "id": 96,
+      "date_of_birth": null,
+      "gender": "Male",
+      "district": "Coimbatore",
       "state": "Tamil Nadu"
     }
   ],
@@ -4293,6 +4309,34 @@
       "confidence": 1.0,
       "verification_method": "institute_intake",
       "metadata_json": null
+    },
+    {
+      "id": 199,
+      "node_id": "core-T100",
+      "trainee_id": "T100",
+      "node_type": "identity",
+      "label": "Trainee Core",
+      "value": "T100",
+      "is_active": 1,
+      "valid_from": "2026-01-05",
+      "valid_until": null,
+      "confidence": 1.0,
+      "verification_method": "institute_intake",
+      "metadata_json": null
+    },
+    {
+      "id": 200,
+      "node_id": "trn-TRN-B055-T100",
+      "trainee_id": "T100",
+      "node_type": "training",
+      "label": "Training: Data Analytics",
+      "value": "TRN-B055-T100",
+      "is_active": 1,
+      "valid_from": "2026-01-05",
+      "valid_until": null,
+      "confidence": 1.0,
+      "verification_method": "institute_intake",
+      "metadata_json": null
     }
   ],
   "dsigedge": [
@@ -4651,6 +4695,19 @@
       "extracted_fields_json": "{\"document_type\": \"payslip\", \"ocr\": {\"raw_text\": \"PAYROLL SLIP\\nINGOUDE COMPANY\\n\\nEmployee Information\\n\\nEmployee Name: Morgan Maxwell ayo eared Recs ata\\nEmployee ID: 1234567890 issue Date: May tp 20z)\\nPosition: Sales Executive\\n\\nDepartment: Sales & Marketing\\n\\nBank Account: 1234567890: Fauget Bank\\n\\nSalary Breakdown ($)\\n\\nBasic Salary\\n\\n\\u2018Transportation Allow.\\n\\nMeal Allowance\\n\\nOvertime\\n\\nBonus\\n\\nDeductions:\\n\\nTax\\n\\nTotal Paid\\n\\nAuthorized by:\", \"text_clarity\": \"high\"}, \"employer\": {\"company_name\": \"PAYROLL SLIP\", \"address\": null, \"registration_or_cin\": null, \"establishment_code\": null}, \"employee\": {\"employee_name\": \"Morgan Maxwell ayo eared Recs ata\", \"employee_id\": \"1234567890\", \"designation\": \"Sales Executive\", \"uan_number\": null, \"pf_number\": null}, \"pay_period\": {\"month\": \"May\", \"year\": null, \"paid_days\": null}, \"financials\": {\"basic_pay\": null, \"hra\": null, \"conveyance\": null, \"special_allowance\": null, \"gross_earnings\": null, \"provident_fund_pf\": null, \"esi\": null, \"professional_tax\": null, \"total_deductions\": null, \"net_payable_wage\": null}, \"verification\": {\"math_consistent\": null, \"deductions_consistent\": null, \"identity_match\": false, \"identity_match_score\": 25.0, \"timeline_consistent\": null, \"employment_relevance\": false, \"anomalies\": [\"Candidate identity divergence: CONTINUUM registry has 'Priya S', payslip shows 'Morgan Maxwell ayo eared Recs ata' (Match score: 25.0%).\", \"Occupational check: Role 'Sales Executive' has limited direct correlation with enrolled program 'Web Development'.\"], \"evidence_confidence\": 45}, \"evidence_id\": \"DOC-5233E209\", \"filename\": \"1.png\", \"file_url\": \"http://127.0.0.1:8000/evidence/DOC-5233E209/file\"}",
       "document_consistency": 45.0,
       "claim_match_score": 25.0
+    },
+    {
+      "id": 9,
+      "evidence_id": "DOC-58573C82",
+      "trainee_id": "T001",
+      "event_id": null,
+      "evidence_type": "payslip",
+      "filename": "1.png",
+      "upload_date": "2026-09-10 11:03:59.743580",
+      "ocr_status": "completed",
+      "extracted_fields_json": "{\"document_type\": \"payslip\", \"ocr\": {\"raw_text\": \"PAYROLL SLIP\\nINGOUDE COMPANY\\n\\nEmployee Information\\n\\nEmployee Name: Morgan Maxwell ayo eared Recs ata\\nEmployee ID: 1234567890 issue Date: May tp 20z)\\nPosition: Sales Executive\\n\\nDepartment: Sales & Marketing\\n\\nBank Account: 1234567890: Fauget Bank\\n\\nSalary Breakdown ($)\\n\\nBasic Salary\\n\\n\\u2018Transportation Allow.\\n\\nMeal Allowance\\n\\nOvertime\\n\\nBonus\\n\\nDeductions:\\n\\nTax\\n\\nTotal Paid\\n\\nAuthorized by:\", \"text_clarity\": \"high\"}, \"employer\": {\"company_name\": \"PAYROLL SLIP\", \"address\": null, \"registration_or_cin\": null, \"establishment_code\": null, \"gstin\": null}, \"employee\": {\"employee_name\": \"Morgan Maxwell ayo eared Recs ata\", \"employee_id\": \"1234567890\", \"designation\": \"Sales Executive\", \"uan_number\": null, \"pf_number\": null}, \"pay_period\": {\"month\": \"May\", \"year\": null, \"paid_days\": null}, \"financials\": {\"basic_pay\": null, \"hra\": null, \"conveyance\": null, \"special_allowance\": null, \"gross_earnings\": null, \"provident_fund_pf\": null, \"esi\": null, \"professional_tax\": null, \"total_deductions\": null, \"net_payable_wage\": null}, \"verification\": {\"math_status\": \"unverified\", \"math_consistent\": null, \"math_message\": \"Mathematical report unverified: Required figure(s) (Gross Pay, Total Deductions, Net Pay) were not detected in document scan.\", \"deductions_status\": \"unverified\", \"deductions_consistent\": null, \"deductions_message\": \"Statutory deduction breakdown components (EPF, ESI, PT) not itemized or detected in document.\", \"identity_match\": false, \"identity_match_score\": 31.1, \"timeline_consistent\": null, \"employment_relevance\": false, \"anomalies\": [\"Financial figures unverified: Key figures (Gross Pay, Total Deductions, Net Pay) not detected in document scan.\", \"Candidate identity divergence: CONTINUUM registry has 'Rahul Sharma', payslip shows 'Morgan Maxwell ayo eared Recs ata' (Match score: 31.1%).\", \"Occupational check: Role 'Sales Executive' has limited direct correlation with enrolled program 'Data Analytics'.\"], \"evidence_confidence\": 36}, \"evidence_id\": \"DOC-58573C82\", \"filename\": \"1.png\", \"file_url\": \"http://127.0.0.1:8000/evidence/DOC-58573C82/file\"}",
+      "document_consistency": 36.0,
+      "claim_match_score": 31.1
     }
   ],
   "providerscorecard": [
@@ -6170,6 +6227,21 @@
       "training_status": "In Progress",
       "attendance_percentage": 72.0,
       "created_at": "2026-09-09 08:56:33.987501"
+    },
+    {
+      "id": 96,
+      "record_id": "TRN-B055-T100",
+      "trainee_id": "T100",
+      "course": "Data Analytics",
+      "sector": "IT-ITeS",
+      "training_provider": "SkillBridge Training Services",
+      "training_centre": "SkillBridge Coimbatore Centre",
+      "batch_id": "B055",
+      "training_start_date": "2026-01-05",
+      "training_end_date": "2026-03-06",
+      "training_status": "Completed",
+      "attendance_percentage": 94.0,
+      "created_at": "2026-09-11 06:50:31.551623"
     }
   ],
   "assessmentrecord": [
@@ -7122,6 +7194,16 @@
       "assessment_score": 69.0,
       "assessment_result": "Pending",
       "assessment_date": "2026-05-01"
+    },
+    {
+      "id": 96,
+      "assessment_id": "ASM-B055-T100",
+      "trainee_id": "T100",
+      "training_record_id": "TRN-B055-T100",
+      "course": "Data Analytics",
+      "assessment_score": 88.0,
+      "assessment_result": "Pass",
+      "assessment_date": "2026-03-06"
     }
   ],
   "certificationrecord": [
@@ -7979,6 +8061,15 @@
       "course": "Tailoring & Apparel Design",
       "certification_status": "Not Yet Certified",
       "certification_date": null
+    },
+    {
+      "id": 96,
+      "certification_id": "CRT-B055-T100",
+      "trainee_id": "T100",
+      "training_record_id": "TRN-B055-T100",
+      "course": "Data Analytics",
+      "certification_status": "Certified",
+      "certification_date": "2026-03-20"
     }
   ],
   "traineeskill": [
@@ -10641,6 +10732,34 @@
       "skill_name": "Quality Control",
       "source": "training_intake",
       "acquired_date": "2026-05-01"
+    },
+    {
+      "id": 381,
+      "trainee_id": "T100",
+      "skill_name": "Python",
+      "source": "training_intake",
+      "acquired_date": "2026-03-20"
+    },
+    {
+      "id": 382,
+      "trainee_id": "T100",
+      "skill_name": "SQL",
+      "source": "training_intake",
+      "acquired_date": "2026-03-20"
+    },
+    {
+      "id": 383,
+      "trainee_id": "T100",
+      "skill_name": "Power BI",
+      "source": "training_intake",
+      "acquired_date": "2026-03-20"
+    },
+    {
+      "id": 384,
+      "trainee_id": "T100",
+      "skill_name": "Data Visualization",
+      "source": "training_intake",
+      "acquired_date": "2026-03-20"
     }
   ],
   "importbatchlog": [
@@ -10747,6 +10866,32 @@
       "warnings_count": 0,
       "status": "completed",
       "imported_at": "2026-09-09 11:18:56.512852"
+    },
+    {
+      "id": 9,
+      "batch_id": "BATCH-DB592E75",
+      "filename": "CONTINUUM_Training_Intake_Template.csv",
+      "total_rows": 1,
+      "valid_rows": 0,
+      "imported_rows": 0,
+      "skipped_rows": 1,
+      "failed_rows": 1,
+      "warnings_count": 1,
+      "status": "completed",
+      "imported_at": "2026-09-10 10:55:35.054473"
+    },
+    {
+      "id": 10,
+      "batch_id": "BATCH-05062A91",
+      "filename": "Heeraj_SK_Training_Import.csv",
+      "total_rows": 1,
+      "valid_rows": 1,
+      "imported_rows": 1,
+      "skipped_rows": 0,
+      "failed_rows": 0,
+      "warnings_count": 0,
+      "status": "completed",
+      "imported_at": "2026-09-11 06:50:31.571153"
     }
   ],
   "communicationlog": [
@@ -11433,6 +11578,44 @@
       "sent_at": "2026-09-10 01:02:15.698438",
       "created_by": "Officer (MSDE CONTINUUM)",
       "id": 36
+    },
+    {
+      "communication_id": "COMM-A48F8C15",
+      "trainee_id": "T003",
+      "trainee_name": "Arun Prakash",
+      "phone_number": "+919000001002",
+      "channel": "sms+email",
+      "message_type": "longitudinal_outcome_survey",
+      "milestone": "6M",
+      "message_body": "Gov of India (MSDE - CONTINUUM): Hello Arun Prakash, your 6M longitudinal outcome check in Digital Marketing is due. Please confirm your employment & salary update here: http://localhost:3000/outcomes/new?trainee_id=T003&milestone=6M&source=sms",
+      "portal_link": "http://localhost:3000/outcomes/new?trainee_id=T003&milestone=6M&source=sms",
+      "status": "delivered",
+      "delivery_reference": "SIM-JIO-TEL-E9D3F14A",
+      "is_simulated": 0,
+      "response_received": 0,
+      "responded_at": null,
+      "sent_at": "2026-09-10 10:25:38.263395",
+      "created_by": "Officer (MSDE CONTINUUM)",
+      "id": 37
+    },
+    {
+      "communication_id": "COMM-85A5E2A5",
+      "trainee_id": "T004",
+      "trainee_name": "Meena R",
+      "phone_number": "+919000001003",
+      "channel": "sms+email",
+      "message_type": "longitudinal_outcome_survey",
+      "milestone": "6M",
+      "message_body": "Gov of India (MSDE - CONTINUUM): Hello Meena R, your 6M longitudinal outcome check in Electrical Technician is due. Please confirm your employment & salary update here: http://localhost:3000/outcomes/new?trainee_id=T004&milestone=6M&source=sms",
+      "portal_link": "http://localhost:3000/outcomes/new?trainee_id=T004&milestone=6M&source=sms",
+      "status": "delivered",
+      "delivery_reference": "SIM-AIRTEL-DLT-9AD02E5E",
+      "is_simulated": 0,
+      "response_received": 0,
+      "responded_at": null,
+      "sent_at": "2026-09-10 10:27:12.652858",
+      "created_by": "Officer (MSDE CONTINUUM)",
+      "id": 38
     }
   ]
 }

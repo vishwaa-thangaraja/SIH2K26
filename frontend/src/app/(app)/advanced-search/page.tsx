@@ -49,8 +49,8 @@ function AdvancedFilterSearchContent() {
   const [selectedDemographics, setSelectedDemographics] = useState<string[]>([])
   
   // Wage Filter (Slider and Quick Presets)
-  const [wageMin, setWageMin] = useState<number>(10000)
-  const [wageMax, setWageMax] = useState<number>(45000)
+  const [wageMin, setWageMin] = useState<number>(0)
+  const [wageMax, setWageMax] = useState<number>(50000)
   const [selectedWagePreset, setSelectedWagePreset] = useState<string | null>(null)
 
   // Sort State
@@ -218,8 +218,8 @@ function AdvancedFilterSearchContent() {
     setSelectedDistricts([])
     setSelectedProviders([])
     setSelectedDemographics([])
-    setWageMin(10000)
-    setWageMax(45000)
+    setWageMin(0)
+    setWageMax(50000)
     setSelectedWagePreset(null)
   }
 
@@ -234,7 +234,7 @@ function AdvancedFilterSearchContent() {
     count += selectedDistricts.length
     count += selectedProviders.length
     count += selectedDemographics.length
-    if (wageMin > 10000 || wageMax < 45000 || selectedWagePreset) count++
+    if (wageMin > 0 || wageMax < 50000 || selectedWagePreset) count++
     return count
   }, [searchTerm, selectedMilestones, selectedVerification, selectedSectors, selectedNsqf, selectedDistricts, selectedProviders, selectedDemographics, wageMin, wageMax, selectedWagePreset])
 
@@ -313,8 +313,11 @@ function AdvancedFilterSearchContent() {
         if (!matchesDemo) return false
       }
 
-      // Wage Range
-      if (item.monthly_wage < wageMin || item.monthly_wage > wageMax) {
+      // Wage Range: only filter when user has explicitly set an active wage boundary
+      if (wageMin > 0 && item.monthly_wage < wageMin) {
+        return false
+      }
+      if (wageMax < 50000 && item.monthly_wage > wageMax) {
         return false
       }
 
@@ -533,10 +536,10 @@ function AdvancedFilterSearchContent() {
             </span>
           ))}
 
-          {selectedWagePreset && (
+          {selectedWagePreset && selectedWagePreset !== 'All Wages (incl. In-Training)' && (
             <span className="inline-flex items-center gap-1 bg-emerald-50 border border-emerald-200 text-emerald-900 px-2 py-0.5 rounded-md font-medium">
               Wage: {selectedWagePreset}
-              <button onClick={() => { setWageMin(10000); setWageMax(45000); setSelectedWagePreset(null) }} className="hover:text-rose-600"><X size={12} /></button>
+              <button onClick={() => { setWageMin(0); setWageMax(50000); setSelectedWagePreset(null) }} className="hover:text-rose-600"><X size={12} /></button>
             </span>
           )}
 
@@ -641,7 +644,7 @@ function AdvancedFilterSearchContent() {
                   Monthly Wage (₹)
                 </h3>
                 <span className="text-xs font-extrabold text-blue-900 font-mono">
-                  ₹{wageMin.toLocaleString()} – ₹{wageMax.toLocaleString()}+
+                  {wageMin === 0 && wageMax >= 50000 ? 'All Ranges' : `₹${wageMin.toLocaleString()} – ₹${wageMax.toLocaleString()}+`}
                 </span>
               </div>
 
@@ -650,7 +653,7 @@ function AdvancedFilterSearchContent() {
                 <input
                   type="range"
                   min={10000}
-                  max={45000}
+                  max={50000}
                   step={2500}
                   value={wageMax}
                   onChange={(e) => {
@@ -662,25 +665,26 @@ function AdvancedFilterSearchContent() {
                 <div className="flex justify-between text-[10px] text-slate-400 font-bold">
                   <span>₹10,000</span>
                   <span>₹25,000</span>
-                  <span>₹45,000+</span>
+                  <span>₹50,000+</span>
                 </div>
               </div>
 
               {/* Quick Range Links (Amazon Style) */}
               <div className="space-y-1 text-xs text-slate-700 pt-1">
                 {[
+                  { label: 'All Trainees (incl. In-Training)', min: 0, max: 50000 },
                   { label: 'Up to ₹15,000', min: 10000, max: 15000 },
                   { label: '₹15,000 – ₹20,000', min: 15000, max: 20000 },
                   { label: '₹20,000 – ₹28,000', min: 20000, max: 28000 },
                   { label: '₹28,000 – ₹35,000', min: 28000, max: 35000 },
-                  { label: 'Over ₹35,000', min: 35000, max: 45000 },
+                  { label: 'Over ₹35,000', min: 35000, max: 50000 },
                 ].map(preset => (
                   <button
                     key={preset.label}
                     type="button"
                     onClick={() => handleWagePreset(preset.min, preset.max, preset.label)}
                     className={`w-full text-left py-1 px-2 rounded transition-colors block text-xs ${
-                      selectedWagePreset === preset.label
+                      (selectedWagePreset === preset.label || (preset.min === 0 && wageMin === 0 && wageMax >= 50000 && !selectedWagePreset))
                         ? 'font-extrabold text-blue-900 bg-blue-50'
                         : 'hover:text-blue-700'
                     }`}
@@ -860,7 +864,7 @@ function AdvancedFilterSearchContent() {
                         <div className="flex items-center gap-2 text-xs pt-0.5">
                           <span className="text-slate-500">Current Employer:</span>
                           <span className="font-bold text-slate-800">
-                            {trainee.current_employer || 'Self-Employed / Freelance'}
+                            {trainee.current_employer || 'Pending Placement / In Training'}
                           </span>
                           {trainee.current_role && (
                             <span className="text-slate-500">({trainee.current_role})</span>
@@ -885,18 +889,31 @@ function AdvancedFilterSearchContent() {
                       <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
                         Verified Monthly Wage
                       </span>
-                      <div className="text-lg font-black text-slate-900 font-mono">
-                        ₹{trainee.monthly_wage.toLocaleString()}
-                        <span className="text-xs font-normal text-slate-500"> /mo</span>
-                      </div>
-                      <div className="flex items-center justify-start sm:justify-end gap-1.5 mt-0.5">
-                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.2 rounded">
-                          +{trainee.wage_growth_pct}% Growth
-                        </span>
-                        <span className="text-[10px] text-slate-500">
-                          ({trainee.retention_months}M retained)
-                        </span>
-                      </div>
+                      {trainee.monthly_wage > 0 ? (
+                        <>
+                          <div className="text-lg font-black text-slate-900 font-mono">
+                            ₹{trainee.monthly_wage.toLocaleString()}
+                            <span className="text-xs font-normal text-slate-500"> /mo</span>
+                          </div>
+                          <div className="flex items-center justify-start sm:justify-end gap-1.5 mt-0.5">
+                            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.2 rounded">
+                              +{trainee.wage_growth_pct}% Growth
+                            </span>
+                            <span className="text-[10px] text-slate-500">
+                              ({trainee.retention_months}M retained)
+                            </span>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="text-sm font-extrabold text-amber-800 font-mono mt-0.5">
+                            ₹0 (In-Training)
+                          </div>
+                          <div className="text-[10px] text-slate-500 mt-1">
+                            Pending employment outcome
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
 
