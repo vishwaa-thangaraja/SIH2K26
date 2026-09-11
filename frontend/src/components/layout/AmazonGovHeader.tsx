@@ -112,8 +112,6 @@ export default function AmazonGovHeader() {
     { label: 'Manage Identity', href: '/identity/update', icon: Shield },
     { label: 'Identity Recovery', href: '/identity/recovery', icon: RefreshCw },
     { label: 'Outcome Ledger & Wages', href: '/outcomes', icon: ClipboardList },
-    { label: 'Claim New Outcome', href: `/outcomes/new?trainee_id=${activeTrainee?.trainee_id || 'T001'}`, icon: BookOpen },
-    { label: 'Upload Evidence', href: `/evidence/upload?trainee_id=${activeTrainee?.trainee_id || 'T001'}`, icon: Upload },
     { label: 'Employer Attestation', href: '/attestation', icon: CheckSquare },
   ]
 
@@ -162,10 +160,6 @@ export default function AmazonGovHeader() {
       category: 'Autonomous Evidence Verification & Attestation',
       items: [
         { label: 'Outcome Ledger & Wage History', href: '/outcomes', icon: FileText, desc: 'Tamper-evident log of verified employment outcomes' },
-        { label: 'Register New Outcome', href: `/outcomes/new?trainee_id=${activeTrainee?.trainee_id || 'T001'}`, icon: BookOpen, desc: 'Submit employment milestone claim' },
-        { label: 'Upload Evidence Document', href: `/evidence/upload?trainee_id=${activeTrainee?.trainee_id || 'T001'}`, icon: Upload, desc: 'Submit salary slips, bank credit SMS or offer letters' },
-        { label: 'Autonomous Payslip OCR Engine', href: '/evidence/DOC-096BF585/extraction', icon: FileSearch, desc: 'Tesseract OCR with Gross - Deductions == Net equation check', badge: 'Tesseract' },
-        { label: 'Evidence vs Claim Comparison', href: '/evidence/DOC-096BF585/comparison', icon: BadgeCheck, desc: 'Automated side-by-side claim & document verification' },
         { label: 'Employer HR Attestation', href: '/attestation', icon: CheckSquare, desc: 'One-tap digital outcome confirmation portal for employers' },
       ],
     },
@@ -228,31 +222,31 @@ export default function AmazonGovHeader() {
             </Link>
           </div>
 
-          {/* Center Search Bar */}
-          <div className="flex-1 max-w-xl hidden md:block">
-            <form onSubmit={handleSearchSubmit} className="relative flex items-center">
-              <div className="relative w-full flex items-center">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder={
-                    isGovernmentOfficial
-                      ? 'Search by Trainee ID (e.g. T001) or Location (e.g. Madurai)...'
-                      : 'Search your verified outcomes or employer records...'
-                  }
-                  className="w-full bg-slate-900/90 text-white placeholder-slate-400 text-xs px-4 py-2.5 pl-10 pr-24 rounded-xl border border-slate-700/80 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition-all shadow-inner"
-                />
-                <Search size={15} className="absolute left-3.5 text-slate-400" />
-                <button
-                  type="submit"
-                  className="absolute right-1.5 bg-sky-700 hover:bg-sky-600 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition-colors shadow-xs"
-                >
-                  Search
-                </button>
-              </div>
-            </form>
-          </div>
+          {/* Center Search Bar (Government Official / Admin Only) */}
+          {isGovernmentOfficial ? (
+            <div className="flex-1 max-w-xl hidden md:block">
+              <form onSubmit={handleSearchSubmit} className="relative flex items-center">
+                <div className="relative w-full flex items-center">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search by Trainee ID (e.g. T001) or Location (e.g. Madurai)..."
+                    className="w-full bg-slate-900/90 text-white placeholder-slate-400 text-xs px-4 py-2.5 pl-10 pr-24 rounded-xl border border-slate-700/80 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition-all shadow-inner"
+                  />
+                  <Search size={15} className="absolute left-3.5 text-slate-400" />
+                  <button
+                    type="submit"
+                    className="absolute right-1.5 bg-sky-700 hover:bg-sky-600 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition-colors shadow-xs"
+                  >
+                    Search
+                  </button>
+                </div>
+              </form>
+            </div>
+          ) : (
+            <div className="flex-1" />
+          )}
 
           {/* Right Header Controls */}
           <div className="flex items-center gap-3 shrink-0">

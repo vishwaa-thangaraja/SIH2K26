@@ -16,42 +16,36 @@ export default function OutcomeLedgerPage() {
   const [filter, setFilter] = useState<'all' | 'verified' | 'pending'>('all')
   const [selectedEvent, setSelectedEvent] = useState<OutcomeEvent | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
-  const [commStats, setCommStats] = useState<{
-    total_sent: number
-    total_delivered: number
-    total_responded: number
-    response_rate_percent: number
-    unverified_candidates: number
-  } | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  const traineeId = activeTrainee?.trainee_id || 'T002'
 
   useEffect(() => {
-    // Fetch live outcomes from SQLite database
-    fetch('http://127.0.0.1:8000/outcomes')
+    setLoading(true)
+    // Fetch live outcomes strictly for the active trainee from SQLite database
+    fetch(`http://127.0.0.1:8000/outcomes?trainee_id=${traineeId}`)
       .then(res => res.ok ? res.json() : null)
       .then(data => {
-        if (data && data.events && data.events.length > 0) {
+        if (data && Array.isArray(data.events)) {
           setOutcomes(data.events)
-          setSelectedEvent(data.events[0])
+          if (data.events.length > 0) {
+            setSelectedEvent(data.events[0])
+          } else {
+            setSelectedEvent(null)
+          }
+        } else {
+          setOutcomes([])
+          setSelectedEvent(null)
         }
       })
-      .catch(() => {})
-
-    // Fetch live communications outreach stats
-    fetch('http://127.0.0.1:8000/communications/summary')
-      .then(res => res.ok ? res.json() : null)
-      .then(data => {
-        if (data) {
-          setCommStats({
-            total_sent: data.total_sent || 0,
-            total_delivered: data.total_delivered || 0,
-            total_responded: data.total_responded || 0,
-            response_rate_percent: data.response_rate_percent || 0,
-            unverified_candidates: data.unverified_trainees_count || 0
-          })
-        }
+      .catch(() => {
+        setOutcomes([])
+        setSelectedEvent(null)
       })
-      .catch(() => {})
-  }, [])
+      .finally(() => {
+        setLoading(false)
+      })
+  }, [traineeId])
 
   const filteredOutcomes = outcomes.filter((ev) => {
     if (filter === 'verified' && ev.verification_status !== 'verified') return false
@@ -74,7 +68,7 @@ export default function OutcomeLedgerPage() {
           <div className="flex items-center gap-2 text-xs font-bold text-sky-700 uppercase tracking-wider mb-1">
             <span>Outcome Provenance Ledger</span>
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-            <span>Trainee {activeTrainee?.trainee_id || 'T001'} ({activeTrainee?.name || 'Candidate'})</span>
+            <span>Trainee {activeTrainee?.trainee_id || 'T002'} ({activeTrainee?.name || 'Candidate'})</span>
           </div>
           <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
             Verified Livelihood Event Ledger
@@ -85,58 +79,13 @@ export default function OutcomeLedgerPage() {
         </div>
 
         <Link
-          href={`/outcomes/new?trainee_id=${activeTrainee?.trainee_id || 'T001'}`}
+          href={`/outcomes/new?trainee_id=${activeTrainee?.trainee_id || 'T002'}`}
           className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors"
         >
           <Plus size={16} />
           Register New Outcome Event
         </Link>
       </div>
-
-      {/* Longitudinal Outreach Activity Banner */}
-      {commStats && (
-        <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 text-white rounded-xl p-5 shadow-sm border border-blue-900/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1 bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full">
-                <Zap size={10} className="fill-amber-300" /> Longitudinal Follow-Up Engine
-              </span>
-              <span className="text-xs text-blue-200">
-                Unverified Due: <strong className="text-white">{commStats.unverified_candidates} candidates</strong>
-              </span>
-            </div>
-            <h2 className="text-base font-extrabold text-white flex items-center gap-2">
-              Autonomous Periodic Outreach & Outcome Verification Activity
-            </h2>
-            <div className="flex flex-wrap items-center gap-3 pt-1 text-xs text-blue-200 font-medium">
-              <span>Total Dispatched: <strong className="text-white font-bold">{commStats.total_sent}</strong></span>
-              <span>•</span>
-              <span>Delivered: <strong className="text-emerald-400 font-bold">{commStats.total_delivered}</strong></span>
-              <span>•</span>
-              <span>Candidate Responses: <strong className="text-sky-300 font-bold">{commStats.total_responded}</strong></span>
-              <span>•</span>
-              <span>Response Rate: <strong className="text-amber-300 font-bold">{commStats.response_rate_percent}%</strong></span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 shrink-0">
-            <Link
-              href="/trainees/T001/timeline"
-              className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-3.5 py-2 rounded-lg shadow-sm transition-colors"
-            >
-              <MessageSquare size={13} />
-              <span>Trainee Outreach</span>
-            </Link>
-            <Link
-              href="/advanced-search"
-              className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs px-3.5 py-2 rounded-lg shadow-sm transition-all"
-            >
-              <Zap size={13} className="fill-slate-950" />
-              <span>1-Click Broadcast</span>
-            </Link>
-          </div>
-        </div>
-      )}
 
       {/* Filter Tabs & Search Bar */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
@@ -171,6 +120,8 @@ export default function OutcomeLedgerPage() {
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search employer or role..."
             className="w-full pl-9 pr-3 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
           />
@@ -195,43 +146,60 @@ export default function OutcomeLedgerPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filteredOutcomes.map((ev) => {
-                  const isSelected = selectedEvent ? selectedEvent.event_id === ev.event_id : false
+                {filteredOutcomes.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="p-8 text-center text-slate-500">
+                      <div className="space-y-2">
+                        <p className="font-semibold text-slate-700">No outcome records found for {activeTrainee?.name || 'Candidate'} ({traineeId})</p>
+                        <p className="text-[11px] text-slate-500">Register your first verified employment outcome or milestone progression.</p>
+                        <Link
+                          href={`/outcomes/new?trainee_id=${traineeId}`}
+                          className="inline-flex items-center gap-1.5 bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded-lg mt-2 shadow-xs hover:bg-slate-800"
+                        >
+                          <Plus size={13} /> Register New Outcome
+                        </Link>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredOutcomes.map((ev) => {
+                    const isSelected = selectedEvent ? selectedEvent.event_id === ev.event_id : false
 
-                  return (
-                    <tr
-                      key={ev.event_id}
-                      onClick={() => setSelectedEvent(ev)}
-                      className={`cursor-pointer transition-colors ${
-                        isSelected ? 'bg-sky-50/70 font-medium' : 'hover:bg-slate-50'
-                      }`}
-                    >
-                      <td className="p-3.5 font-mono text-slate-900 font-bold">{ev.event_id}</td>
-                      <td className="p-3.5">
-                        <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-[11px] font-bold">
-                          {ev.milestone}
-                        </span>
-                      </td>
-                      <td className="p-3.5 font-semibold text-slate-900">{ev.employer_name || '—'}</td>
-                      <td className="p-3.5 text-slate-700">{ev.role || '—'}</td>
-                      <td className="p-3.5 font-bold text-slate-900">
-                        {ev.wage_monthly ? `₹${ev.wage_monthly.toLocaleString()}` : '—'}
-                      </td>
-                      <td className="p-3.5">
-                        <span className="font-bold text-slate-800">{Math.round(ev.confidence_score * 100)}%</span>
-                      </td>
-                      <td className="p-3.5">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                          ev.verification_status === 'verified' 
-                            ? 'bg-emerald-100 text-emerald-800' 
-                            : 'bg-amber-100 text-amber-800'
-                        }`}>
-                          {ev.verification_status}
-                        </span>
-                      </td>
-                    </tr>
-                  )
-                })}
+                    return (
+                      <tr
+                        key={ev.event_id}
+                        onClick={() => setSelectedEvent(ev)}
+                        className={`cursor-pointer transition-colors ${
+                          isSelected ? 'bg-sky-50/70 font-medium' : 'hover:bg-slate-50'
+                        }`}
+                      >
+                        <td className="p-3.5 font-mono text-slate-900 font-bold">{ev.event_id}</td>
+                        <td className="p-3.5">
+                          <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-[11px] font-bold">
+                            {ev.milestone}
+                          </span>
+                        </td>
+                        <td className="p-3.5 font-semibold text-slate-900">{ev.employer_name || '—'}</td>
+                        <td className="p-3.5 text-slate-700">{ev.role || '—'}</td>
+                        <td className="p-3.5 font-bold text-slate-900">
+                          {ev.wage_monthly ? `₹${ev.wage_monthly.toLocaleString()}` : '—'}
+                        </td>
+                        <td className="p-3.5">
+                          <span className="font-bold text-slate-800">{Math.round(ev.confidence_score * 100)}%</span>
+                        </td>
+                        <td className="p-3.5">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                            ev.verification_status === 'verified' 
+                              ? 'bg-emerald-100 text-emerald-800' 
+                              : 'bg-amber-100 text-amber-800'
+                          }`}>
+                            {ev.verification_status}
+                          </span>
+                        </td>
+                      </tr>
+                    )
+                  })
+                )}
               </tbody>
             </table>
           </div>

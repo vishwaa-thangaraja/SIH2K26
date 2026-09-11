@@ -1,16 +1,65 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
+import { useRole } from '@/contexts/RoleContext'
 import AmazonGovHeader from '@/components/layout/AmazonGovHeader'
+
+const OFFICIAL_ONLY_ROUTES = [
+  '/intelligence',
+  '/advanced-search',
+  '/scorecards',
+  '/regional-analytics',
+  '/intake/import',
+]
 
 export default function AppLayoutWrapper({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const pathname = usePathname()
+  const router = useRouter()
+  const { role, activeTrainee } = useRole()
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    // ── Security & Privacy Isolation for Trainee Role ──
+    if (role === 'trainee') {
+      // 1. Restrict official-only administrative routes
+      if (OFFICIAL_ONLY_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))) {
+        router.replace('/dashboard')
+        return
+      }
+
+      const effectiveId = (
+        activeTrainee?.trainee_id || 
+        localStorage.getItem('continuum_active_trainee_id') || 
+        'T002'
+      ).toUpperCase()
+
+      // 2. Trainees cannot access administrative audit timeline (/trainees/[id]/timeline)
+      if (pathname.includes('/timeline')) {
+        router.replace(`/trainees/${effectiveId}`)
+        return
+      }
+
+      // 3. Restrict foreign trainee profile inspection (/trainees/[other_id])
+      const match = pathname.match(/\/trainees\/(T\d+)/i)
+      if (match && match[1]) {
+        const requestedId = match[1].toUpperCase()
+        if (requestedId !== effectiveId) {
+          router.replace(`/trainees/${effectiveId}`)
+          return
+        }
+      }
+    }
+  }, [role, pathname, activeTrainee?.trainee_id, router])
+
   return (
     <div className="flex flex-col min-h-screen bg-slate-100 font-sans">
-      {/* Top Navigation Header for Both Roles */}
+      {/* Top Navigation Header */}
       <AmazonGovHeader />
       
       {/* Main Content Canvas */}
@@ -20,4 +69,3 @@ export default function AppLayoutWrapper({
     </div>
   )
 }
-

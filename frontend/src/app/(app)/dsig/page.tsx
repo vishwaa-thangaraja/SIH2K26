@@ -19,17 +19,18 @@ function DSIGContent() {
   const initialParamId = searchParams.get('trainee_id')
   const { role, activeTrainee } = useRole()
   const [trainees, setTrainees] = useState<TraineeOption[]>([])
+  const effectiveId = activeTrainee?.trainee_id || 'T002'
   const [selectedTraineeId, setSelectedTraineeId] = useState<string>(
-    initialParamId || (role === 'trainee' ? activeTrainee.trainee_id : 'T002')
+    role === 'trainee' ? effectiveId : (initialParamId || 'T002')
   )
 
   useEffect(() => {
-    if (initialParamId) {
+    if (role === 'trainee') {
+      setSelectedTraineeId(effectiveId)
+    } else if (initialParamId) {
       setSelectedTraineeId(initialParamId)
-    } else if (role === 'trainee' && activeTrainee.trainee_id) {
-      setSelectedTraineeId(activeTrainee.trainee_id)
     }
-  }, [initialParamId, role, activeTrainee.trainee_id])
+  }, [initialParamId, role, effectiveId])
 
   useEffect(() => {
     fetch('http://127.0.0.1:8000/trainees?limit=100')
