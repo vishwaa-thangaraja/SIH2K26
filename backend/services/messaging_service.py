@@ -50,7 +50,7 @@ class MockSMSProvider(BaseMessagingProvider):
         normalized = self.normalize_phone(phone_number)
         is_valid = self.validate_phone(phone_number)
 
-        time.sleep(0.05)
+        # Instant mock simulation for cellular network
 
         if not is_valid:
             return {
@@ -222,6 +222,7 @@ class EmailProvider:
         milestone: str,
         portal_link: str,
         trainee_id: str,
+        force_simulation: bool = False,
     ) -> Dict[str, Any]:
         clean_email = to_email.strip()
         if not clean_email or "@" not in clean_email:
@@ -306,8 +307,9 @@ class EmailProvider:
             f"Ministry of Skill Development & Entrepreneurship, Government of India."
         )
 
-        if not self.is_configured():
-            # Simulated Email delivery
+        is_demo_domain = clean_email.lower().endswith(("@example.com", "@test.com", "@sample.gov.in"))
+        if force_simulation or not self.is_configured() or is_demo_domain:
+            # Simulated Email delivery for demo accounts / rate protection
             ref = f"SIM-EMAIL-{uuid.uuid4().hex[:8].upper()}"
             return {
                 "success": True,

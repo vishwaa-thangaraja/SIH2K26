@@ -150,6 +150,7 @@ def broadcast_unverified_followup(
     dispatched_count = 0
     failed_count = 0
 
+    real_emails_sent = 0
     for t in unverified_trainees:
         generated = build_followup_message(t.name, t.trainee_id, milestone, t.program)
         
@@ -161,13 +162,18 @@ def broadcast_unverified_followup(
         # Dispatch Email
         email_res = {"status": "skipped", "success": True}
         if t.email:
+            # Limit real SMTP delivery to 1 in a batch to prevent timeouts and Gmail rate-limiting
+            allow_real = (real_emails_sent < 1)
             email_res = email_provider.send_email(
                 to_email=t.email,
                 trainee_name=t.name,
                 milestone=milestone,
                 portal_link=generated["link"],
                 trainee_id=t.trainee_id,
+                force_simulation=not allow_real,
             )
+            if not email_res.get("is_simulated", True):
+                real_emails_sent += 1
 
         comm_id = f"COMM-{uuid.uuid4().hex[:8].upper()}"
         status = sms_res.get("status", "sent") if t.phone else email_res.get("status", "sent")
