@@ -4,7 +4,7 @@ from database import get_db
 from models.provider import ProviderScorecard, RegionalSkillGap
 from models.trainee import Trainee
 from models.training_intake import TrainingRecord, AssessmentRecord, CertificationRecord, TraineeSkill
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import json
 
 router = APIRouter()
