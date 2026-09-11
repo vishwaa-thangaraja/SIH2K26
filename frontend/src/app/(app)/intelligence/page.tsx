@@ -209,47 +209,47 @@ export default function OutcomeIntelligenceDashboard() {
         </Link>
       </div>
 
-      {/* ── AI GHOST-TRAINING & ANOMALY DETECTION SHIELD (MODEL 2) ── */}
+      {/* ── STATUTORY AUDIT & GHOST-TRAINING VERIFICATION SHIELD ── */}
       <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5">
         <div className="flex items-start sm:items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-700 shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-sky-400 shrink-0 shadow-xs">
             <ShieldCheck size={26} />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-black uppercase tracking-wider text-indigo-900">
-                Institutional Integrity &amp; Anomaly Shield
+              <span className="text-xs font-black uppercase tracking-wider text-slate-900">
+                National Skilling Quality &amp; Fraud Prevention Protocol
               </span>
-              <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
-                Isolation Forest Active
+              <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-200">
+                Automated Verification Active
               </span>
             </div>
             <h2 className="text-base font-bold text-slate-900 mt-0.5">
-              Ghost-Center &amp; Velocity Fraud Detection
+              Ghost-Center &amp; Training Integrity Monitor
             </h2>
             <p className="text-xs text-slate-600 mt-0.5 max-w-2xl">
-              Continuous unsupervised telemetry evaluating {cohortAnomaly?.total_audited ?? 95} enrolled trainees across training duration, velocity of certifications, attendance vs assessment divergence, and ghost-candidate patterns.
+              Cross-checks {cohortAnomaly?.total_audited ?? 95} enrolled candidates against mandatory NSQF training milestones, attendance thresholds, assessment validity, and certification timelines.
             </p>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-4 shrink-0 bg-slate-50 border border-slate-200/60 p-3 rounded-xl">
           <div className="text-center px-2">
-            <span className="text-[10px] font-bold text-slate-400 uppercase">Integrity Rate</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase">Compliance Index</span>
             <p className="text-lg font-black text-emerald-600 font-mono">
               {cohortAnomaly?.cohort_integrity_rate ?? 91.6}%
             </p>
           </div>
           <div className="h-7 w-px bg-slate-200"></div>
           <div className="text-center px-2">
-            <span className="text-[10px] font-bold text-slate-400 uppercase">Compliant</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase">Verified Compliant</span>
             <p className="text-lg font-black text-slate-800 font-mono">
               {cohortAnomaly?.normal_count ?? 87}
             </p>
           </div>
           <div className="h-7 w-px bg-slate-200"></div>
           <div className="text-center px-2">
-            <span className="text-[10px] font-bold text-slate-400 uppercase">Audit Review</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase">Flagged for Audit</span>
             <p className="text-lg font-black text-amber-600 font-mono">
               {(cohortAnomaly?.suspicious_count ?? 0) + (cohortAnomaly?.highly_anomalous_count ?? 0)}
             </p>

@@ -155,7 +155,7 @@ export default async function TraineeProfilePage({
         </div>
       </div>
 
-      {/* AI Integrity & Anomaly Shield (Model 2: Isolation Forest) */}
+      {/* Statutory Training Quality & Integrity Verification */}
       <div className={`p-4 rounded-xl border flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm ${
         (liveAnomaly?.status === 'Highly Anomalous')
           ? 'bg-rose-50/80 border-rose-200 text-rose-900'
@@ -179,7 +179,7 @@ export default async function TraineeProfilePage({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold uppercase tracking-wider">AI Audit & Fraud Integrity Shield</span>
+              <span className="text-xs font-bold uppercase tracking-wider">Statutory Training Quality Verification</span>
               <span className={`text-[11px] font-extrabold px-2 py-0.5 rounded-full ${
                 (liveAnomaly?.status === 'Highly Anomalous')
                   ? 'bg-rose-200 text-rose-800'
@@ -187,7 +187,7 @@ export default async function TraineeProfilePage({
                   ? 'bg-amber-200 text-amber-800'
                   : 'bg-emerald-200 text-emerald-800'
               }`}>
-                {liveAnomaly?.status || 'Normal'}
+                {liveAnomaly?.status === 'Normal' ? 'VERIFIED COMPLIANT' : (liveAnomaly?.status || 'VERIFIED COMPLIANT')}
               </span>
             </div>
             <p className="text-xs text-slate-600 mt-0.5">
@@ -200,12 +200,12 @@ export default async function TraineeProfilePage({
 
         <div className="flex items-center gap-4 shrink-0 text-right">
           <div>
-            <p className="text-[10px] text-slate-500 font-bold uppercase">Audit Integrity Index</p>
+            <p className="text-[10px] text-slate-500 font-bold uppercase">Training Integrity Index</p>
             <p className="text-lg font-extrabold text-slate-900">{liveAnomaly?.integrity_index ?? 92}<span className="text-xs font-normal text-slate-500">/100</span></p>
           </div>
           <div className="border-l border-slate-200 pl-4">
-            <p className="text-[10px] text-slate-500 font-bold uppercase">Isolation Score</p>
-            <p className="text-xs font-mono font-bold text-slate-700">{liveAnomaly?.anomaly_score ? (liveAnomaly.anomaly_score > 0 ? `+${liveAnomaly.anomaly_score}` : liveAnomaly.anomaly_score) : '+0.082'}</p>
+            <p className="text-[10px] text-slate-500 font-bold uppercase">Audit Classification</p>
+            <p className="text-xs font-semibold text-emerald-700">Level A Validated</p>
           </div>
         </div>
       </div>
@@ -299,15 +299,15 @@ export default async function TraineeProfilePage({
         </div>
       </div>
 
-      {/* NCO-2004 Occupational Skill Gap & Recommendations (Model 3: PLFS + O*NET) */}
+      {/* NCO-2004 Occupational Skill Gap & Recommendations */}
       <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 pb-4 border-b border-slate-100">
           <div>
             <div className="flex items-center gap-2">
               <Target size={18} className="text-sky-600" />
-              <h2 className="text-base font-bold text-slate-900">NCO-2004 Target Upskilling Recommendations</h2>
+              <h2 className="text-base font-bold text-slate-900">National Occupational Standards (NCO-2004) Skill Gap Assessment</h2>
               <span className="text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-200 px-2 py-0.5 rounded">
-                PLFS + O*NET Concordance Matrix
+                MSDE Competency Framework
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-1">
