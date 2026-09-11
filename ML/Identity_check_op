@@ -1,0 +1,892 @@
+import os
+import recordlinkage
+import pandas as pd
+from recordlinkage.datasets import load_febrl1
+
+from recordlinkage import Compare
+
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score
+)
+
+
+# ============================================================
+# SETTINGS
+# ============================================================
+
+SAMPLE_SIZE = 100
+
+MATCH_THRESHOLD = 0.90
+
+DATABASE_FILE = "continuum_users.csv"
+
+
+# ============================================================
+# 1. LOAD FEBRL1
+# ============================================================
+
+print("=" * 60)
+print("LOADING FEBRL1")
+print("=" * 60)
+
+df, links = load_febrl1(
+    return_links=True
+)
+
+# Use only a small portion
+df = df.head(
+    SAMPLE_SIZE
+).copy()
+
+print("\nRecords used:", len(df))
+
+print(
+    "Number of fields:",
+    len(df.columns)
+)
+
+print(
+    "Fields:",
+    list(df.columns)
+)
+
+
+# ============================================================
+# 2. CONVERT ALL DATA TO STRINGS
+# ============================================================
+
+# IMPORTANT:
+# Recordlinkage string comparison requires strings.
+#
+# We convert EVERY column to string.
+# This fixes problems with:
+# street_number
+# postcode
+# date_of_birth
+# soc_sec_id
+# etc.
+
+for column in df.columns:
+
+    df[column] = (
+        df[column]
+        .fillna("")
+        .astype(str)
+        .str.lower()
+        .str.strip()
+    )
+
+
+# ============================================================
+# 3. CREATE RECORD PAIRS
+# ============================================================
+
+print("\nCreating record pairs...")
+
+indexer = recordlinkage.Index()
+
+indexer.full()
+
+candidate_pairs = indexer.index(
+    df
+)
+
+print(
+    "Candidate pairs:",
+    len(candidate_pairs)
+)
+
+
+# ============================================================
+# 4. CREATE COMPARISON MODEL
+# ============================================================
+
+print("\nCalculating similarity features...")
+
+compare = Compare()
+
+
+compare.string(
+    "given_name",
+    "given_name",
+    method="jarowinkler",
+    label="given_name_similarity"
+)
+
+compare.string(
+    "surname",
+    "surname",
+    method="jarowinkler",
+    label="surname_similarity"
+)
+
+compare.string(
+    "address_1",
+    "address_1",
+    method="jarowinkler",
+    label="address_similarity"
+)
+
+compare.string(
+    "suburb",
+    "suburb",
+    method="jarowinkler",
+    label="suburb_similarity"
+)
+
+compare.string(
+    "postcode",
+    "postcode",
+    method="jarowinkler",
+    label="postcode_similarity"
+)
+
+compare.string(
+    "state",
+    "state",
+    method="jarowinkler",
+    label="state_similarity"
+)
+
+compare.exact(
+    "date_of_birth",
+    "date_of_birth",
+    label="dob_similarity"
+)
+
+compare.exact(
+    "soc_sec_id",
+    "soc_sec_id",
+    label="soc_sec_similarity"
+)
+
+
+features = compare.compute(
+    candidate_pairs,
+    df
+)
+
+
+# ============================================================
+# 5. CREATE MATCH LABELS
+# ============================================================
+
+def normalize_pairs(pairs):
+
+    return set(
+        tuple(sorted(pair))
+        for pair in pairs
+    )
+
+
+true_links = normalize_pairs(
+    links
+)
+
+
+features["match"] = [
+
+    1
+    if tuple(sorted(pair)) in true_links
+    else 0
+
+    for pair in features.index
+]
+
+
+# ============================================================
+# 6. TRAIN MODEL
+# ============================================================
+
+X = features.drop(
+    columns=["match"]
+)
+
+y = features["match"]
+
+
+X_train, X_test, y_train, y_test = train_test_split(
+
+    X,
+    y,
+
+    test_size=0.20,
+
+    random_state=42,
+
+    stratify=y
+)
+
+
+print("\nTraining Random Forest...")
+
+
+model = RandomForestClassifier(
+
+    n_estimators=100,
+
+    random_state=42,
+
+    class_weight="balanced"
+)
+
+
+model.fit(
+    X_train,
+    y_train
+)
+
+
+# ============================================================
+# 7. MODEL EVALUATION
+# ============================================================
+
+y_pred = model.predict(
+    X_test
+)
+
+
+accuracy = accuracy_score(
+    y_test,
+    y_pred
+)
+
+precision = precision_score(
+    y_test,
+    y_pred,
+    zero_division=0
+)
+
+recall = recall_score(
+    y_test,
+    y_pred,
+    zero_division=0
+)
+
+f1 = f1_score(
+    y_test,
+    y_pred,
+    zero_division=0
+)
+
+
+print("\n")
+print("=" * 60)
+print("MODEL RESULTS")
+print("=" * 60)
+
+print(
+    "Accuracy :",
+    round(accuracy, 4)
+)
+
+print(
+    "Precision:",
+    round(precision, 4)
+)
+
+print(
+    "Recall   :",
+    round(recall, 4)
+)
+
+print(
+    "F1 Score :",
+    round(f1, 4)
+)
+
+
+# ============================================================
+# 8. LOAD / CREATE CONTINUUM DATABASE
+# ============================================================
+
+print("\n")
+print("=" * 60)
+print("CONTINUUM DATABASE")
+print("=" * 60)
+
+
+if not os.path.exists(
+    DATABASE_FILE
+):
+
+    continuum_users = df.copy()
+
+
+    continuum_users.insert(
+        0,
+        "trainee_id",
+
+        [
+            f"T{i+1:03d}"
+            for i in range(
+                len(continuum_users)
+            )
+        ]
+    )
+
+
+    continuum_users.to_csv(
+        DATABASE_FILE,
+        index=False
+    )
+
+
+    print(
+        "Created:",
+        DATABASE_FILE
+    )
+
+
+else:
+
+    continuum_users = pd.read_csv(
+        DATABASE_FILE,
+        dtype=str
+    )
+
+
+    print(
+        "Loaded:",
+        DATABASE_FILE
+    )
+
+
+# ============================================================
+# 9. MAKE SURE DATABASE DATA IS STRING
+# ============================================================
+
+for column in df.columns:
+
+    continuum_users[column] = (
+        continuum_users[column]
+        .fillna("")
+        .astype(str)
+        .str.lower()
+        .str.strip()
+    )
+
+
+print(
+    "Current users:",
+    len(continuum_users)
+)
+
+
+# ============================================================
+# 10. ADD NEW USER
+# ============================================================
+
+def add_new_user():
+
+    global continuum_users
+
+
+    print("\n")
+    print("=" * 60)
+    print("NEW USER")
+    print("=" * 60)
+
+
+    new_user = {}
+
+
+    # --------------------------------------------------------
+    # ENTER INFORMATION
+    # --------------------------------------------------------
+
+    for column in df.columns:
+
+        value = input(
+            f"{column} : "
+        )
+
+        new_user[column] = (
+            value
+            .lower()
+            .strip()
+        )
+
+
+    # ========================================================
+    # PREPARE EXISTING DATA
+    # ========================================================
+
+    existing_data = (
+        continuum_users[
+            df.columns
+        ]
+        .copy()
+    )
+
+
+    # Make absolutely sure everything is string
+
+    for column in existing_data.columns:
+
+        existing_data[column] = (
+            existing_data[column]
+            .fillna("")
+            .astype(str)
+        )
+
+
+    # ========================================================
+    # CREATE NEW USER RECORD
+    # ========================================================
+
+    new_id = "new_user"
+
+
+    new_record = pd.DataFrame(
+        [new_user],
+        index=[new_id]
+    )
+
+
+    # Make sure new record is string
+
+    for column in new_record.columns:
+
+        new_record[column] = (
+            new_record[column]
+            .fillna("")
+            .astype(str)
+        )
+
+
+    # ========================================================
+    # TEMPORARY DATAFRAME
+    # ========================================================
+
+    temp_df = pd.concat(
+        [
+            existing_data,
+            new_record
+        ]
+    )
+
+
+    # ========================================================
+    # CREATE PAIRS
+    # ========================================================
+
+    new_pairs = []
+
+
+    for existing_index in existing_data.index:
+
+        new_pairs.append(
+            (
+                new_id,
+                existing_index
+            )
+        )
+
+
+    new_pairs = pd.MultiIndex.from_tuples(
+        new_pairs
+    )
+
+
+    # ========================================================
+    # CALCULATE SIMILARITY
+    # ========================================================
+
+    new_features = compare.compute(
+        new_pairs,
+        temp_df
+    )
+
+
+    # ========================================================
+    # PREDICT PROBABILITIES
+    # ========================================================
+
+    probabilities = model.predict_proba(
+        new_features
+    )[:, 1]
+
+
+    # ========================================================
+    # RESULTS
+    # ========================================================
+
+    results = pd.DataFrame({
+
+        "database_index":
+        existing_data.index,
+
+        "similarity":
+        probabilities
+
+    })
+
+
+    results = results.sort_values(
+        by="similarity",
+        ascending=False
+    )
+
+
+    # ========================================================
+    # SHOW TOP 5
+    # ========================================================
+
+    print("\n")
+    print("=" * 60)
+    print("TOP SIMILAR USERS")
+    print("=" * 60)
+
+
+    for _, row in results.head(5).iterrows():
+
+        index = row[
+            "database_index"
+        ]
+
+        score = (
+            row["similarity"]
+            * 100
+        )
+
+
+        trainee_id = (
+            continuum_users
+            .loc[index, "trainee_id"]
+        )
+
+
+        print(
+            trainee_id,
+            "->",
+            round(score, 2),
+            "%"
+        )
+
+
+    # ========================================================
+    # BEST MATCH
+    # ========================================================
+
+    best = results.iloc[0]
+
+
+    best_index = (
+        best["database_index"]
+    )
+
+
+    best_score = (
+        best["similarity"]
+    )
+
+
+    best_trainee_id = (
+        continuum_users
+        .loc[
+            best_index,
+            "trainee_id"
+        ]
+    )
+
+
+    # ========================================================
+    # THRESHOLD CHECK
+    # ========================================================
+
+    if best_score >= MATCH_THRESHOLD:
+
+
+        print("\n")
+        print("=" * 60)
+        print("POSSIBLE EXISTING USER")
+        print("=" * 60)
+
+
+        print(
+            "Existing Trainee ID:",
+            best_trainee_id
+        )
+
+
+        print(
+            "Match Score:",
+            round(
+                best_score * 100,
+                2
+            ),
+            "%"
+        )
+
+
+        print(
+            "\nAre these the same person?"
+        )
+
+
+        answer = input(
+            "Enter Y for YES or N for NO: "
+        )
+
+
+        # ====================================================
+        # YES
+        # ====================================================
+
+        if answer.lower() == "y":
+
+
+            print("\nUpdating user...")
+
+
+            trainee_id = (
+                continuum_users
+                .loc[
+                    best_index,
+                    "trainee_id"
+                ]
+            )
+
+
+            # Update existing information
+
+            for column in df.columns:
+
+                continuum_users.loc[
+                    best_index,
+                    column
+                ] = new_user[column]
+
+
+            # Save
+
+            continuum_users.to_csv(
+                DATABASE_FILE,
+                index=False
+            )
+
+
+            print("\n")
+            print("=" * 60)
+            print("USER UPDATED")
+            print("=" * 60)
+
+
+            print(
+                "Trainee ID:",
+                trainee_id
+            )
+
+
+            print(
+                "Match Score:",
+                round(
+                    best_score * 100,
+                    2
+                ),
+                "%"
+            )
+
+
+        # ====================================================
+        # NO
+        # ====================================================
+
+        else:
+
+
+            print("\n")
+            print("=" * 60)
+            print("MATCH REJECTED")
+            print("=" * 60)
+
+
+            print(
+                "Existing user was not modified."
+            )
+
+
+            print(
+                "New user was ignored."
+            )
+
+
+    # ========================================================
+    # NO MATCH
+    # ========================================================
+
+    else:
+
+
+        print("\n")
+        print("=" * 60)
+        print("NO MATCH FOUND")
+        print("=" * 60)
+
+
+        print(
+            "Highest score:",
+            round(
+                best_score * 100,
+                2
+            ),
+            "%"
+        )
+
+
+        print(
+            "Required threshold:",
+            MATCH_THRESHOLD * 100,
+            "%"
+        )
+
+
+        # ----------------------------------------------------
+        # CREATE NEW TRAINEE ID
+        # ----------------------------------------------------
+
+        new_number = (
+            len(continuum_users)
+            + 1
+        )
+
+
+        new_trainee_id = (
+            f"T{new_number:03d}"
+        )
+
+
+        new_row = {
+            "trainee_id":
+            new_trainee_id
+        }
+
+
+        for column in df.columns:
+
+            new_row[column] = (
+                new_user[column]
+            )
+
+
+        # ----------------------------------------------------
+        # ADD TO DATABASE
+        # ----------------------------------------------------
+
+        continuum_users = pd.concat(
+
+            [
+                continuum_users,
+
+                pd.DataFrame(
+                    [new_row]
+                )
+            ],
+
+            ignore_index=True
+        )
+
+
+        # ----------------------------------------------------
+        # SAVE
+        # ----------------------------------------------------
+
+        continuum_users.to_csv(
+            DATABASE_FILE,
+            index=False
+        )
+
+
+        print("\n")
+        print("=" * 60)
+        print("NEW USER ADDED")
+        print("=" * 60)
+
+
+        print(
+            "New Trainee ID:",
+            new_trainee_id
+        )
+
+
+# ============================================================
+# 11. MAIN MENU
+# ============================================================
+
+while True:
+
+
+    print("\n")
+    print("=" * 60)
+    print("CONTINUUM IDENTITY SYSTEM")
+    print("=" * 60)
+
+
+    print("1. Add new user")
+    print("2. Show current dataset")
+    print("3. Exit")
+
+
+    choice = input(
+        "\nChoose an option: "
+    )
+
+
+    # ========================================================
+    # ADD
+    # ========================================================
+
+    if choice == "1":
+
+        add_new_user()
+
+
+    # ========================================================
+    # SHOW DATASET
+    # ========================================================
+
+    elif choice == "2":
+
+
+        print("\n")
+        print("=" * 60)
+        print("CURRENT CONTINUUM DATASET")
+        print("=" * 60)
+
+
+        print(
+            continuum_users.to_string(
+                index=False
+            )
+        )
+
+
+        print(
+            "\nTotal users:",
+            len(continuum_users)
+        )
+
+
+    # ========================================================
+    # EXIT
+    # ========================================================
+
+    elif choice == "3":
+
+        print("\nExiting...")
+
+        break
+
+
+    else:
+
+        print(
+            "\nInvalid choice."
+        )
