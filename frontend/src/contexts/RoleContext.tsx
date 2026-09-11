@@ -9,6 +9,7 @@ export interface TraineeSession {
   trainee_id: string
   name: string
   program?: string
+  provider?: string
   district?: string
   state?: string
   phone?: string

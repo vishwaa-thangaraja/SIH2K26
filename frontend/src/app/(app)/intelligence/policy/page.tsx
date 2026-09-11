@@ -1,18 +1,17 @@
 import React from 'react'
 import Link from 'next/link'
-import { MOCK_POLICY_INSIGHTS } from '@/lib/mockData'
 import { 
   Sparkles, ArrowLeft, ArrowRight, AlertTriangle, 
   Award, TrendingUp, Building2, Download, CheckCircle2, ShieldCheck 
 } from 'lucide-react'
 
 export default async function PolicyInsightsPage() {
-  let liveDirectives = MOCK_POLICY_INSIGHTS
+  let liveDirectives: any[] = []
   try {
     const res = await fetch('http://127.0.0.1:8000/intelligence/policy-insights', { cache: 'no-store' })
     if (res.ok) {
       const data = await res.json()
-      if (Array.isArray(data) && data.length > 0) {
+      if (Array.isArray(data)) {
         liveDirectives = data
       }
     }

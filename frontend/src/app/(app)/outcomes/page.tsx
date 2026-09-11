@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRole } from '@/contexts/RoleContext'
-import { MOCK_OUTCOMES } from '@/lib/mockData'
 import { OutcomeEvent } from '@/types'
 import { 
   Building2, Plus, Filter, Search, CheckCircle2, 
@@ -13,9 +12,9 @@ import {
 
 export default function OutcomeLedgerPage() {
   const { activeTrainee } = useRole()
-  const [outcomes, setOutcomes] = useState<OutcomeEvent[]>(MOCK_OUTCOMES)
+  const [outcomes, setOutcomes] = useState<OutcomeEvent[]>([])
   const [filter, setFilter] = useState<'all' | 'verified' | 'pending'>('all')
-  const [selectedEvent, setSelectedEvent] = useState<OutcomeEvent>(MOCK_OUTCOMES[2])
+  const [selectedEvent, setSelectedEvent] = useState<OutcomeEvent | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [commStats, setCommStats] = useState<{
     total_sent: number
@@ -197,7 +196,7 @@ export default function OutcomeLedgerPage() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredOutcomes.map((ev) => {
-                  const isSelected = selectedEvent.event_id === ev.event_id
+                  const isSelected = selectedEvent ? selectedEvent.event_id === ev.event_id : false
 
                   return (
                     <tr
@@ -240,87 +239,96 @@ export default function OutcomeLedgerPage() {
 
         {/* Selected Event Deep Dive Inspector */}
         <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4 flex flex-col justify-between">
-          <div className="space-y-4">
-            <div className="border-b border-slate-200 pb-3">
-              <span className="text-xs font-bold text-sky-700 uppercase tracking-wider">Event Provenance Deep Dive</span>
-              <h3 className="text-lg font-bold text-slate-900 mt-1">
-                {selectedEvent.employer_name || 'Pending Outcome Check'}
-              </h3>
-              <p className="text-xs text-slate-500">Event ID: {selectedEvent.event_id}</p>
-            </div>
+          {selectedEvent ? (
+            <>
+              <div className="space-y-4">
+                <div className="border-b border-slate-200 pb-3">
+                  <span className="text-xs font-bold text-sky-700 uppercase tracking-wider">Event Provenance Deep Dive</span>
+                  <h3 className="text-lg font-bold text-slate-900 mt-1">
+                    {selectedEvent.employer_name || 'Pending Outcome Check'}
+                  </h3>
+                  <p className="text-xs text-slate-500">Event ID: {selectedEvent.event_id}</p>
+                </div>
 
-            <div className="space-y-3 text-xs">
-              <div className="flex justify-between py-1 border-b border-slate-50">
-                <span className="text-slate-500 font-medium">Milestone Marker</span>
-                <span className="font-bold text-slate-900">{selectedEvent.milestone} Post-Cert</span>
-              </div>
-
-              <div className="flex justify-between py-1 border-b border-slate-50">
-                <span className="text-slate-500 font-medium">Occupational Role</span>
-                <span className="font-bold text-slate-900">{selectedEvent.role || 'Unspecified'}</span>
-              </div>
-
-              <div className="flex justify-between py-1 border-b border-slate-50">
-                <span className="text-slate-500 font-medium">Monthly Compensation</span>
-                <span className="font-bold text-slate-900">
-                  {selectedEvent.wage_monthly ? `₹${selectedEvent.wage_monthly.toLocaleString()}` : '—'}
-                </span>
-              </div>
-
-              <div className="flex justify-between py-1 border-b border-slate-50">
-                <span className="text-slate-500 font-medium">Commencement Date</span>
-                <span className="font-semibold text-slate-800">{selectedEvent.start_date}</span>
-              </div>
-
-              <div className="flex justify-between py-1 border-b border-slate-50">
-                <span className="text-slate-500 font-medium">Employer GSTN</span>
-                <span className="font-mono text-slate-800">{selectedEvent.employer_gstn || 'N/A'}</span>
-              </div>
-
-              <div>
-                <span className="text-slate-500 font-medium block mb-1">Corroborating Evidence</span>
-                <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <FileText size={16} className="text-blue-600" />
-                    <span className="font-semibold text-slate-800">{selectedEvent.evidence_count} Verified Records</span>
+                <div className="space-y-3 text-xs">
+                  <div className="flex justify-between py-1 border-b border-slate-50">
+                    <span className="text-slate-500 font-medium">Milestone Marker</span>
+                    <span className="font-bold text-slate-900">{selectedEvent.milestone} Post-Cert</span>
                   </div>
-                  <Link 
-                    href="/evidence/DOC001/extraction" 
-                    className="text-sky-700 hover:underline flex items-center gap-1 font-bold text-[11px]"
-                  >
-                    View OCR <ArrowRight size={10} />
-                  </Link>
+
+                  <div className="flex justify-between py-1 border-b border-slate-50">
+                    <span className="text-slate-500 font-medium">Occupational Role</span>
+                    <span className="font-bold text-slate-900">{selectedEvent.role || 'Unspecified'}</span>
+                  </div>
+
+                  <div className="flex justify-between py-1 border-b border-slate-50">
+                    <span className="text-slate-500 font-medium">Monthly Compensation</span>
+                    <span className="font-bold text-slate-900">
+                      {selectedEvent.wage_monthly ? `₹${selectedEvent.wage_monthly.toLocaleString()}` : '—'}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between py-1 border-b border-slate-50">
+                    <span className="text-slate-500 font-medium">Commencement Date</span>
+                    <span className="font-semibold text-slate-800">{selectedEvent.start_date}</span>
+                  </div>
+
+                  <div className="flex justify-between py-1 border-b border-slate-50">
+                    <span className="text-slate-500 font-medium">Employer GSTN</span>
+                    <span className="font-mono text-slate-800">{selectedEvent.employer_gstn || 'N/A'}</span>
+                  </div>
+
+                  <div>
+                    <span className="text-slate-500 font-medium block mb-1">Corroborating Evidence</span>
+                    <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <FileText size={16} className="text-blue-600" />
+                        <span className="font-semibold text-slate-800">{selectedEvent.evidence_count} Verified Records</span>
+                      </div>
+                      <Link 
+                        href="/evidence/DOC001/extraction" 
+                        className="text-sky-700 hover:underline flex items-center gap-1 font-bold text-[11px]"
+                      >
+                        View OCR <ArrowRight size={10} />
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 4-Step Lifecycle */}
+                <div className="border-t border-slate-200 pt-3">
+                  <span className="text-xs font-bold text-slate-700 block mb-2">Verification Lifecycle Track</span>
+                  <div className="grid grid-cols-4 gap-1 text-center text-[10px]">
+                    <div className="bg-blue-50 border border-blue-200 text-blue-800 p-1.5 rounded font-semibold">
+                      1. Claim ✓
+                    </div>
+                    <div className="bg-blue-50 border border-blue-200 text-blue-800 p-1.5 rounded font-semibold">
+                      2. OCR ✓
+                    </div>
+                    <div className="bg-blue-50 border border-blue-200 text-blue-800 p-1.5 rounded font-semibold">
+                      3. Employer ✓
+                    </div>
+                    <div className="bg-emerald-100 border border-emerald-300 text-emerald-800 p-1.5 rounded font-bold">
+                      4. Verified ✓
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* 4-Step Lifecycle */}
-            <div className="border-t border-slate-200 pt-3">
-              <span className="text-xs font-bold text-slate-700 block mb-2">Verification Lifecycle Track</span>
-              <div className="grid grid-cols-4 gap-1 text-center text-[10px]">
-                <div className="bg-blue-50 border border-blue-200 text-blue-800 p-1.5 rounded font-semibold">
-                  1. Claim ✓
-                </div>
-                <div className="bg-blue-50 border border-blue-200 text-blue-800 p-1.5 rounded font-semibold">
-                  2. OCR ✓
-                </div>
-                <div className="bg-blue-50 border border-blue-200 text-blue-800 p-1.5 rounded font-semibold">
-                  3. Employer ✓
-                </div>
-                <div className="bg-emerald-100 border border-emerald-300 text-emerald-800 p-1.5 rounded font-bold">
-                  4. Verified ✓
-                </div>
-              </div>
+              <Link
+                href="/evidence/DOC001/confidence"
+                className="w-full inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs py-2.5 px-3 rounded-lg shadow-sm transition-colors"
+              >
+                <span>Inspect Confidence Factors</span>
+                <ExternalLink size={14} />
+              </Link>
+            </>
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-slate-400 min-h-[300px]">
+              <Building2 size={36} className="text-slate-300 mb-2" />
+              <p className="text-xs font-medium">Select an outcome record from the ledger to inspect verification provenance.</p>
             </div>
-          </div>
-
-          <Link
-            href="/evidence/DOC001/confidence"
-            className="w-full inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs py-2.5 px-3 rounded-lg shadow-sm transition-colors"
-          >
-            <span>Inspect Confidence Factors</span>
-            <ExternalLink size={14} />
-          </Link>
+          )}
         </div>
       </div>
     </div>

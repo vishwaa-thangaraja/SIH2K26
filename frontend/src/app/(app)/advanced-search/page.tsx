@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { MOCK_SEARCH_DATASET, SearchTraineeRecord } from '@/lib/mockSearchData'
+import { type SearchTraineeRecord } from '@/lib/mockSearchData'
 import {
   Search, Filter, X, ChevronRight, Check,
   ShieldCheck, AlertTriangle, Building2, Calendar,
@@ -130,19 +130,25 @@ function AdvancedFilterSearchContent() {
             provider: t.provider || 'Accredited Center',
             district: (t.district || 'Madurai') as any,
             state: t.state || 'Tamil Nadu',
-            current_employer: null,
-            current_role: null,
-            employment_type: 'wage_employed',
-            monthly_wage: 18000,
-            wage_growth_pct: 25.0,
-            milestone_progress: { training: true, m3: true, m6: false, m12: false, m24: false },
-            retention_months: 6,
-            confidence_score: 95,
+            current_employer: t.current_employer || null,
+            current_role: t.current_role || null,
+            employment_type: t.current_employer ? 'wage_employed' : 'unemployed',
+            monthly_wage: t.monthly_wage || 0,
+            wage_growth_pct: t.monthly_wage ? Math.round(((t.monthly_wage - 12000) / 12000) * 100) : 0,
+            milestone_progress: {
+              training: true,
+              m3: Boolean(t.milestone && ['3M', '6M', '12M', '24M'].includes(t.milestone.toUpperCase())),
+              m6: Boolean(t.milestone && ['6M', '12M', '24M'].includes(t.milestone.toUpperCase())),
+              m12: Boolean(t.milestone && ['12M', '24M'].includes(t.milestone.toUpperCase())),
+              m24: Boolean(t.milestone && t.milestone.toUpperCase() === '24M'),
+            },
+            retention_months: t.milestone === '24M' ? 24 : (t.milestone === '12M' ? 12 : (t.milestone === '6M' ? 6 : (t.current_employer ? 3 : 0))),
+            confidence_score: t.confidence_score || 92,
             verification_sources: ['Training Ingestion Protocol', 'Institutional Assessment'],
-            dsig_node_count: 4,
+            dsig_node_count: t.current_employer ? 6 : 4,
             flagged_for_audit: false,
             completion_date: t.completion_date || '2026-03-30',
-            uan_epfo_matched: false,
+            uan_epfo_matched: Boolean(t.current_employer),
             digilocker_verified: true,
             phone: t.phone || '+91 90000 01000',
             email: t.email || `${t.trainee_id.toLowerCase()}@example.com`,
@@ -154,10 +160,9 @@ function AdvancedFilterSearchContent() {
     fetchSummaryStats()
   }, [])
 
-  // Dataset: live database trainees strictly used when available
+  // Dataset: live database trainees strictly used
   const effectiveDataset = useMemo(() => {
-    if (liveTrainees.length > 0) return liveTrainees
-    return MOCK_SEARCH_DATASET
+    return liveTrainees
   }, [liveTrainees])
 
   // Dynamically compute available filter facets from the effective dataset

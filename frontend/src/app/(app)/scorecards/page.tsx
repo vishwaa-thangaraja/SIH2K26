@@ -2,14 +2,13 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { MOCK_PROVIDERS } from '@/lib/mockData'
 import { 
   Award, Building2, CheckCircle2, TrendingUp, 
   ArrowRight, ShieldCheck, Users, Star 
 } from 'lucide-react'
 
 export default function ProviderScorecardsPage() {
-  const [providers, setProviders] = useState<any[]>(MOCK_PROVIDERS)
+  const [providers, setProviders] = useState<any[]>([])
 
   useEffect(() => {
     fetch('http://127.0.0.1:8000/intelligence/provider-comparison')

@@ -1,11 +1,9 @@
 import React from 'react'
 import Link from 'next/link'
-import { MOCK_TRAINEE, MOCK_OUTCOMES, MOCK_EVIDENCE } from '@/lib/mockData'
-import { MOCK_SEARCH_DATASET } from '@/lib/mockSearchData'
 import { 
   User, ShieldCheck, Phone, Mail, GraduationCap, 
   Building2, Calendar, FileText, CheckCircle2, ArrowRight, Network,
-  AlertTriangle, ShieldAlert, Sparkles, Target, TrendingUp
+  AlertTriangle, ShieldAlert, Sparkles, Target, TrendingUp, ArrowLeft
 } from 'lucide-react'
 
 export default async function TraineeProfilePage({
@@ -39,45 +37,46 @@ export default async function TraineeProfilePage({
     if (sRes.ok) liveSkillRecs = await sRes.json()
   } catch (err) {}
 
-  const found = MOCK_SEARCH_DATASET.find((t) => t.trainee_id === id || t.id === id)
+  if (!liveTrainee) {
+    return (
+      <div className="bg-white border border-slate-200 rounded-xl p-12 text-center space-y-4 max-w-2xl mx-auto my-8">
+        <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto text-slate-500">
+          <User size={24} />
+        </div>
+        <h2 className="text-xl font-bold text-slate-900">Candidate Not Found in CONTINUUM Registry</h2>
+        <p className="text-xs text-slate-600">
+          No active enrollment or longitudinal credential found matching ID <strong className="font-mono">{id}</strong>.
+        </p>
+        <Link
+          href="/advanced-search"
+          className="inline-flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-4 py-2.5 rounded-lg transition-colors"
+        >
+          <ArrowLeft size={14} /> Back to Trainee Directory
+        </Link>
+      </div>
+    )
+  }
+
   const latestOutcome = liveOutcomes.length > 0 ? liveOutcomes[liveOutcomes.length - 1] : null
   const totalEvidenceCount = liveOutcomes.reduce((acc, ev) => acc + (ev.evidence_count || 0), 0)
 
-  const trainee = liveTrainee ? {
+  const trainee = {
     trainee_id: liveTrainee.trainee_id,
     name: liveTrainee.name,
     email: liveTrainee.email || `${liveTrainee.name.toLowerCase().replace(/\s+/g, '.')}@example.com`,
-    phone: liveTrainee.phone || '+91 98765 43210',
-    program: liveTrainee.program,
-    provider: liveTrainee.provider,
-    enrollment_date: liveTrainee.enrollment_date || '2023-01-15',
-    completion_date: liveTrainee.completion_date || '2023-04-30',
+    phone: liveTrainee.phone || '+91 90000 01000',
+    program: liveTrainee.program || 'Vocational Training',
+    provider: liveTrainee.provider || 'Accredited Training Center',
+    district: liveTrainee.district || 'Madurai',
+    state: liveTrainee.state || 'Tamil Nadu',
+    enrollment_date: liveTrainee.enrollment_date || '2026-01-01',
+    completion_date: liveTrainee.completion_date || '2026-03-30',
     status: liveTrainee.status || 'completed',
-    monthly_wage: latestOutcome?.wage_monthly || (found?.monthly_wage ?? 18000),
-    current_employer: latestOutcome?.employer_name || found?.current_employer || 'Accredited Industry Partner',
-    current_role: latestOutcome?.role || found?.current_role || 'Certified Associate',
-    confidence_score: latestOutcome?.confidence_score ? Math.round(latestOutcome.confidence_score * 100) : (found?.confidence_score ?? 95),
-  } : (found ? {
-    trainee_id: found.trainee_id,
-    name: found.name,
-    email: `${found.name.toLowerCase().replace(/\s+/g, '.')}@example.com`,
-    phone: found.trainee_id === 'T001' ? '+91 98765 43210' : '+91 94421 88320',
-    program: found.program,
-    provider: found.provider,
-    enrollment_date: '2023-01-15',
-    completion_date: found.completion_date || '2023-04-30',
-    status: 'completed',
-    monthly_wage: found.monthly_wage,
-    current_employer: found.current_employer,
-    current_role: found.current_role,
-    confidence_score: found.confidence_score,
-  } : {
-    ...MOCK_TRAINEE,
-    monthly_wage: 18000,
-    current_employer: 'ABC Manufacturing',
-    current_role: 'CNC Operator',
-    confidence_score: 94,
-  })
+    monthly_wage: latestOutcome?.wage_monthly || 0,
+    current_employer: latestOutcome?.employer_name || null,
+    current_role: latestOutcome?.role || null,
+    confidence_score: latestOutcome?.confidence_score ? Math.round(latestOutcome.confidence_score * 100) : 92,
+  }
 
   const initials = (trainee.name || 'T')
     .split(' ')
@@ -142,14 +141,18 @@ export default async function TraineeProfilePage({
 
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
           <span className="text-xs text-slate-500 font-medium">Current Livelihood</span>
-          <p className="text-base font-bold text-slate-900 mt-1">₹{trainee.monthly_wage.toLocaleString()} / mo</p>
-          <p className="text-[11px] text-emerald-600 font-semibold mt-0.5">{trainee.current_employer || 'Self-Employed'}</p>
+          <p className="text-base font-bold text-slate-900 mt-1">
+            {trainee.monthly_wage > 0 ? `₹${trainee.monthly_wage.toLocaleString()} / mo` : 'Training Certified'}
+          </p>
+          <p className="text-[11px] text-emerald-600 font-semibold mt-0.5">
+            {trainee.current_employer || 'Awaiting 3M Reporting'}
+          </p>
         </div>
 
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
           <span className="text-xs text-slate-500 font-medium">Verified Evidence</span>
           <p className="text-base font-bold text-slate-900 mt-1">
-            {totalEvidenceCount > 0 ? `${totalEvidenceCount} Records` : (found ? '1 Record' : `${MOCK_EVIDENCE.length} Records`)}
+            {totalEvidenceCount} Records
           </p>
           <p className="text-[11px] text-purple-600 font-semibold mt-0.5">Payslips + Attestations</p>
         </div>
@@ -260,7 +263,7 @@ export default async function TraineeProfilePage({
           </div>
 
           <div className="space-y-3">
-            {((liveOutcomes && liveOutcomes.length > 0) ? liveOutcomes : (found ? [] : MOCK_OUTCOMES)).length === 0 ? (
+            {liveOutcomes.length === 0 ? (
               <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg text-center text-xs text-slate-500">
                 <p className="font-medium">No verified outcome events recorded yet for this candidate.</p>
                 <Link
@@ -271,7 +274,7 @@ export default async function TraineeProfilePage({
                 </Link>
               </div>
             ) : (
-              ((liveOutcomes && liveOutcomes.length > 0) ? liveOutcomes : MOCK_OUTCOMES).map((ev: any) => (
+              liveOutcomes.map((ev: any) => (
                 <div key={ev.event_id} className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs flex items-center justify-between">
                   <div>
                     <div className="flex items-center gap-2">

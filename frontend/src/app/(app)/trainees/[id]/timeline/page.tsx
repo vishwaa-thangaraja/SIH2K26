@@ -3,8 +3,6 @@
 import React from 'react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
-import { TIMELINE_MILESTONES, MOCK_TRAINEE } from '@/lib/mockData'
-import { MOCK_SEARCH_DATASET } from '@/lib/mockSearchData'
 import { 
   Building2, CheckCircle2, AlertCircle, ArrowLeft, 
   TrendingUp, ShieldCheck, FileCheck, Network, UserCheck, Search,
@@ -117,12 +115,12 @@ export default function LongitudinalTimelinePage() {
   const handleOpenEditModal = () => {
     setEditForm({
       name: liveTrainee?.name || traineeName || '',
-      email: liveTrainee?.email || (found as any)?.email || '',
-      phone: liveTrainee?.phone || (found as any)?.phone || '',
-      program: liveTrainee?.program || (found as any)?.program || 'Vocational Training',
-      provider: liveTrainee?.provider || (found as any)?.provider || 'Accredited Center',
-      district: liveTrainee?.district || (found as any)?.district || 'Madurai',
-      state: liveTrainee?.state || (found as any)?.state || 'Tamil Nadu',
+      email: liveTrainee?.email || '',
+      phone: liveTrainee?.phone || '',
+      program: liveTrainee?.program || 'Vocational Training',
+      provider: liveTrainee?.provider || 'Accredited Center',
+      district: liveTrainee?.district || 'Madurai',
+      state: liveTrainee?.state || 'Tamil Nadu',
       status: liveTrainee?.status || 'completed'
     })
     setEditSuccessMsg(null)
@@ -158,11 +156,22 @@ export default function LongitudinalTimelinePage() {
     }
   }
 
+  const [liveTimeline, setLiveTimeline] = React.useState<any[]>([])
+
   React.useEffect(() => {
     fetch(`http://127.0.0.1:8000/trainees/${id}`)
       .then(res => (res.ok ? res.json() : null))
       .then(data => {
         if (data) setLiveTrainee(data)
+      })
+      .catch(() => {})
+
+    fetch(`http://127.0.0.1:8000/trainees/${id}/timeline`)
+      .then(res => (res.ok ? res.json() : []))
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setLiveTimeline(data)
+        }
       })
       .catch(() => {})
   }, [id])
@@ -181,17 +190,17 @@ export default function LongitudinalTimelinePage() {
       .catch(() => {})
   }, [])
 
-  const found = MOCK_SEARCH_DATASET.find((t) => t.trainee_id === id || t.id === id)
+  const traineeName = liveTrainee ? liveTrainee.name : (id || 'Trainee')
 
-  const traineeName = liveTrainee ? liveTrainee.name : (found ? found.name : MOCK_TRAINEE.name)
-  const traineeWage = found ? found.monthly_wage : 21000
+  // Use live milestones returned dynamically from database
+  const activeMilestones = liveTimeline
 
-  const wageTrendData = [
-    { milestone: 'Training', wage: 0, date: 'Apr 2023' },
-    { milestone: '3M', wage: Math.round(traineeWage * 0.75), date: 'Jul 2023' },
-    { milestone: '6M', wage: Math.round(traineeWage * 0.90), date: 'Oct 2023' },
-    { milestone: '12M', wage: traineeWage, date: 'Apr 2024' },
-  ]
+  // Derive dynamic wage progression from real recorded milestones
+  const wageTrendData = activeMilestones.map((m: any) => ({
+    milestone: m.milestone,
+    wage: m.wage || 0,
+    date: m.date
+  }))
 
   return (
     <div className="space-y-6">
@@ -214,11 +223,11 @@ export default function LongitudinalTimelinePage() {
           <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 mt-2">
             <span className="inline-flex items-center gap-1 font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded">
               <Phone size={11} className="text-emerald-600" />
-              {liveTrainee?.phone || (found as any)?.phone || '+91 90000 01000'}
+              {liveTrainee?.phone || '+91 90000 01000'}
             </span>
             <span className="inline-flex items-center gap-1 font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded">
               <Mail size={11} className="text-blue-600" />
-              {liveTrainee?.email || (found as any)?.email || `${id.toLowerCase()}@example.com`}
+              {liveTrainee?.email || `${id.toLowerCase()}@example.com`}
             </span>
             {liveTrainee?.program && (
               <span className="inline-flex items-center gap-1 font-medium bg-blue-50 text-blue-800 border border-blue-200 px-2 py-0.5 rounded">
@@ -334,10 +343,10 @@ export default function LongitudinalTimelinePage() {
         <h2 className="text-lg font-bold text-slate-900">Milestone Event Provenance Cards</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {TIMELINE_MILESTONES.map((milestone, i) => {
+          {activeMilestones.map((milestone: any, i: number) => {
             const isCompleted = milestone.status === 'completed'
             const isCurrent = milestone.status === 'current'
-            const isUnknown = milestone.status === 'unknown'
+            const isUnknown = milestone.status === 'unknown' || milestone.status === 'pending'
 
             return (
               <div 
@@ -514,14 +523,14 @@ export default function LongitudinalTimelinePage() {
                   <span className="text-slate-500 font-semibold">Registered Phone:</span>
                   <span className="font-mono font-bold text-slate-800 flex items-center gap-1">
                     <Phone size={12} className="text-emerald-600" />
-                    {liveTrainee?.phone || (found as any)?.phone || '+91 90000 01000'}
+                    {liveTrainee?.phone || '+91 90000 01000'}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-slate-500 font-semibold">Registered Email:</span>
                   <span className="font-mono font-bold text-slate-800 flex items-center gap-1">
                     <Mail size={12} className="text-blue-600" />
-                    {liveTrainee?.email || (found as any)?.email || `${id.toLowerCase()}@example.com`}
+                    {liveTrainee?.email || `${id.toLowerCase()}@example.com`}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">

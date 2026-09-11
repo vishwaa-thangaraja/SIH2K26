@@ -69,14 +69,15 @@ def validate_training_csv(file_content: str, db: Optional[Any] = None) -> Dict[s
             "records": [],
         }
 
-    # Fetch existing trainee IDs from DB to detect duplicates across uploads
+    # Fetch existing trainees from DB to detect duplicates across uploads
     existing_db_ids = set()
+    all_db_trainees = []
     if db is not None:
         try:
             from models.trainee import Trainee
             from sqlmodel import select
-            all_ids = db.exec(select(Trainee.trainee_id)).all()
-            existing_db_ids = set(str(i).strip() for i in all_ids if i)
+            all_db_trainees = list(db.exec(select(Trainee)).all())
+            existing_db_ids = set(str(t.trainee_id).strip() for t in all_db_trainees if t.trainee_id)
         except Exception:
             pass
     else:
@@ -85,8 +86,8 @@ def validate_training_csv(file_content: str, db: Optional[Any] = None) -> Dict[s
             from sqlmodel import Session, select
             from models.trainee import Trainee
             with Session(engine) as db_sess:
-                all_ids = db_sess.exec(select(Trainee.trainee_id)).all()
-                existing_db_ids = set(str(i).strip() for i in all_ids if i)
+                all_db_trainees = list(db_sess.exec(select(Trainee)).all())
+                existing_db_ids = set(str(t.trainee_id).strip() for t in all_db_trainees if t.trainee_id)
         except Exception:
             pass
 
@@ -178,6 +179,34 @@ def validate_training_csv(file_content: str, db: Optional[Any] = None) -> Dict[s
                 category_counts["duplicates"] += 1
             else:
                 seen_trainee_ids[trainee_id] = row_num
+                # Also check Model 1 duplicate candidate detection across name, phone, email
+                if name and all_db_trainees:
+                    from services.identity_matching_service import calculate_entity_similarity, MATCH_THRESHOLD
+                    contact_no = (row.get("contact_number") or "").strip()
+                    email_str = (row.get("email") or "").strip()
+                    best_sim = 0.0
+                    matched_t = None
+                    for ext in all_db_trainees:
+                        sim = calculate_entity_similarity(name, contact_no, email_str, district, ext)
+                        if sim > best_sim:
+                            best_sim = sim
+                            matched_t = ext
+
+                    if matched_t and best_sim >= MATCH_THRESHOLD:
+                        is_duplicate = True
+                        issue = {
+                            "row_number": row_num,
+                            "trainee_id": trainee_id,
+                            "field": "name",
+                            "current_value": f"{name} ({contact_no or email_str})",
+                            "category": "duplicates",
+                            "problem": f"Duplicate Candidate Alert: {int(best_sim * 100)}% match with existing database trainee {matched_t.trainee_id} ({matched_t.name}, {matched_t.district}).",
+                            "suggested_correction": f"Verify identity or confirm continuity linking with existing record {matched_t.trainee_id}.",
+                            "is_blocking": False,
+                            "auto_dropped": True,
+                        }
+                        row_issues.append(issue)
+                        category_counts["duplicates"] += 1
 
         # Date Validations
         start_dt, start_err = parse_date(start_date_str)

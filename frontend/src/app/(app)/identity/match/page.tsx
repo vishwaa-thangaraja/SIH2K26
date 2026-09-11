@@ -1,20 +1,26 @@
+'use client'
+
 import React from 'react'
 import Link from 'next/link'
-import { MOCK_IDENTITY_MATCH } from '@/lib/mockData'
+import { useRole } from '@/contexts/RoleContext'
 import { 
   ShieldCheck, CheckCircle2, ArrowRight, ArrowLeft, 
   Sparkles, AlertCircle, RefreshCw 
 } from 'lucide-react'
 
 export default function IdentityMatchPage() {
+  const { activeTrainee } = useRole()
+  const traineeId = activeTrainee.trainee_id || 'T002'
+  const traineeName = activeTrainee.name || 'Priya S'
+
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Header */}
       <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
         <div className="flex items-center gap-2 text-xs font-bold text-sky-700 uppercase tracking-wider mb-1">
-          <span>AI Multi-Anchor Intelligence</span>
+          <span>Identity Continuity Assessment</span>
           <span className="inline-block w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-          <span>RapidFuzz + Jaro-Winkler</span>
+          <span>National Multi-Anchor Protocol</span>
         </div>
         <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
           Identity Match Assessment
@@ -59,7 +65,7 @@ export default function IdentityMatchPage() {
                 <CheckCircle2 size={12} /> HIGH MATCH CONFIDENCE
               </span>
               <h3 className="text-base font-bold text-slate-900 mt-1">Same Individual Verified</h3>
-              <p className="text-xs text-slate-500">Target Core Node: Trainee T001 (Ravi Kumar)</p>
+              <p className="text-xs text-slate-500">Target Core Node: Trainee {traineeId} ({traineeName})</p>
             </div>
           </div>
         </div>
@@ -71,7 +77,7 @@ export default function IdentityMatchPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
             <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-1">
               <div className="flex justify-between font-semibold">
-                <span className="text-slate-700">Name Match (Jaro-Winkler)</span>
+                <span className="text-slate-700">Name Match (Multi-Attribute)</span>
                 <span className="text-emerald-700 font-bold">96%</span>
               </div>
               <div className="w-full bg-slate-200 rounded-full h-1.5">
@@ -81,7 +87,7 @@ export default function IdentityMatchPage() {
 
             <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-1">
               <div className="flex justify-between font-semibold">
-                <span className="text-slate-700">Course & Batch Alignment</span>
+                <span className="text-slate-700">Course &amp; Batch Alignment</span>
                 <span className="text-emerald-700 font-bold">98%</span>
               </div>
               <div className="w-full bg-slate-200 rounded-full h-1.5">
@@ -115,7 +121,7 @@ export default function IdentityMatchPage() {
         <div className="p-4 bg-sky-50 border border-sky-200 rounded-lg text-xs text-sky-900">
           <p className="font-semibold">Governance Decision Rule:</p>
           <p className="mt-0.5">
-            {MOCK_IDENTITY_MATCH.recommendation}
+            Direct Anchor Attachment Approved: Multi-attribute confidence exceeds statutory threshold (≥ 88%). Automatically attach verified credentials to existing profile ({traineeId}) without creating duplicate citizen persona.
           </p>
         </div>
 

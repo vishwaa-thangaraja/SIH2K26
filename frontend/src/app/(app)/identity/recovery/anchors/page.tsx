@@ -8,6 +8,8 @@ import {
   AlertTriangle
 } from 'lucide-react'
 
+import { useRole } from '@/contexts/RoleContext'
+
 interface AnchorItem {
   id: string
   title: string
@@ -19,63 +21,79 @@ interface AnchorItem {
   bgClass: string
 }
 
-const AVAILABLE_ANCHORS: AnchorItem[] = [
-  {
-    id: 'email',
-    title: 'Verified Email Address',
-    subtitle: 'ravi.kumar@example.com',
-    confidence: 97,
-    weight: 0.25,
-    icon: Mail,
-    colorClass: 'text-blue-700',
-    bgClass: 'bg-blue-100',
-  },
-  {
-    id: 'training',
-    title: 'PMKVY Training Certificate',
-    subtitle: 'NSQF Level 5 (Welding) • PMKVY-2023-T001',
-    confidence: 100,
-    weight: 0.35,
-    icon: GraduationCap,
-    colorClass: 'text-indigo-700',
-    bgClass: 'bg-indigo-100',
-  },
-  {
-    id: 'ekyc',
-    title: 'DigiLocker Mock Sandbox',
-    subtitle: 'Authoritative e-KYC Verification Token',
-    confidence: 95,
-    weight: 0.40,
-    icon: ShieldCheck,
-    colorClass: 'text-emerald-700',
-    bgClass: 'bg-emerald-100',
-  },
-  {
-    id: 'employer',
-    title: 'Past Employer Contact',
-    subtitle: 'XYZ Fabricators (3M Milestone Record)',
-    confidence: 78,
-    weight: 0.20,
-    icon: Building2,
-    colorClass: 'text-amber-700',
-    bgClass: 'bg-amber-100',
-  },
-  {
-    id: 'pfms',
-    title: 'PFMS / Bank Account Seed',
-    subtitle: 'State Bank of India (DBT Verified Account)',
-    confidence: 99,
-    weight: 0.30,
-    icon: Landmark,
-    colorClass: 'text-purple-700',
-    bgClass: 'bg-purple-100',
-  },
-]
-
 const THRESHOLD = 0.85
 
 export default function TrustedAnchorsPage() {
+  const { activeTrainee } = useRole()
   const [selectedAnchors, setSelectedAnchors] = useState<string[]>(['email', 'training', 'ekyc'])
+  const [liveEmployer, setLiveEmployer] = useState<string>('Accredited Industry Partner')
+
+  React.useEffect(() => {
+    if (activeTrainee.trainee_id) {
+      fetch(`http://127.0.0.1:8000/trainees/${activeTrainee.trainee_id}/dsig`)
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data && data.nodes) {
+            const empNode = data.nodes.find((n: any) => n.node_type === 'employer')
+            if (empNode) setLiveEmployer(empNode.label.replace('Employer: ', ''))
+          }
+        })
+        .catch(() => {})
+    }
+  }, [activeTrainee.trainee_id])
+
+  const availableAnchors: AnchorItem[] = useMemo(() => [
+    {
+      id: 'email',
+      title: 'Verified Email Address',
+      subtitle: activeTrainee.email || 'trainee@example.com',
+      confidence: 97,
+      weight: 0.25,
+      icon: Mail,
+      colorClass: 'text-blue-700',
+      bgClass: 'bg-blue-100',
+    },
+    {
+      id: 'training',
+      title: 'Vocational Training Qualification',
+      subtitle: `${activeTrainee.program || 'Vocational Training'} • ${activeTrainee.provider || 'CONTINUUM Training Hub'}`,
+      confidence: 100,
+      weight: 0.35,
+      icon: GraduationCap,
+      colorClass: 'text-indigo-700',
+      bgClass: 'bg-indigo-100',
+    },
+    {
+      id: 'ekyc',
+      title: 'DigiLocker Statutory e-KYC Anchor',
+      subtitle: 'Authoritative Digital Identity Token',
+      confidence: 95,
+      weight: 0.40,
+      icon: ShieldCheck,
+      colorClass: 'text-emerald-700',
+      bgClass: 'bg-emerald-100',
+    },
+    {
+      id: 'employer',
+      title: 'Verified Employer Anchor',
+      subtitle: `${liveEmployer} (Placement Record)`,
+      confidence: 85,
+      weight: 0.20,
+      icon: Building2,
+      colorClass: 'text-amber-700',
+      bgClass: 'bg-amber-100',
+    },
+    {
+      id: 'pfms',
+      title: 'PFMS / DBT Seeded Bank Account',
+      subtitle: 'Direct Benefit Transfer Verified Channel',
+      confidence: 99,
+      weight: 0.30,
+      icon: Landmark,
+      colorClass: 'text-purple-700',
+      bgClass: 'bg-purple-100',
+    },
+  ], [activeTrainee, liveEmployer])
 
   const toggleAnchor = (id: string) => {
     if (selectedAnchors.includes(id)) {
@@ -88,11 +106,11 @@ export default function TrustedAnchorsPage() {
   // Calculate cumulative weight dynamically
   const cumulativeWeight = useMemo(() => {
     const total = selectedAnchors.reduce((sum, id) => {
-      const anchor = AVAILABLE_ANCHORS.find(a => a.id === id)
+      const anchor = availableAnchors.find(a => a.id === id)
       return sum + (anchor ? anchor.weight : 0)
     }, 0)
     return Math.min(Number(total.toFixed(2)), 1.0)
-  }, [selectedAnchors])
+  }, [selectedAnchors, availableAnchors])
 
   const isThresholdMet = cumulativeWeight >= THRESHOLD
   const progressPercentage = Math.min(Math.round((cumulativeWeight / 1.0) * 100), 100)
@@ -117,7 +135,7 @@ export default function TrustedAnchorsPage() {
       {/* Anchor Selection Grid */}
       <div className="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-          {AVAILABLE_ANCHORS.map((anchor) => {
+          {availableAnchors.map((anchor) => {
             const isSelected = selectedAnchors.includes(anchor.id)
             const Icon = anchor.icon
 

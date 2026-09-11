@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { MOCK_PROVIDERS, MOCK_SKILL_GAPS } from '@/lib/mockData'
 import { 
   BarChart3, TrendingUp, Award, Map, ArrowRight, 
   ShieldCheck, AlertCircle, Sparkles, Building2, Users,
@@ -12,16 +11,6 @@ import {
   ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, 
   Tooltip, Legend, CartesianGrid 
 } from 'recharts'
-
-// Longitudinal outcome trajectory data (Area Chart inspired by bklit.com)
-const longitudinalWageTrajectoryData = [
-  { milestone: 'Enrollment', avgWage: 0, verifiedTrainees: 1480, retentionRate: 100 },
-  { milestone: 'Training Exit', avgWage: 12000, verifiedTrainees: 1420, retentionRate: 96 },
-  { milestone: '3M Milestone', avgWage: 15400, verifiedTrainees: 1310, retentionRate: 88 },
-  { milestone: '6M Milestone', avgWage: 18200, verifiedTrainees: 1220, retentionRate: 82 },
-  { milestone: '12M Milestone', avgWage: 22800, verifiedTrainees: 1140, retentionRate: 77 },
-  { milestone: '24M Milestone', avgWage: 27500, verifiedTrainees: 980, retentionRate: 66 },
-]
 
 // Custom Tooltip component in minimal style
 function CustomAreaTooltip({ active, payload, label }: any) {
@@ -51,6 +40,7 @@ export default function OutcomeIntelligenceDashboard() {
   const [liveProviders, setLiveProviders] = useState<any[]>([])
   const [liveDeficit, setLiveDeficit] = useState<any>(null)
   const [cohortAnomaly, setCohortAnomaly] = useState<any>(null)
+  const [trajectoryData, setTrajectoryData] = useState<any[]>([])
 
   useEffect(() => {
     // Fetch live summary from SQLite database
@@ -58,6 +48,16 @@ export default function OutcomeIntelligenceDashboard() {
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data) setLiveSummary(data)
+      })
+      .catch(() => {})
+
+    // Fetch live wage trajectory curve from SQLite database
+    fetch('http://127.0.0.1:8000/intelligence/wage-trajectory')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && Array.isArray(data) && data.length > 0) {
+          setTrajectoryData(data)
+        }
       })
       .catch(() => {})
 
@@ -88,20 +88,14 @@ export default function OutcomeIntelligenceDashboard() {
       .catch(() => {})
   }, [])
 
-  const providerChartData = liveProviders.length > 0
-    ? liveProviders.map((p) => ({
-        name: p.name || p.provider_name,
-        '3M': p['3M'] || 75,
-        '6M': p['6M'] || 80,
-        '12M': p['12M'] || 78,
-      }))
-    : [
-        { name: 'PMKVY National Center', '3M': 72, '6M': 81, '12M': 76 },
-        { name: 'DDUGKY Skills Hub', '3M': 61, '6M': 69, '12M': 64 },
-        { name: 'NAPS Apprenticeship', '3M': 88, '6M': 91, '12M': 87 },
-      ]
+  const providerChartData = liveProviders.map((p) => ({
+    name: p.name || p.provider_name,
+    '3M': p['3M'] || 75,
+    '6M': p['6M'] || 80,
+    '12M': p['12M'] || 78,
+  }))
 
-  const totalCandidates = liveSummary?.total_audited_candidates ?? 1480
+  const totalCandidates = liveSummary?.total_audited_candidates ?? 95
   const regionalClusters = liveSummary?.regional_clusters_count ?? 6
 
   return (
@@ -298,7 +292,7 @@ export default function OutcomeIntelligenceDashboard() {
         <div className="h-72 w-full pt-2">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
-              data={longitudinalWageTrajectoryData}
+              data={trajectoryData}
               margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
             >
               <defs>

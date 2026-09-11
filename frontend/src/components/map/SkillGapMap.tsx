@@ -2,15 +2,14 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import L from 'leaflet'
-import { MOCK_SKILL_GAPS } from '@/lib/mockData'
 import { RegionalSkillGap } from '@/types'
 import { AlertCircle, TrendingUp, Users, MapPin } from 'lucide-react'
 
 export default function SkillGapMap() {
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<L.Map | null>(null)
-  const [districts, setDistricts] = useState<any[]>(MOCK_SKILL_GAPS)
-  const [selectedDistrict, setSelectedDistrict] = useState<any>(MOCK_SKILL_GAPS[0])
+  const [districts, setDistricts] = useState<any[]>([])
+  const [selectedDistrict, setSelectedDistrict] = useState<any>(null)
 
   useEffect(() => {
     fetch('http://127.0.0.1:8000/intelligence/district-density')
