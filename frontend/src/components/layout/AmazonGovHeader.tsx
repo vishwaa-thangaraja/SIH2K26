@@ -102,7 +102,6 @@ export default function AmazonGovHeader() {
     { label: 'Regional Skill Map', href: '/regional-analytics', icon: Map },
     { label: 'Trainee Audit Records', href: '/trainees/T001/timeline', icon: ClipboardList },
     { label: 'DSIG Graph Audit', href: '/dsig', icon: Network },
-    { label: 'Evidence OCR Engine', href: '/evidence/DOC-096BF585/extraction', icon: FileSearch },
   ]
 
   // ── Trainee Nav Items (Horizontal Sub-Bar) ──
@@ -120,8 +119,8 @@ export default function AmazonGovHeader() {
 
   const activeNavItems = isGovernmentOfficial ? analystNavItems : traineeNavItems
 
-  // ── All Modules Catalog (Comprehensive Directory) ──
-  const allModuleSections: ModuleSection[] = [
+  // ── All Modules Catalog (Comprehensive Directory Tailored by Role) ──
+  const officialModuleSections: ModuleSection[] = [
     {
       category: 'Macro Governance & Policy Loop',
       items: [
@@ -139,10 +138,21 @@ export default function AmazonGovHeader() {
       ],
     },
     {
+      category: 'Trainee Oversight & Identity Audit',
+      items: [
+        { label: 'Trainee Audit Records', href: `/trainees/${activeTrainee?.trainee_id || 'T001'}/timeline`, icon: ClipboardList, desc: 'Multi-year trajectory & career milestone progression' },
+        { label: 'Trainee 360° Profile Audit', href: `/trainees/${activeTrainee?.trainee_id || 'T001'}`, icon: User, desc: 'Institutional credentials, verified wage & employment history' },
+        { label: 'Dynamic Skill Identity Graph (DSIG)', href: '/dsig', icon: Network, desc: 'Decoupled graph identity resolving SIM/contact migrations', badge: 'Graph Engine' },
+      ],
+    },
+  ]
+
+  const traineeModuleSections: ModuleSection[] = [
+    {
       category: 'Candidate Skill Identity & Career Progression',
       items: [
+        { label: 'My Dashboard', href: '/dashboard', icon: LayoutDashboard, desc: 'Personal training status, wage progression and next milestones' },
         { label: 'Trainee 360° Profile', href: `/trainees/${activeTrainee?.trainee_id || 'T001'}`, icon: User, desc: 'Institutional credentials, verified wage & employment history' },
-        { label: 'Longitudinal Wage Timeline', href: `/trainees/${activeTrainee?.trainee_id || 'T001'}/timeline`, icon: ClipboardList, desc: 'Multi-year trajectory & career milestone progression' },
         { label: 'Dynamic Skill Identity Graph (DSIG)', href: '/dsig', icon: Network, desc: 'Decoupled graph identity resolving SIM/contact migrations', badge: 'Graph Engine' },
         { label: 'Identity Recovery Protocol', href: '/identity/recovery', icon: RefreshCw, desc: 'Multi-tier anchor threshold verification for migrated contacts' },
         { label: 'Identity Contact Update', href: '/identity/update', icon: Shield, desc: 'Update mobile & address credentials securely' },
@@ -151,14 +161,17 @@ export default function AmazonGovHeader() {
     {
       category: 'Autonomous Evidence Verification & Attestation',
       items: [
+        { label: 'Outcome Ledger & Wage History', href: '/outcomes', icon: FileText, desc: 'Tamper-evident log of verified employment outcomes' },
+        { label: 'Register New Outcome', href: `/outcomes/new?trainee_id=${activeTrainee?.trainee_id || 'T001'}`, icon: BookOpen, desc: 'Submit employment milestone claim' },
+        { label: 'Upload Evidence Document', href: `/evidence/upload?trainee_id=${activeTrainee?.trainee_id || 'T001'}`, icon: Upload, desc: 'Submit salary slips, bank credit SMS or offer letters' },
         { label: 'Autonomous Payslip OCR Engine', href: '/evidence/DOC-096BF585/extraction', icon: FileSearch, desc: 'Tesseract OCR with Gross - Deductions == Net equation check', badge: 'Tesseract' },
         { label: 'Evidence vs Claim Comparison', href: '/evidence/DOC-096BF585/comparison', icon: BadgeCheck, desc: 'Automated side-by-side claim & document verification' },
-        { label: 'Outcome Ledger & Wage History', href: '/outcomes', icon: FileText, desc: 'Tamper-evident log of verified employment outcomes' },
-        { label: 'Upload Evidence Document', href: `/evidence/upload?trainee_id=${activeTrainee?.trainee_id || 'T001'}`, icon: Upload, desc: 'Submit salary slips, bank credit SMS or offer letters' },
         { label: 'Employer HR Attestation', href: '/attestation', icon: CheckSquare, desc: 'One-tap digital outcome confirmation portal for employers' },
       ],
     },
   ]
+
+  const allModuleSections = isGovernmentOfficial ? officialModuleSections : traineeModuleSections
 
   // Filter sections if search term is entered
   const filteredSections = allModuleSections.map((sec) => ({

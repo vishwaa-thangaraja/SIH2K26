@@ -145,22 +145,33 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
     fetchTraineeFromBackend(cleanId)
   }, [fetchTraineeFromBackend])
 
+  // 1. Initial Session Load (run once on mount - NEVER mutate role on route navigation)
   useEffect(() => {
-    // 1. Check if the current route explicitly belongs to a role
-    if (ANALYST_ROUTES.some(route => pathname === route || pathname.startsWith(route + '/'))) {
-      setRoleState('analyst')
-      localStorage.setItem('continuum_role', 'analyst')
-    } else if (TRAINEE_ROUTES.some(route => pathname === route || pathname.startsWith(route + '/'))) {
-      setRoleState('trainee')
-      localStorage.setItem('continuum_role', 'trainee')
-    } else {
+    if (typeof window !== 'undefined') {
       const stored = localStorage.getItem('continuum_role') as AppRole | null
       if (stored === 'trainee' || stored === 'analyst') {
         setRoleState(stored)
+      } else {
+        // Fallback only on initial cold visit if no role has ever been set
+        if (TRAINEE_ROUTES.some(route => pathname === route || pathname.startsWith(route + '/'))) {
+          setRoleState('trainee')
+          localStorage.setItem('continuum_role', 'trainee')
+        } else {
+          setRoleState('analyst')
+          localStorage.setItem('continuum_role', 'analyst')
+        }
+      }
+
+      const storedTrainee = localStorage.getItem('continuum_active_trainee_id')
+      if (storedTrainee) {
+        fetchTraineeFromBackend(storedTrainee)
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-    // 2. Check if URL contains a trainee ID (e.g. /trainees/T002 or search params in window)
+  // 2. Trainee ID sync from URL params / routes (strictly preserves current role)
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search)
       const paramTraineeId = urlParams.get('trainee_id')
@@ -172,14 +183,8 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
       // Check path matching /trainees/(T\d+)
       const match = pathname.match(/\/trainees\/(T\d+)/i)
       if (match && match[1]) {
-        setActiveTraineeId(match[1])
+        fetchTraineeFromBackend(match[1])
         return
-      }
-
-      // Fallback to stored trainee preference
-      const storedTrainee = localStorage.getItem('continuum_active_trainee_id')
-      if (storedTrainee) {
-        fetchTraineeFromBackend(storedTrainee)
       }
     }
   }, [pathname, setActiveTraineeId, fetchTraineeFromBackend])
