@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
@@ -218,8 +218,8 @@ export default function AmazonGovHeader() {
             </button>
 
             <Link href={isGovernmentOfficial ? '/intelligence' : '/dashboard'} className="flex items-center gap-3 group">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center font-black text-slate-950 text-base shadow-sm group-hover:scale-105 transition-transform duration-200 border border-amber-300">
-                IN
+              <div className="h-10 px-2 py-1 bg-white rounded-xl shadow-xs border border-slate-200 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200">
+                <img src="/emblem.png" alt="Government of India - MSDE" className="h-8 w-auto object-contain" />
               </div>
               <div className="flex flex-col text-left">
                 <div className="flex items-center gap-2">
@@ -402,8 +402,8 @@ export default function AmazonGovHeader() {
             {/* Drawer Header */}
             <div className="bg-[#0B2545] text-white p-5 flex items-center justify-between shrink-0 border-b border-white/10">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center font-black text-slate-950 text-sm border border-amber-300 shadow-xs">
-                  IN
+                <div className="h-9 px-2 py-0.5 bg-white rounded-xl flex items-center justify-center border border-slate-200 shadow-xs shrink-0">
+                  <img src="/emblem.png" alt="MSDE Emblem" className="h-7 w-auto object-contain" />
                 </div>
                 <div className="flex flex-col text-left">
                   <div className="flex items-center gap-2">

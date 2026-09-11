@@ -91,14 +91,21 @@ export default async function TraineeProfilePage({
       {/* Profile Header */}
       <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="flex items-center gap-5">
-          <div className="w-16 h-16 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-2xl shadow-md shrink-0">
-            {initials}
+          <div className="w-16 h-16 rounded-2xl bg-white border border-slate-200 p-1.5 flex items-center justify-center shadow-xs shrink-0">
+            <img 
+              src="/emblem.png" 
+              alt="Government of India - MSDE" 
+              className="h-13 w-auto object-contain"
+            />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-extrabold text-slate-900">{trainee.name}</h1>
               <span className="text-xs font-bold bg-sky-50 text-sky-700 border border-sky-200 px-2 py-0.5 rounded font-mono">
                 {trainee.trainee_id}
+              </span>
+              <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded uppercase tracking-wide">
+                Verified Citizen Credential
               </span>
             </div>
             <p className="text-sm text-slate-600 mt-0.5">

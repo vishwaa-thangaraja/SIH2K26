@@ -134,8 +134,8 @@ export default function LandingPage() {
       {/* ── TOP GOVERNMENT HEADER BAR ── */}
       <header className="w-full bg-white/90 backdrop-blur-md border-b border-slate-200/90 sticky top-0 z-50 px-6 sm:px-12 py-4 flex items-center justify-between transition-all duration-300 shadow-2xs">
         <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-xl shadow-xs shrink-0">
-            🇮🇳
+          <div className="h-12 px-2 py-0.5 bg-white border border-slate-200 rounded-xl flex items-center justify-center shadow-xs shrink-0">
+            <img src="/emblem.png" alt="Government of India - MSDE" className="h-10 w-auto object-contain" />
           </div>
           <div className="flex flex-col text-left leading-tight">
             <span className="font-black text-base sm:text-lg tracking-tight text-slate-900">

@@ -91,25 +91,30 @@ export default function DashboardPage() {
     <div className="space-y-6 animate-fade-in">
       {/* Hero Welcome Banner */}
       <div className="bg-white border border-slate-200/90 rounded-2xl p-6 md:p-8 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-5">
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-2 text-xs font-black text-blue-700 uppercase tracking-wider">
-            <span className="bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-md">
-              Learner Longitudinal Portal
-            </span>
-            <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
-            <span className="font-mono text-slate-700">ENROLLMENT ID: {traineeId}</span>
+        <div className="flex items-start gap-4">
+          <div className="hidden sm:flex h-16 w-16 bg-slate-50 border border-slate-200 rounded-2xl p-1.5 items-center justify-center shrink-0 shadow-2xs">
+            <img src="/emblem.png" alt="Government of India - MSDE" className="h-full w-auto object-contain" />
           </div>
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2 text-xs font-black text-blue-700 uppercase tracking-wider">
+              <span className="bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-md">
+                Learner Longitudinal Portal
+              </span>
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+              <span className="font-mono text-slate-700">ENROLLMENT ID: {traineeId}</span>
+            </div>
 
-          <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-            <span>Welcome back, {name}</span>
-            <span className="text-xs font-black bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg border border-slate-200">
-              {district}, {state}
-            </span>
-          </h1>
+            <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+              <span>Welcome back, {name}</span>
+              <span className="text-xs font-black bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg border border-slate-200">
+                {district}, {state}
+              </span>
+            </h1>
 
-          <p className="text-xs sm:text-sm text-slate-600 font-medium">
-            Program: <strong className="text-slate-900 font-bold">{program}</strong> • Center: <strong className="text-slate-800">{provider}</strong>
-          </p>
+            <p className="text-xs sm:text-sm text-slate-600 font-medium">
+              Program: <strong className="text-slate-900 font-bold">{program}</strong> • Center: <strong className="text-slate-800">{provider}</strong>
+            </p>
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">

@@ -206,42 +206,47 @@ export default function LongitudinalTimelinePage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Link href="/advanced-search" className="text-xs text-sky-700 font-semibold hover:underline flex items-center gap-1">
-              <Search size={12} /> Trainee Directory
-            </Link>
-            <span className="text-slate-300">/</span>
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider font-mono">Trainee {id}</span>
+        <div className="flex items-start gap-4">
+          <div className="hidden sm:flex h-16 w-16 bg-white border border-slate-200 rounded-xl p-1 items-center justify-center shrink-0 shadow-2xs">
+            <img src="/emblem.png" alt="Government of India - MSDE" className="h-full w-auto object-contain" />
           </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Longitudinal Outcome Timeline
-          </h1>
-          <p className="text-sm text-slate-600 mt-1">
-            Multi-year trajectory tracking for <strong>{traineeName}</strong> from certification to 24-month livelihood stability.
-          </p>
-          <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 mt-2">
-            <span className="inline-flex items-center gap-1 font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded">
-              <Phone size={11} className="text-emerald-600" />
-              {liveTrainee?.phone || '+91 90000 01000'}
-            </span>
-            <span className="inline-flex items-center gap-1 font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded">
-              <Mail size={11} className="text-blue-600" />
-              {liveTrainee?.email || `${id.toLowerCase()}@example.com`}
-            </span>
-            {liveTrainee?.program && (
-              <span className="inline-flex items-center gap-1 font-medium bg-blue-50 text-blue-800 border border-blue-200 px-2 py-0.5 rounded">
-                Trade: {liveTrainee.program}
-              </span>
-            )}
-            {liveTrainee?.district && (
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <Link href="/advanced-search" className="text-xs text-sky-700 font-semibold hover:underline flex items-center gap-1">
+                <Search size={12} /> Trainee Directory
+              </Link>
+              <span className="text-slate-300">/</span>
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider font-mono">Trainee {id}</span>
+            </div>
+            <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
+              Longitudinal Outcome Timeline
+            </h1>
+            <p className="text-sm text-slate-600 mt-1">
+              Multi-year trajectory tracking for <strong>{traineeName}</strong> from certification to 24-month livelihood stability.
+            </p>
+            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 mt-2">
               <span className="inline-flex items-center gap-1 font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded">
-                📍 {liveTrainee.district}, {liveTrainee.state || 'Tamil Nadu'}
+                <Phone size={11} className="text-emerald-600" />
+                {liveTrainee?.phone || '+91 90000 01000'}
               </span>
-            )}
-            <span className="inline-flex items-center gap-1 font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded uppercase text-[10px]">
-              Status: {liveTrainee?.status || 'Active'}
-            </span>
+              <span className="inline-flex items-center gap-1 font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded">
+                <Mail size={11} className="text-blue-600" />
+                {liveTrainee?.email || `${id.toLowerCase()}@example.com`}
+              </span>
+              {liveTrainee?.program && (
+                <span className="inline-flex items-center gap-1 font-medium bg-blue-50 text-blue-800 border border-blue-200 px-2 py-0.5 rounded">
+                  Trade: {liveTrainee.program}
+                </span>
+              )}
+              {liveTrainee?.district && (
+                <span className="inline-flex items-center gap-1 font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded">
+                  📍 {liveTrainee.district}, {liveTrainee.state || 'Tamil Nadu'}
+                </span>
+              )}
+              <span className="inline-flex items-center gap-1 font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded uppercase text-[10px]">
+                Status: {liveTrainee?.status || 'Active'}
+              </span>
+            </div>
           </div>
         </div>
 
