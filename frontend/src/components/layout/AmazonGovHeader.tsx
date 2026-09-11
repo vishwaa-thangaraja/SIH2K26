@@ -43,13 +43,12 @@ export default function AmazonGovHeader() {
   const [drawerFilter, setDrawerFilter] = useState('')
   const [filterFlyoutOpen, setFilterFlyoutOpen] = useState(false)
 
-  // Dynamic Scroll & Hover states
+  // Dynamic Scroll state for subtle elevation shadow
   const [isScrolled, setIsScrolled] = useState(false)
-  const [isHovered, setIsHovered] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 80)
+      setIsScrolled(window.scrollY > 20)
     }
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
@@ -174,33 +173,12 @@ export default function AmazonGovHeader() {
 
   return (
     <>
-      {/* Top Hover Sensor: Invisible trigger strip fixed at top when scrolled down */}
-      {isScrolled && !allDrawerOpen && (
-        <div
-          onMouseEnter={() => setIsHovered(true)}
-          className="fixed top-0 left-0 right-0 h-4 z-40 pointer-events-auto cursor-pointer"
-          aria-hidden="true"
-        />
-      )}
-
-      {/* Main Header Container with Auto-Hide and Hover-to-Open */}
-      <div
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        className={`w-full shrink-0 flex flex-col font-sans z-30 transition-all duration-300 ease-in-out ${
-          isScrolled
-            ? `fixed top-0 left-0 right-0 shadow-2xl ${
-                isHovered || allDrawerOpen
-                  ? 'translate-y-0 opacity-100'
-                  : '-translate-y-[calc(100%-8px)] opacity-95 hover:translate-y-0 hover:opacity-100'
-              }`
-            : 'relative translate-y-0 opacity-100 shadow-sm'
+      {/* Main Header Container - Native Smooth Sticky Header (Zero Jump, Zero Jitter) */}
+      <header
+        className={`sticky top-0 z-40 w-full shrink-0 flex flex-col font-sans transition-shadow duration-200 ${
+          isScrolled ? 'shadow-lg border-b border-slate-900/40' : 'shadow-xs'
         }`}
       >
-        {/* Visual cue strip visible at top when header is tucked away */}
-        {isScrolled && !isHovered && !allDrawerOpen && (
-          <div className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-blue-500 via-amber-400 to-sky-400 cursor-pointer animate-pulse" />
-        )}
 
         {/* ──────────────────────────────────────────────────────────
             ROW 1: UNIQUE PRIMARY HEADER (GOV NAVY #0B2545)
@@ -389,7 +367,7 @@ export default function AmazonGovHeader() {
             )
           })}
         </div>
-      </div>
+      </header>
 
       {/* ──────────────────────────────────────────────────────────
           ALL MODULES FULL-VIEWPORT DRAWER (RENDERED AT ROOT LEVEL)
