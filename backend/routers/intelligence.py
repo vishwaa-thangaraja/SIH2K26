@@ -320,3 +320,28 @@ def get_hotspot_deficit(district: str = "Madurai", db: Session = Depends(get_db)
 @router.get("/outcome-trends")
 def get_outcome_trends():
     return {"months": ["Jan", "Feb", "Mar"], "placements": [120, 150, 180]}
+
+@router.get("/cohort-anomalies")
+def get_cohort_anomalies(db: Session = Depends(get_db)):
+    """
+    Macro-level audit metrics evaluating the entire trainee cohort for ghost-training, 
+    proxy testing, and velocity anomalies using Isolation Forest boundaries.
+    """
+    from services.anomaly_service import get_cohort_anomaly_summary
+    return get_cohort_anomaly_summary(db)
+
+@router.get("/nco-skills")
+def get_nco_skills(trade: Optional[str] = None):
+    """
+    Returns NCO-2004 occupational skill gaps and statewide priority needs from O*NET mappings.
+    """
+    from services.skill_gap_service import get_recommendations_for_trade, get_statewide_priority_gaps
+    if trade:
+        return {
+            "query_trade": trade,
+            "skills": get_recommendations_for_trade(trade)
+        }
+    return {
+        "statewide_priority_gaps": get_statewide_priority_gaps()
+    }
+

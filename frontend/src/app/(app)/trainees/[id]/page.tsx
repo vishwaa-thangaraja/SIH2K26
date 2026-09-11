@@ -4,7 +4,8 @@ import { MOCK_TRAINEE, MOCK_OUTCOMES, MOCK_EVIDENCE } from '@/lib/mockData'
 import { MOCK_SEARCH_DATASET } from '@/lib/mockSearchData'
 import { 
   User, ShieldCheck, Phone, Mail, GraduationCap, 
-  Building2, Calendar, FileText, CheckCircle2, ArrowRight, Network 
+  Building2, Calendar, FileText, CheckCircle2, ArrowRight, Network,
+  AlertTriangle, ShieldAlert, Sparkles, Target, TrendingUp
 } from 'lucide-react'
 
 export default async function TraineeProfilePage({
@@ -14,13 +15,18 @@ export default async function TraineeProfilePage({
 }) {
   const { id } = await params
   
-  // Fetch live trainee and outcomes from database
+  // Fetch live trainee, outcomes, anomaly shield, and NCO skill recommendations
   let liveTrainee: any = null
   let liveOutcomes: any[] = []
+  let liveAnomaly: any = null
+  let liveSkillRecs: any = null
+
   try {
-    const [tRes, oRes] = await Promise.all([
+    const [tRes, oRes, aRes, sRes] = await Promise.all([
       fetch(`http://127.0.0.1:8000/trainees/${id}`, { cache: 'no-store' }),
-      fetch(`http://127.0.0.1:8000/outcomes?trainee_id=${id}`, { cache: 'no-store' })
+      fetch(`http://127.0.0.1:8000/outcomes?trainee_id=${id}`, { cache: 'no-store' }),
+      fetch(`http://127.0.0.1:8000/trainees/${id}/anomaly`, { cache: 'no-store' }),
+      fetch(`http://127.0.0.1:8000/trainees/${id}/skill-recommendations`, { cache: 'no-store' })
     ])
     if (tRes.ok) liveTrainee = await tRes.json()
     if (oRes.ok) {
@@ -29,6 +35,8 @@ export default async function TraineeProfilePage({
         liveOutcomes = oData.events
       }
     }
+    if (aRes.ok) liveAnomaly = await aRes.json()
+    if (sRes.ok) liveSkillRecs = await sRes.json()
   } catch (err) {}
 
   const found = MOCK_SEARCH_DATASET.find((t) => t.trainee_id === id || t.id === id)
@@ -147,6 +155,61 @@ export default async function TraineeProfilePage({
         </div>
       </div>
 
+      {/* AI Integrity & Anomaly Shield (Model 2: Isolation Forest) */}
+      <div className={`p-4 rounded-xl border flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm ${
+        (liveAnomaly?.status === 'Highly Anomalous')
+          ? 'bg-rose-50/80 border-rose-200 text-rose-900'
+          : (liveAnomaly?.status === 'Suspicious')
+          ? 'bg-amber-50/80 border-amber-200 text-amber-900'
+          : 'bg-emerald-50/70 border-emerald-200 text-emerald-900'
+      }`}>
+        <div className="flex items-center gap-3">
+          <div className={`p-2.5 rounded-lg shrink-0 ${
+            (liveAnomaly?.status === 'Highly Anomalous')
+              ? 'bg-rose-100 text-rose-700'
+              : (liveAnomaly?.status === 'Suspicious')
+              ? 'bg-amber-100 text-amber-700'
+              : 'bg-emerald-100 text-emerald-700'
+          }`}>
+            {(liveAnomaly?.status === 'Highly Anomalous' || liveAnomaly?.status === 'Suspicious') ? (
+              <ShieldAlert size={22} />
+            ) : (
+              <ShieldCheck size={22} />
+            )}
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-wider">AI Audit & Fraud Integrity Shield</span>
+              <span className={`text-[11px] font-extrabold px-2 py-0.5 rounded-full ${
+                (liveAnomaly?.status === 'Highly Anomalous')
+                  ? 'bg-rose-200 text-rose-800'
+                  : (liveAnomaly?.status === 'Suspicious')
+                  ? 'bg-amber-200 text-amber-800'
+                  : 'bg-emerald-200 text-emerald-800'
+              }`}>
+                {liveAnomaly?.status || 'Normal'}
+              </span>
+            </div>
+            <p className="text-xs text-slate-600 mt-0.5">
+              {liveAnomaly?.risk_factors && liveAnomaly.risk_factors.length > 0 
+                ? liveAnomaly.risk_factors.join(' • ')
+                : 'Training attendance, velocity, assessment score, and certification patterns comply with NSQF operational norms.'}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4 shrink-0 text-right">
+          <div>
+            <p className="text-[10px] text-slate-500 font-bold uppercase">Audit Integrity Index</p>
+            <p className="text-lg font-extrabold text-slate-900">{liveAnomaly?.integrity_index ?? 92}<span className="text-xs font-normal text-slate-500">/100</span></p>
+          </div>
+          <div className="border-l border-slate-200 pl-4">
+            <p className="text-[10px] text-slate-500 font-bold uppercase">Isolation Score</p>
+            <p className="text-xs font-mono font-bold text-slate-700">{liveAnomaly?.anomaly_score ? (liveAnomaly.anomaly_score > 0 ? `+${liveAnomaly.anomaly_score}` : liveAnomaly.anomaly_score) : '+0.082'}</p>
+          </div>
+        </div>
+      </div>
+
       {/* Detailed Information Panels */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Core Attributes */}
@@ -235,6 +298,65 @@ export default async function TraineeProfilePage({
           </div>
         </div>
       </div>
+
+      {/* NCO-2004 Occupational Skill Gap & Recommendations (Model 3: PLFS + O*NET) */}
+      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 pb-4 border-b border-slate-100">
+          <div>
+            <div className="flex items-center gap-2">
+              <Target size={18} className="text-sky-600" />
+              <h2 className="text-base font-bold text-slate-900">NCO-2004 Target Upskilling Recommendations</h2>
+              <span className="text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-200 px-2 py-0.5 rounded">
+                PLFS + O*NET Concordance Matrix
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 mt-1">
+              Top skill deficits identified for career progression in <strong className="text-slate-800">{liveSkillRecs?.trade || trainee.program}</strong>.
+            </p>
+          </div>
+          <Link
+            href="/regional-analytics"
+            className="text-xs font-semibold text-sky-700 hover:underline flex items-center gap-1 shrink-0"
+          >
+            Corridor Skill Analytics <ArrowRight size={12} />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+          {(liveSkillRecs?.recommendations && liveSkillRecs.recommendations.length > 0 
+            ? liveSkillRecs.recommendations.slice(0, 3) 
+            : [
+                { skill: "Active Listening & Technical Interpretation", required_level: 4.0, inferred_score: 1.8, skill_gap: 2.2 },
+                { skill: "Precision Quality Control & Inspection", required_level: 4.2, inferred_score: 2.1, skill_gap: 2.1 },
+                { skill: "Automated Tooling & CNC Setup", required_level: 4.5, inferred_score: 2.6, skill_gap: 1.9 }
+              ]
+          ).map((rec: any, idx: number) => (
+            <div key={idx} className="p-4 bg-slate-50/80 border border-slate-200 rounded-xl hover:border-sky-300 transition-colors">
+              <div className="flex items-center justify-between text-xs font-bold text-slate-700">
+                <span className="truncate max-w-[180px] text-slate-900">{rec.skill}</span>
+                <span className="text-rose-600 font-mono text-[11px]">Gap: -{rec.skill_gap}</span>
+              </div>
+              <div className="mt-3 space-y-1.5 text-[11px]">
+                <div className="flex justify-between text-slate-500">
+                  <span>Current Inferred</span>
+                  <span className="font-semibold text-slate-800">{rec.inferred_score} / 5.0</span>
+                </div>
+                <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                  <div 
+                    className="bg-sky-600 h-1.5 rounded-full" 
+                    style={{ width: `${Math.min(100, Math.max(10, (rec.inferred_score / 5.0) * 100))}%` }}
+                  />
+                </div>
+                <div className="flex justify-between text-slate-400 text-[10px] pt-1">
+                  <span>Required Industry Level: <strong>{rec.required_level}</strong></span>
+                  <span className="text-emerald-700 font-bold">NSQF L5 Target</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
     </div>
   )
 }

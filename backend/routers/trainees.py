@@ -267,3 +267,33 @@ def get_trainee_timeline(trainee_id: str, db: Session = Depends(get_db)):
 def get_trainee_anchors(trainee_id: str, db: Session = Depends(get_db)):
     anchors = db.exec(select(IdentityAnchor).where(IdentityAnchor.trainee_id == trainee_id)).all()
     return anchors
+
+@router.get("/{trainee_id}/anomaly")
+def get_trainee_anomaly_score(trainee_id: str, db: Session = Depends(get_db)):
+    """
+    Evaluates trainee across 7 training dimensions using Isolation Forest boundaries.
+    """
+    from services.anomaly_service import evaluate_trainee
+    return evaluate_trainee(trainee_id, db)
+
+@router.get("/{trainee_id}/skill-recommendations")
+def get_trainee_skill_recommendations(trainee_id: str, db: Session = Depends(get_db)):
+    """
+    Returns targeted O*NET occupational skill recommendations based on the trainee's trade/course.
+    """
+    from services.skill_gap_service import get_recommendations_for_trade
+    trainee = db.exec(select(Trainee).where(Trainee.trainee_id == trainee_id)).first()
+    if not trainee:
+        raise HTTPException(status_code=404, detail="Trainee not found")
+
+    trn = db.exec(select(TrainingRecord).where(TrainingRecord.trainee_id == trainee_id)).first()
+    trade_name = trn.course if trn and trn.course else (trainee.program or "Precision Engineering")
+    recommendations = get_recommendations_for_trade(trade_name)
+    
+    return {
+        "trainee_id": trainee_id,
+        "name": trainee.name,
+        "trade": trade_name,
+        "recommendations": recommendations
+    }
+

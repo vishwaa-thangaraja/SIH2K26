@@ -304,3 +304,20 @@ def confirm_import(
 def get_import_batches(db: Session = Depends(get_db)):
     """Returns past import batch history."""
     return db.exec(select(ImportBatchLog).order_by(ImportBatchLog.imported_at.desc())).all()
+
+@router.post("/check-duplicate")
+def check_candidate_duplicate(
+    payload: Dict[str, Any] = Body(...),
+    db: Session = Depends(get_db)
+):
+    """
+    Evaluates an incoming candidate record against existing database trainees using Jaro-Winkler
+    and multi-attribute matching (Model 1 Identity Matcher).
+    """
+    from services.identity_matching_service import check_for_duplicates
+    name = payload.get("name", "")
+    phone = payload.get("phone", "")
+    email = payload.get("email", "")
+    district = payload.get("district", "")
+    return check_for_duplicates(name=name, phone=phone, email=email, district=district, db=db)
+
