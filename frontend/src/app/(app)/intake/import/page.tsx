@@ -82,7 +82,32 @@ export default function TrainingIntakeImportPage() {
   const [isImporting, setIsImporting] = useState<boolean>(false)
   const [importSummary, setImportSummary] = useState<ImportSummaryResult | null>(null)
 
-  // ── 1. LOAD SYNTHETIC DEMO CSV ──
+  // ── 1. LOAD HEERAJ S K CSV (SINGLE TRAINEE) ──
+  const handleLoadHeerajCSV = async () => {
+    try {
+      setValidationError(null)
+      const res = await fetch('/demo_data/Heeraj_SK_Training_Import.csv')
+      if (!res.ok) {
+        throw new Error('Failed to load Heeraj S K demo CSV.')
+      }
+      const text = await res.text()
+      const lines = text.trim().split('\n').filter(Boolean)
+      const rowCount = Math.max(0, lines.length - 1)
+
+      setFileContent(text)
+      setSelectedFile(null)
+      setIsDemoData(true)
+      setFileDetails({
+        name: 'Heeraj_SK_Training_Import.csv (Single Trainee - Heeraj S K)',
+        size: `${(text.length / 1024).toFixed(1)} KB`,
+        rowCountEstimate: rowCount,
+      })
+    } catch (err: any) {
+      setValidationError(err.message || 'Error loading Heeraj S K dataset.')
+    }
+  }
+
+  // ── 1A. LOAD SYNTHETIC DEMO CSV (100 ROWS) ──
   const handleLoadDemoCSV = async () => {
     try {
       setValidationError(null)
@@ -107,7 +132,7 @@ export default function TrainingIntakeImportPage() {
     }
   }
 
-  // ── 1B. DOWNLOAD EMPTY / SAMPLE CSV TEMPLATE ──
+  // ── 1B. DOWNLOAD HEERAJ S K SAMPLE CSV TEMPLATE ──
   const handleDownloadTemplateCSV = () => {
     const headers = [
       'trainee_id', 'name', 'date_of_birth', 'gender', 'contact_number', 'email',
@@ -117,17 +142,17 @@ export default function TrainingIntakeImportPage() {
       'certification_status', 'certification_date', 'skill_1', 'skill_2', 'skill_3', 'skill_4'
     ]
     const sampleRow = [
-      'T001', 'Aarav Kumar', '1995-01-01', 'Male', '9876543210', 'aarav.kumar@example.com',
-      'Chennai', 'Tamil Nadu', 'SkillBridge Training Services', 'Guindy Centre', 'Data Analytics', 'IT-ITeS',
-      'BATCH-2026-01', '2026-01-05', '2026-03-06', 'Completed', '88', '75', 'Pass',
-      'Certified', '2026-03-22', 'Excel', 'SQL', 'Python', 'PowerBI'
+      'T100', 'Heeraj S K', '2002-04-14', 'Male', '9840123456', 'heeraj.sk@example.com',
+      'Coimbatore', 'Tamil Nadu', 'SkillBridge Training Services', 'SkillBridge Coimbatore Centre', 'Data Analytics', 'IT-ITeS',
+      'B055', '2026-01-05', '2026-03-06', 'Completed', '94', '88', 'Pass',
+      'Certified', '2026-03-20', 'Python', 'SQL', 'Power BI', 'Data Visualization'
     ]
     const csvString = headers.join(',') + '\n' + sampleRow.join(',') + '\n'
     const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = 'CONTINUUM_Training_Intake_Template.csv'
+    link.download = 'Heeraj_SK_Training_Import.csv'
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -416,24 +441,33 @@ export default function TrainingIntakeImportPage() {
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
-                {/* Single-Click Download Sample Template CSV Button */}
+                {/* Single-Click Download Heeraj S K Sample CSV */}
                 <button
                   type="button"
                   onClick={handleDownloadTemplateCSV}
-                  className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 text-xs font-bold px-3 py-1.5 rounded-xl shadow-xs transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 text-xs font-bold px-3 py-1.5 rounded-xl shadow-xs transition-colors cursor-pointer"
                 >
-                  <Download size={13} className="text-slate-700" />
-                  <span>Download Sample CSV Template</span>
+                  <Download size={13} className="text-emerald-700" />
+                  <span>Download Heeraj S K CSV (1 Trainee)</span>
+                </button>
+
+                {/* Quick Load Heeraj S K Button */}
+                <button
+                  type="button"
+                  onClick={handleLoadHeerajCSV}
+                  className="inline-flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-300 text-xs font-bold px-3 py-1.5 rounded-xl shadow-xs transition-colors cursor-pointer"
+                >
+                  <Sparkles size={13} className="text-blue-600" />
+                  <span>Load Heeraj S K (1 Trainee)</span>
                 </button>
 
                 {/* Quick Load Demo Button */}
                 <button
                   type="button"
                   onClick={handleLoadDemoCSV}
-                  className="inline-flex items-center gap-1.5 bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 text-xs font-bold px-3 py-1.5 rounded-xl shadow-xs transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 text-xs font-semibold px-2.5 py-1.5 rounded-xl transition-colors cursor-pointer"
                 >
-                  <Sparkles size={13} className="text-sky-600" />
-                  <span>Load Synthetic Demo CSV (100 Rows)</span>
+                  <span>Benchmark (100 Rows)</span>
                 </button>
               </div>
             </div>
@@ -597,12 +631,12 @@ export default function TrainingIntakeImportPage() {
 
             <div className="pt-2 border-t border-slate-100">
               <a
-                href="/demo_data/CONTINUUM_Module1_Demo_Training_Import.csv"
-                download="CONTINUUM_Module1_Template.csv"
-                className="w-full inline-flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold py-2.5 rounded-xl transition-colors"
+                href="/demo_data/Heeraj_SK_Training_Import.csv"
+                download="Heeraj_SK_Training_Import.csv"
+                className="w-full inline-flex items-center justify-center gap-2 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-900 text-xs font-bold py-2.5 rounded-xl transition-colors shadow-xs"
               >
-                <Download size={14} />
-                <span>Download Sample CSV Template</span>
+                <Download size={14} className="text-emerald-700" />
+                <span>Download Heeraj S K Sample CSV (1 Record)</span>
               </a>
             </div>
           </div>
