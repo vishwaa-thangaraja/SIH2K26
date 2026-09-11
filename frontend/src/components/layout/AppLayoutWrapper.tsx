@@ -25,8 +25,10 @@ export default function AppLayoutWrapper({
   useEffect(() => {
     if (typeof window === 'undefined') return
 
+    const effectiveRole = (localStorage.getItem('continuum_role') as string | null) || role
+
     // ── Security & Privacy Isolation for Trainee Role ──
-    if (role === 'trainee') {
+    if (effectiveRole === 'trainee') {
       // 1. Restrict official-only administrative routes
       if (OFFICIAL_ONLY_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))) {
         router.replace('/dashboard')

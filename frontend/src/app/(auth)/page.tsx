@@ -105,8 +105,11 @@ export default function LandingPage() {
   const handleGovLogin = (e: React.FormEvent) => {
     e.preventDefault()
     setGovLoading(true)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('continuum_role', 'analyst')
+    }
+    setRole('analyst')
     setTimeout(() => {
-      setRole('analyst')
       router.push('/intelligence')
     }, 200)
   }
@@ -114,16 +117,21 @@ export default function LandingPage() {
   const handleTraineeLogin = (targetId?: string) => {
     const idToUse = targetId || selectedTraineeId
     setTraineeLoading(true)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('continuum_role', 'trainee')
+      localStorage.setItem('continuum_active_trainee_id', idToUse)
+    }
     setRole('trainee')
     setActiveTraineeId(idToUse)
-    localStorage.setItem('continuum_role', 'trainee')
-    localStorage.setItem('continuum_active_trainee_id', idToUse)
     setTimeout(() => {
       router.push('/dashboard')
     }, 200)
   }
 
   const handleQuickGovDemo = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('continuum_role', 'analyst')
+    }
     setRole('analyst')
     router.push('/intelligence')
   }

@@ -99,8 +99,22 @@ const TRAINEE_ROUTES = [
 
 export function RoleProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const [role, setRoleState] = useState<AppRole>('analyst')
-  const [activeTrainee, setActiveTrainee] = useState<TraineeSession>(DEFAULT_TRAINEES.T001)
+  const [role, setRoleState] = useState<AppRole>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('continuum_role') as AppRole | null
+      if (stored === 'trainee' || stored === 'analyst') return stored
+    }
+    return 'analyst'
+  })
+  const [activeTrainee, setActiveTrainee] = useState<TraineeSession>(() => {
+    if (typeof window !== 'undefined') {
+      const storedTrainee = localStorage.getItem('continuum_active_trainee_id')
+      if (storedTrainee && DEFAULT_TRAINEES[storedTrainee.toUpperCase()]) {
+        return DEFAULT_TRAINEES[storedTrainee.toUpperCase()]
+      }
+    }
+    return DEFAULT_TRAINEES.T002 || DEFAULT_TRAINEES.T001
+  })
 
   const fetchTraineeFromBackend = useCallback(async (id: string) => {
     const formattedId = id.toUpperCase()
