@@ -130,7 +130,7 @@ export default function OutcomeIntelligenceDashboard() {
             className="inline-flex items-center gap-2 bg-gov-navy hover:bg-blue-900 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-xs transition-all duration-200 hover:-translate-y-0.5 active:translate-y-px"
           >
             <Sparkles size={14} className="text-sky-300" />
-            <span>Policy Directives (5 Active)</span>
+            <span>Policy Directive and Recommendation</span>
             <ArrowRight size={14} />
           </Link>
         </div>

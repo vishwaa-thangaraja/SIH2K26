@@ -98,7 +98,7 @@ export default function AmazonGovHeader() {
     { label: 'Macro Intelligence', href: '/intelligence', icon: BarChart3 },
     { label: 'Import Training Data', href: '/intake/import', icon: Upload },
     { label: 'Advanced Filter Search', href: '/advanced-search', icon: Filter, isFilter: true },
-    { label: 'Policy Directives', href: '/intelligence/policy', icon: LineChart },
+    { label: 'Policy Directive and Recommendation', href: '/intelligence/policy', icon: LineChart },
     { label: 'Provider Scorecards', href: '/scorecards', icon: Award },
     { label: 'Regional Skill Map', href: '/regional-analytics', icon: Map },
     { label: 'Trainee Audit Records', href: '/trainees/T001/timeline', icon: ClipboardList },
@@ -127,7 +127,7 @@ export default function AmazonGovHeader() {
       category: 'Macro Governance & Policy Loop',
       items: [
         { label: 'Macro Outcome Intelligence', href: '/intelligence', icon: BarChart3, desc: 'Aggregated longitudinal 3M–24M KPIs & benchmarks', badge: 'Live Data' },
-        { label: 'Policy Feedback Directives', href: '/intelligence/policy', icon: LineChart, desc: 'Automated seat & funding reallocation interventions', badge: '5 Directives' },
+        { label: 'Policy Directive and Recommendation', href: '/intelligence/policy', icon: LineChart, desc: 'Automated seat & funding reallocation interventions', badge: 'Active' },
         { label: 'Training Provider Scorecards', href: '/scorecards', icon: Award, desc: 'Institutional placement & wage adequacy rankings' },
         { label: 'Regional GIS Skill-Gap Map', href: '/regional-analytics', icon: Map, desc: 'Spatial district-wise labor deficit & supply heatmap', badge: 'GIS Heatmap' },
       ],
