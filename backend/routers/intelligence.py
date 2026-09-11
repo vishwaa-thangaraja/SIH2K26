@@ -367,22 +367,20 @@ def get_hotspot_deficit(district: str = "Madurai", db: Session = Depends(get_db)
             .where(CertificationRecord.trainee_id.in_(trainee_ids))
         ).one()
 
-    # 3. Dynamic macroeconomic calculation:
-    # Market demand slots derived from empirical demand index (e.g. demand_score * 150)
-    market_demand = int(demand_score * 150)
-    # Certified supply derived from base supply score index + live DB verified certifications
-    certified_supply = int(base_supply_score * 100) + (certified_count * 10)
+    # 3. Authentic macroeconomic calculation directly from RegionalSkillGap & live DB:
+    demand_score = int(demand_score)
+    base_supply_score = int(base_supply_score)
     
-    gap_ratio = round(market_demand / max(1, certified_supply), 2)
-    demand_pct = min(100, int((market_demand / 16000) * 100))
-    supply_pct = min(100, int((certified_supply / market_demand) * 100))
+    gap_ratio = round(demand_score / max(1, base_supply_score), 2)
+    demand_pct = demand_score
+    supply_pct = base_supply_score
 
     return {
         "hub_name": f"{dist_name} Hub",
         "corridor": f"{dist_name} & Kappalur Industrial Corridor" if "madurai" in dist_name.lower() else f"{dist_name} Industrial Corridor",
         "trades": trades,
-        "market_demand_slots": market_demand,
-        "certified_supply_count": certified_supply,
+        "market_demand_slots": f"{demand_score} / 100 Index",
+        "certified_supply_count": f"{base_supply_score} / 100 Score",
         "live_trainees_in_db": madurai_count,
         "audited_certified": certified_count,
         "demand_score": demand_score,

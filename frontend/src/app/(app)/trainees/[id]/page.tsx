@@ -315,13 +315,13 @@ export default async function TraineeProfilePage({
           <div>
             <div className="flex items-center gap-2">
               <Target size={18} className="text-sky-600" />
-              <h2 className="text-base font-bold text-slate-900">National Occupational Standards (NCO-2004) Skill Gap Assessment</h2>
+              <h2 className="text-base font-bold text-slate-900">National Occupational Standards (NCO-2004) Competency Assessment</h2>
               <span className="text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-200 px-2 py-0.5 rounded">
                 MSDE Competency Framework
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-1">
-              Top skill deficits identified for career progression in <strong className="text-slate-800">{liveSkillRecs?.trade || trainee.program}</strong>.
+              Verified technical trade mastery and NSQF Level 5 target progression competencies in <strong className="text-slate-800">{liveSkillRecs?.trade || trainee.program}</strong>.
             </p>
           </div>
           <Link
@@ -332,18 +332,37 @@ export default async function TraineeProfilePage({
           </Link>
         </div>
 
+        {/* Verified Acquired Skills from Database */}
+        {liveSkillRecs?.acquired_skills && liveSkillRecs.acquired_skills.length > 0 && (
+          <div className="mt-4 p-3 bg-slate-50 rounded-xl border border-slate-200/80 flex flex-wrap items-center gap-2">
+            <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mr-1">
+              Verified Intake Skills:
+            </span>
+            {liveSkillRecs.acquired_skills.map((s: string, sIdx: number) => (
+              <span 
+                key={sIdx}
+                className="inline-flex items-center gap-1 text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-1 rounded-lg"
+              >
+                <CheckCircle2 size={12} className="text-emerald-600" />
+                {s}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Next-Step NSQF Level 5 Progression Competencies */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
           {(liveSkillRecs?.recommendations && liveSkillRecs.recommendations.length > 0 
             ? liveSkillRecs.recommendations.slice(0, 3) 
             : [
-                { skill: "Active Listening & Technical Interpretation", required_level: 4.0, inferred_score: 1.8, skill_gap: 2.2 },
-                { skill: "Precision Quality Control & Inspection", required_level: 4.2, inferred_score: 2.1, skill_gap: 2.1 },
-                { skill: "Automated Tooling & CNC Setup", required_level: 4.5, inferred_score: 2.6, skill_gap: 1.9 }
+                { skill: "Industrial PLC Automation & Relay Controls", required_level: 4.5, inferred_score: 3.4, skill_gap: 1.1, target_descriptor: "NSQF L5 Target" },
+                { skill: "3-Phase Power Distribution & Diagnostics", required_level: 4.2, inferred_score: 3.3, skill_gap: 0.9, target_descriptor: "NSQF L5 Target" },
+                { skill: "High-Voltage Safety & Earthing Audit", required_level: 4.8, inferred_score: 3.7, skill_gap: 1.1, target_descriptor: "Statutory Safety Standard" }
               ]
           ).map((rec: any, idx: number) => (
             <div key={idx} className="p-4 bg-slate-50/80 border border-slate-200 rounded-xl hover:border-sky-300 transition-colors">
               <div className="flex items-center justify-between text-xs font-bold text-slate-700">
-                <span className="truncate max-w-[180px] text-slate-900">{rec.skill}</span>
+                <span className="truncate max-w-[190px] text-slate-900" title={rec.skill}>{rec.skill}</span>
                 <span className="text-rose-600 font-mono text-[11px]">Gap: -{rec.skill_gap}</span>
               </div>
               <div className="mt-3 space-y-1.5 text-[11px]">
@@ -359,7 +378,7 @@ export default async function TraineeProfilePage({
                 </div>
                 <div className="flex justify-between text-slate-400 text-[10px] pt-1">
                   <span>Required Industry Level: <strong>{rec.required_level}</strong></span>
-                  <span className="text-emerald-700 font-bold">NSQF L5 Target</span>
+                  <span className="text-emerald-700 font-bold">{rec.target_descriptor || 'NSQF L5 Target'}</span>
                 </div>
               </div>
             </div>

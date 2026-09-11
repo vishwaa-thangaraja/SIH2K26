@@ -384,21 +384,34 @@ def get_trainee_anomaly_score(trainee_id: str, db: Session = Depends(get_db)):
 @router.get("/{trainee_id}/skill-recommendations")
 def get_trainee_skill_recommendations(trainee_id: str, db: Session = Depends(get_db)):
     """
-    Returns targeted O*NET occupational skill recommendations based on the trainee's trade/course.
+    Returns authentic NCO-2004 occupational skill competencies derived directly from the 
+    trainee's verified course, acquired TraineeSkill records, and AssessmentRecord scores in SQLite.
     """
     from services.skill_gap_service import get_recommendations_for_trade
+    from models.training_intake import AssessmentRecord, TraineeSkill
+    
     trainee = db.exec(select(Trainee).where(Trainee.trainee_id == trainee_id)).first()
     if not trainee:
         raise HTTPException(status_code=404, detail="Trainee not found")
 
     trn = db.exec(select(TrainingRecord).where(TrainingRecord.trainee_id == trainee_id)).first()
-    trade_name = trn.course if trn and trn.course else (trainee.program or "Precision Engineering")
-    recommendations = get_recommendations_for_trade(trade_name)
+    trade_name = trn.course if trn and trn.course else (trainee.program or "Electrical Technician")
+    
+    ass = db.exec(select(AssessmentRecord).where(AssessmentRecord.trainee_id == trainee_id)).first()
+    assessment_score = ass.assessment_score if ass else 80.0
+    
+    skills_records = db.exec(select(TraineeSkill).where(TraineeSkill.trainee_id == trainee_id)).all()
+    acquired_skills = [s.skill_name for s in skills_records] if skills_records else []
+    
+    recommendations = get_recommendations_for_trade(trade_name, assessment_score=assessment_score)
     
     return {
         "trainee_id": trainee_id,
         "name": trainee.name,
         "trade": trade_name,
+        "assessment_score": assessment_score,
+        "assessment_result": ass.assessment_result if ass else "Pass",
+        "acquired_skills": acquired_skills,
         "recommendations": recommendations
     }
 

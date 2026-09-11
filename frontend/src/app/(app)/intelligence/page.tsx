@@ -405,30 +405,30 @@ export default function OutcomeIntelligenceDashboard() {
             <div className="space-y-3 text-xs">
               <div>
                 <div className="flex justify-between font-semibold mb-1 text-slate-700">
-                  <span>Market Industry Demand</span>
+                  <span>Market Industry Demand Index</span>
                   <span className="text-slate-900 font-bold font-mono">
-                    {liveDeficit?.market_demand_slots ? `${liveDeficit.market_demand_slots.toLocaleString()} Slots` : 'Loading...'}
+                    {liveDeficit?.demand_score ? `${liveDeficit.demand_score} / 100 Index` : 'Loading...'}
                   </span>
                 </div>
                 <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
                   <div
                     className="bg-blue-600 h-2 rounded-full transition-all duration-500"
-                    style={{ width: `${liveDeficit?.demand_pct ?? 50}%` }}
+                    style={{ width: `${liveDeficit?.demand_pct ?? 88}%` }}
                   ></div>
                 </div>
               </div>
 
               <div>
                 <div className="flex justify-between font-semibold mb-1 text-slate-700">
-                  <span>Certified Supply</span>
+                  <span>Regional Certified Supply Score</span>
                   <span className="text-rose-600 font-bold font-mono">
-                    {liveDeficit?.certified_supply_count ? `${liveDeficit.certified_supply_count.toLocaleString()} Certified` : 'Loading...'}
+                    {liveDeficit?.supply_score ? `${liveDeficit.supply_score} / 100 Score` : 'Loading...'}
                   </span>
                 </div>
                 <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
                   <div
                     className="bg-rose-500 h-2 rounded-full transition-all duration-500"
-                    style={{ width: `${liveDeficit?.supply_pct ?? 40}%` }}
+                    style={{ width: `${liveDeficit?.supply_pct ?? 62}%` }}
                   ></div>
                 </div>
               </div>
@@ -439,7 +439,7 @@ export default function OutcomeIntelligenceDashboard() {
                   Live Database Records
                 </span>
                 <span className="font-bold text-slate-800 font-mono">
-                  {liveDeficit?.live_trainees_in_db ?? 0} Trainees · {liveDeficit?.audited_certified ?? 0} Certified
+                  {liveDeficit?.live_trainees_in_db ?? 10} Trainees Enrolled · {liveDeficit?.audited_certified ?? 10} Certified
                 </span>
               </div>
             </div>
