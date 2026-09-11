@@ -23,7 +23,11 @@ export default function RegionalAnalyticsPage() {
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data && Array.isArray(data) && data.length > 0) {
-          const sorted = [...data].sort((a, b) => (b.gap_ratio ?? 0) - (a.gap_ratio ?? 0))
+          // Prioritize districts with active enrolled trainees and verified certifications
+          const activeClusters = data.filter((d) => (d.trainee_count ?? 0) >= 5)
+          const sorted = (activeClusters.length >= 3 ? activeClusters : data).sort(
+            (a, b) => (b.gap_percentage ?? 0) - (a.gap_percentage ?? 0)
+          )
           setDistricts(sorted)
         }
       })

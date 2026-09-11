@@ -3,10 +3,21 @@ import Link from 'next/link'
 import { MOCK_POLICY_INSIGHTS } from '@/lib/mockData'
 import { 
   Sparkles, ArrowLeft, ArrowRight, AlertTriangle, 
-  Award, TrendingUp, Building2, Download, CheckCircle2 
+  Award, TrendingUp, Building2, Download, CheckCircle2, ShieldCheck 
 } from 'lucide-react'
 
-export default function PolicyInsightsPage() {
+export default async function PolicyInsightsPage() {
+  let liveDirectives = MOCK_POLICY_INSIGHTS
+  try {
+    const res = await fetch('http://127.0.0.1:8000/intelligence/policy-insights', { cache: 'no-store' })
+    if (res.ok) {
+      const data = await res.json()
+      if (Array.isArray(data) && data.length > 0) {
+        liveDirectives = data
+      }
+    }
+  } catch (e) {}
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -35,7 +46,7 @@ export default function PolicyInsightsPage() {
 
       {/* Intervention Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {MOCK_POLICY_INSIGHTS.map((item) => {
+        {liveDirectives.map((item: any) => {
           const isHigh = item.priority === 'high'
           const isMed = item.priority === 'medium'
 
