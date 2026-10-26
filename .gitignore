@@ -19,14 +19,17 @@ yarn-error.log*
 *.pyd
 .Python
 *.db
-!backend/continuum.db
+!continuum/backend/continuum.db
+!aicte-irccip/backend/data.db
 *.sqlite
 *.sqlite3
 
 # Environment
 .env
 .env.*
-!backend/.env
+!.env.example
+!**/.env.example
+!continuum/backend/.env
 .env.local
 .env.development.local
 .env.test.local

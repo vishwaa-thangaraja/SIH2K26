@@ -1,0 +1,145 @@
+================================================================================
+SIH 2026 OFFICIAL VIDEO DEMONSTRATION SCRIPT (WITH EXACT CLICKS & TIMESTAMPS)
+Project: AICTE Integrated Regulatory Case Coordination Platform (IRCCIP)
+Problem Statement ID: 26264
+Team: Code Society — Mepco Schlenk Engineering College
+Total Duration: 3 Minutes 30 Seconds
+================================================================================
+
+[00:00 - 00:30] PART 1: THE REGULATORY CRISIS (INTRODUCTION)
+--------------------------------------------------------------------------------
+SCREEN ACTION:
+- Start on the Dashboard homepage (http://localhost:3000).
+- Keep cursor steady near the header.
+
+VOICEOVER (English / Tanglish style):
+"Respected evaluators, AICTE regulates over 10,000 technical institutions across 
+India, handling more than 25,000 complaints annually. But right now, AICTE suffers 
+from structural regulatory blindness. 
+
+When a student files an excess fee complaint with the Public Grievance Cell (PGRC), 
+and an anonymous faculty files a severe retrenchment petition with the Regulation 
+Bureau, both bureaus operate in complete isolation. As a result, colleges under active 
+Show-Cause proceedings routinely obtain clean-chit disposals in another cell.
+
+To solve this, our team Code Society presents the AICTE Integrated Regulatory Case 
+Coordination and Intelligence Platform."
+
+
+[00:30 - 01:05] PART 2: LIVE NON-INVASIVE INTAKE & 4-TIER ENTITY RESOLUTION
+--------------------------------------------------------------------------------
+SCREEN ACTION:
+- Click the top Stepper button: [1. Ingest Grievance] OR the top-right blue button: 
+  [Simulate Portal Filing].
+- The "Simulate Portal Filing" modal opens.
+- Point out the field: Raw Institution Name shows "Mepco Engg Sivakasi".
+- Point out the Aadhaar field: "XXXX-XXXX-4819".
+- Click the button: [Fire Portal Webhook].
+- A green success box pops up with the live PID and Salted HMAC Hash.
+
+VOICEOVER:
+"We do not require AICTE to discard its legacy portals. Through our 3-Tier Non-Invasive 
+Data Mesh, external portals push case events directly via lightweight webhooks. 
+
+Watch this: a student files a fee complaint on the PGRC portal. Notice that the college 
+name is informally written as 'Mepco Engg Sivakasi' without any Permanent ID. 
+Under Section 4(1) of the DPDP Act 2023, the citizen's Aadhaar is immediately converted 
+into an irreversible, salted HMAC-SHA256 blind token. 
+
+Our 4-Tier Cascaded Resolver instantly maps 'Mepco Engg Sivakasi' to its verified 
+AICTE Permanent ID: 1-1049281721 with 96% confidence. The docket is registered into 
+the immutable ledger without manual intervention."
+
+
+[01:05 - 01:45] PART 3: THE REGULATORY BLINDSPOT & PARALLEL INQUIRY
+--------------------------------------------------------------------------------
+SCREEN ACTION:
+- Click [Close] on the intake modal.
+- Click the Stepper button: [2. RB Show-Cause].
+- The table filters to Regulation Bureau (RB).
+- Click [Case Passport] on Case RB/SC/2026/089.
+- The Case Passport modal opens showing the Show-Cause narrative and chronological 
+  audit trail.
+
+VOICEOVER:
+"Simultaneously, the Regulation Bureau receives a whistle-blower report on faculty 
+retrenchment against the exact same institution, issuing a statutory Show-Cause Notice 
+under APH Chapter VII. 
+
+Opening the Case Passport reveals the full immutable event ledger. Every status change, 
+hearing notice, and officer assignment is recorded with dual timestamps: World Time and 
+System Recorded Time, protected by SHA-256 cryptographic chaining. 
+
+Now, the crisis unfolds: the college produces a fee refund receipt to PGRC, and PGRC 
+attempts to mark the grievance as DISPOSED with a clean-chit, completely unaware that 
+a punitive hearing is underway in the Regulation Bureau!"
+
+
+[01:45 - 02:25] PART 4: THE HERO MOMENT — CONFLICT SENTINEL INTERCEPTION!
+--------------------------------------------------------------------------------
+SCREEN ACTION:
+- Click [Close Passport].
+- Click the Stepper button: [3. Conflict Intercept].
+- BAM! The full-screen red CONFLICT SENTINEL INTERCEPTION MODAL pops up with a 
+  pulsing shield and side-by-side dockets.
+- Point to the side-by-side comparison: PGRC (Proposed Disposed) vs RB (Active Under Inquiry).
+
+VOICEOVER:
+"This is where our primary hero innovation kicks in — the Conflict Sentinel!
+
+Instead of allowing a dangerous contradictory disposal order to be released, the Sentinel 
+actively intercepts the transaction. 
+
+As you can see on screen, it displays a high-priority High Court and RTI vulnerability 
+alert. It detects that granting an administrative clean-chit while a Show-Cause notice is 
+active creates catastrophic legal vulnerability. The system freezes the unilateral 
+closure and automatically mandates an Inter-Bureau Joint Review Conference."
+
+
+[02:25 - 02:55] PART 5: INTER-BUREAU JOINT CONFERENCE CHAMBER
+--------------------------------------------------------------------------------
+SCREEN ACTION:
+- Click the red button: [Convene Inter-Bureau Conference].
+- The Inter-Bureau Conference Chamber opens.
+- Point to the two officials: Dr. K. Ramanathan (RB) and Smt. Anita Sharma (PGRC).
+- Highlight the Unified Disposal Determination Memo.
+- Click: [Co-Sign & Harmonize Dockets].
+- An alert confirms harmonization, and the screen transitions smoothly to the 
+  Inter-Bureau Conferences tab.
+
+VOICEOVER:
+"The platform now brings both Bureau Heads into the Joint Resolution Chamber. 
+Here, Dr. Ramanathan from Regulation Bureau and Smt. Anita Sharma from PGRC review the 
+cross-bureau evidence. 
+
+Rather than working at cross-purposes, they co-author a Unified Disposal Determination: 
+the student refund is acknowledged, but the institutional clean-chit is withheld pending 
+the Standing Hearing Committee outcome. 
+
+With one click on 'Co-Sign & Harmonize', both bureau dockets are digitally synchronized 
+across AICTE's national registry."
+
+
+[02:55 - 03:30] PART 6: BITEMPORAL TIME-TRAVEL AUDIT & CONCLUSION
+--------------------------------------------------------------------------------
+SCREEN ACTION:
+- Click the Stepper button: [5. Time-Travel Audit].
+- The screen navigates to Case History & Audit Trail.
+- Drag the timeline scrubber from 22 July back to 15 July 2026.
+- Show how the bureau swimlanes dynamically update: future events dim, and the 
+  historical snapshot proves exactly what was recorded on 15 July.
+
+VOICEOVER:
+"Finally, we address legal accountability. If a parliamentary committee or court asks: 
+'What did AICTE officially know on 15 July before the disposal was filed?' 
+
+An officer simply drags the Sliding Window Timeline scrubber to 15 July. 
+Our bitemporal engine reconstructs the exact historical truth: showing only the 
+Show-Cause notice was active, proving zero tampering.
+
+From non-invasive intake to active conflict interdiction and bitemporal audit, our 
+platform eliminates regulatory silos and protects the integrity of technical education 
+in India. 
+
+Thank you, we are Team Code Society from Mepco Schlenk Engineering College."
+================================================================================

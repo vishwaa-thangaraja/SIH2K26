@@ -1,0 +1,215 @@
+================================================================================
+AICTE INTEGRATED REGULATORY CASE COORDINATION & MONITORING PLATFORM (IRCCIP)
+COMPREHENSIVE PROGRESS REPORT & SYSTEM INVENTORY (COMPLETED UP UNTIL NOW)
+Smart India Hackathon 2026 | Problem Statement ID: 26264
+Date: 25 October 2026
+Team: Code Society (Mepco Schlenk Engineering College)
+================================================================================
+
+1. OVERVIEW & SCOPE
+--------------------------------------------------------------------------------
+This document records the exact, factual, non-exaggerated inventory of everything 
+designed, written, tested, and running in this project repository.
+
+Root Project Directory: D:\Documents\SEM V\SIH 2026
+Implementation Directory: D:\Documents\SEM V\SIH 2026\IMP
+
+Both backend (FastAPI, port 8000) and frontend (React/Vite, port 3000) are fully 
+implemented and running live.
+
+
+2. CORE ARCHITECTURAL & SPECIFICATION DOCUMENTS
+--------------------------------------------------------------------------------
+Located in root folder: D:\Documents\SEM V\SIH 2026\
+
+A. schema.sql (41 KB, 827 lines):
+   - PostgreSQL 15+ compatible relational database specification.
+   - 3NF design comprising 55 tables, views, and functions.
+   - Bitemporal event-sourcing model (separates event_time [real-world occurrence] 
+     from recorded_at [system ingestion timestamp]).
+   - Append-only trigger enforcement via forbid_mutation() blocking UPDATE/DELETE 
+     on case_event, relationship_review, alert_ack, audit_event, case_lineage.
+   - Cryptographic SHA-256 tamper-evident hash chaining (RFC 6962 compliant) with 
+     audit_chain() trigger and audit_verify() consistency check function.
+   - 8 analytical and executive views including v_case_detail_current, 
+     v_cross_bureau_contradictions, v_dashboard_kpis, and v_dashboard_bureau_workload.
+   - Seeded with 4 explicit relationship types: DUPLICATE_SUBMISSION, 
+     RELATED_PARALLEL, CONTRADICTORY_ACTIONS, and CASE_TRANSFER.
+
+B. tests.sql (10.6 KB):
+   - 10 automated SQL verification test suites (T1 through T10) testing:
+     referential integrity, append-only triggers, trigram search, bitemporal 
+     reconstruction, SLA breach calculation, contradiction detection, and 
+     joint review sessions.
+
+C. components.docx (38.5 KB):
+   - Technical specification detailing the 8 algorithmic components:
+     1. 4-Tier Cascaded Entity Resolution Engine (Exact PID -> Geo-hierarchy 
+        blocking -> Acronym/token normalization -> Human review queue 70-87%).
+     2. Cross-Bureau Conflict Sentinel (Punitive vs. Disposal interdiction).
+     3. Coordination Intelligence Layer (Three-question evidentiary framework).
+     4. Bitemporal Sliding Window Time-Travel Engine.
+     5. Case Passport & Single-View Institutional Dossier.
+     6. Inter-Bureau Joint Review & Harmonization Protocol.
+     7. Non-Invasive 3-Tier Data Intake Gateway (Webhooks, Read-Replica Poller, 
+        Staging CSV Importer).
+     8. Privacy-Preserving HMAC Tokenizer & Explainable ML Service (DPDP Act).
+
+D. solu.docx (37.6 KB):
+   - Complete hackathon proposal document aligned 100% to PS ID 26264.
+   - Documents problem anatomy, root causes of bureau overlap, 5 hero innovations, 
+     and the deterministic live jury demonstration sequence.
+
+E. tech stack.docx (37.5 KB):
+   - Technology selection justifications and Prototype vs. Production matrix.
+   - Compliance mapping to GIGW 3.0, WCAG 2.1 AA, CERT-In guidelines, and the 
+     Digital Personal Data Protection (DPDP) Act 2023.
+   - Justifications for deliberately omitting separate Graph DBs, Elasticsearch, 
+     and commercial cloud LLM APIs.
+
+
+3. BACKEND IMPLEMENTATION (FASTAPI + SQLALCHEMY + SQLITE)
+--------------------------------------------------------------------------------
+Located in: D:\Documents\SEM V\SIH 2026\IMP\backend\
+
+A. Database & ORM Layer:
+   - app/config.py: Environment configuration pointing to local SQLite data.db 
+     (chosen for zero-setup, portable live jury execution; full PostgreSQL schema.sql 
+     maintained for production).
+   - app/database.py: SQLAlchemy engine with foreign key pragma enforcement.
+   - app/models/schema_models.py: Complete ORM definitions covering Region, State, 
+     District, BureauCell, Officer, CanonicalStatus, TrackType, ComplaintCategory, 
+     Institution, InstitutionNameVariant, ComplaintCase, CaseText, 
+     CaseInstitutionLink, CaseEvent, Relationship, Alert, JointReviewSession, 
+     and JointReviewCase. Primary keys adapted to Integer for SQLite autoincrement.
+   - app/models/api_schemas.py: Pydantic request/response validation schemas.
+
+B. Core Algorithmic Engines:
+   - app/core/entity_resolver.py: 4-tier cascaded resolver. Performs exact PID match, 
+     geographic token blocking, acronym dictionary substitution, and Jaro-Winkler 
+     similarity scoring via jellyfish. Returns tier and human-review flag.
+   - app/core/contradiction.py: ContradictionSentinel scanning cross-bureau status 
+     dissonance. Specifically detects when an institution has a DISPOSED case in one 
+     bureau while an active inquiry (PENDING/UNDER_PROCESS/ESCALATED) exists in another.
+   - app/core/time_travel.py: TimeTravelEngine executing bitemporal state reconstruction. 
+     Supports RECORDED (system knowledge) and WORLD (event occurrence) temporal bases. 
+     Returns active dockets, milestone events, and whether a conflict was active as 
+     of the selected historical timestamp.
+   - app/core/sla_engine.py: Evaluates 4 statutory aging buckets (<15d, 15-30d, 
+     30-60d, >60d), detects SLA breaches beyond 45 days, and derives next action due.
+
+C. Machine Learning Service:
+   - app/ml/ml_service.py: Out-of-the-box local inference engine using Scikit-Learn.
+     - TF-IDF + LogisticRegression for 6 complaint categories (Fees, Faculty, 
+       Infrastructure, Admission, Examination, Other).
+     - Severity keyword heuristic for priority prediction (Low, Medium, High).
+     - Cosine text similarity for duplicate detection scoring.
+     - Rule-based category-to-bureau jurisdiction mapping.
+     - Global singleton pattern pre-trained on realistic seed corpus, ready for 
+       immediate drop-in replacement with teammate's trained .pkl model files.
+
+D. REST API Endpoints (All tested & functional):
+   - app/api/dashboard.py:
+     - GET /api/dashboard/kpis: Real-time aggregated counters.
+     - GET /api/dashboard/bureau-workload: Bureau-by-bureau workload and avg disposal days.
+   - app/api/cases.py:
+     - GET /api/cases: Filtered central case registry with institution profiles.
+     - GET /api/cases/{case_id}/events: Chronological audit events for Case Passport.
+   - app/api/coordination.py:
+     - GET /api/coordination/contradictions: Active contradiction sentinel alerts.
+     - GET /api/coordination/overlaps: Coordination Intelligence Layer answering 
+       the 3 core questions (Why review together, why might not need, justified action).
+     - POST /api/coordination/joint-review: Convenes Inter-Bureau Joint Conference.
+     - GET /api/coordination/joint-review: Lists active/resolved conference dockets.
+     - PUT /api/coordination/joint-review/{session_id}/resolve: Records signed 
+       disposal determination memo and harmonizes dockets.
+   - app/api/time_travel.py:
+     - GET /api/time-travel/query: Historical state reconstruction with milestones.
+   - app/api/entity.py:
+     - POST /api/entity/resolve: Tests 4-tier cascade on arbitrary input text.
+   - app/api/ml.py:
+     - POST /api/ml/infer: Runs categorization, priority, and duplicate check.
+
+E. Seed Data & Launch:
+   - app/seed/init_db.py: Pre-seeds 4 institutions (Mepco Schlenk Engineering College, 
+     PSG Tech, CEG Anna University, Harcourt Butler Technical University), 9 name 
+     variants, 4 bureaus (Regulation Bureau, PGRC, Approval Bureau, Vigilance Cell), 
+     6 realistic dockets, bitemporal event chains, and the Mepco contradiction scenario.
+   - run.py: Uvicorn launcher running on 127.0.0.1:8000.
+   - Package structure: All 6 __init__.py files present across packages.
+
+
+4. FRONTEND IMPLEMENTATION (REACT 18 + VITE + TAILWIND CSS)
+--------------------------------------------------------------------------------
+Located in: D:\Documents\SEM V\SIH 2026\IMP\frontend\
+
+A. Configuration & Build:
+   - package.json: React 18, Vite 8, Tailwind CSS v4, Lucide React icons.
+   - vite.config.js: Configured with @tailwindcss/vite plugin and /api proxy 
+     routing requests to http://127.0.0.1:8000.
+   - Production build verified: npm run build passes with 0 errors.
+
+B. Visual Styling & Typography:
+   - src/index.css: Standard Indian Government portal palette (Ashoka Navy #0F172A, 
+     #1E3A8A, clean white cards with #E2E8F0 borders, dignified slate accents).
+   - High-contrast, scalable typography: Root base font set to 19px with 1.55 
+     line-height for maximum officer legibility on desktop displays.
+   - Eliminated all micro-fonts (replaced 63 instances of 10px/11px text).
+   - Removed distracting top decorative borders; clean, unified government header.
+
+C. Navigation & UI Structure (src/App.jsx):
+   - Left-Sliding Drawer Navigation:
+     - Hamburger button trigger and explicit close button (X).
+     - Closes smoothly on outside clicks.
+     - Glassmorphism backdrop blur (backdrop-filter: blur(5px)) across remaining 
+       dashboard area when open.
+   - Real-Time Live Sync Pulse Indicator in header.
+
+D. Key Interactive Modules (src/App.jsx):
+   1. Central Registry & Workload (Overview Tab):
+      - 6 large text-4xl KPI cards with sub-labels.
+      - Bureau-Wise Workload Cards: Auto-sized bureau pills (fixed overflow for 
+        APPROVAL and VIGILANCE) and progress bars with neutral fallback for 0 cases.
+      - Searchable, multi-filter case table (search by institution, PID, summary, 
+        bureau, status, and SLA delay checkbox).
+   2. Coordination Intelligence Layer (Intelligence Tab):
+      - Classifies relationships as CONTRADICTORY_ACTIONS, DUPLICATE_SUBMISSION, 
+        or RELATED_PARALLEL.
+      - Displays side-by-side docket comparison.
+      - Explicitly answers:
+        a) 1. Why Review Together? (Evidentiary justification)
+        b) 2. Why Might Coordination NOT Be Needed? (False-positive / mandate analysis)
+        c) 3. Recommended Coordination Action (Operational directive)
+   3. Case History & Audit Trail (Sliding Window Timeline):
+      - Interactive date scrubber traversing 9 chronological checkpoints 
+        (1 Jul to 15 Aug 2026).
+      - Horizontal Bureau Swimlanes (PGRC vs. Regulation Bureau).
+      - Visual event nodes illuminate when active in historical window and dim 
+        when in the future.
+      - Visual Conflict Sentinel alert trips when PGRC closed a docket while RB 
+        had an active inquiry.
+      - Temporal basis toggle (Recorded System Knowledge vs. Real-World Action).
+   4. Entity Resolution Review Queue:
+      - Simulates officer intake matching.
+      - Shows matching method, tier, and confidence score.
+      - Flags human review requirement for scores between 70% and 87%.
+   5. Explainable AI & Secure Duplicate Detection:
+      - Real-time complaint analysis with confidence scores.
+      - Documents HMAC-SHA256 salted blind indexing for whistleblower protection.
+   6. Inter-Bureau Joint Conferences:
+      - Docket listing convened conference sessions.
+      - Form to record and sign unified disposal determination memos.
+   7. Case Passport Modal:
+      - Accessible from any table row.
+      - Single institutional dossier displaying handling bureau, assigned officer, 
+        age, full grievance narrative, and chronological immutable event log.
+
+
+5. EXECUTION & OPERATIONAL STATUS
+--------------------------------------------------------------------------------
+Both services are running and verified live on Windows:
+- Backend: http://127.0.0.1:8000 (FastAPI / Uvicorn reloader active)
+- Frontend: http://localhost:3000 (Vite development server active with /api proxy)
+- End-to-end integration verified: HTTP 200 on all endpoints, JSON APIs correctly 
+  feeding frontend components without console errors.
+================================================================================
