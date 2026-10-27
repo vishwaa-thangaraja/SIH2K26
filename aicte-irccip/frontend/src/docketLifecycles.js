@@ -1,14 +1,19 @@
 // ═══════════════════════════════════════════════════════════════════════════
 // DOCKET LIFECYCLES: Per-Case Slidable Interactive Audit & Dispute Trails
-// Simulates authentic Indian Government regulatory case progressions
+// Official AICTE Statutory Case Progression Registry
 // ═══════════════════════════════════════════════════════════════════════════
 
 export const DOCKET_LIFECYCLES = {
   'PGRC/2026/014': {
+    key: 'PGRC/2026/014',
+    ref: 'PGRC/2026/014',
     source_ref: 'PGRC/2026/014',
+    institution: 'Mepco Schlenk Engineering College',
     institution_name: 'Mepco Schlenk Engineering College',
+    institution_pid: '1-1049281721',
     permanent_id: '1-1049281721',
     category: 'Capitation & Caution Fees',
+    subject: 'Capitation & Caution Fees Refund Withholding',
     bureau: 'Public Grievance Redressal Cell (PGRC)',
     is_conflict_case: true,
     stages: [
@@ -18,15 +23,29 @@ export const DOCKET_LIFECYCLES = {
         title: 'Intake & Salted DPDP Blind Indexing',
         status_code: 'PENDING',
         status_label: 'Pending Scrutiny',
+        status: 'Pending Scrutiny',
         bureau_code: 'PGRC',
+        bureau: 'Public Grievance Redressal Cell',
         officer: 'Smt. Anita Sharma (Section Officer)',
         action_summary: 'Grievance received via CPGRAMS/PGRC Webhook. Student reports Rs 25,000 caution deposit withheld post-graduation. Complainant Aadhaar tokenized into salted HMAC-SHA256 hash under Section 4(1) DPDP Act 2023.',
+        action: 'Grievance received via CPGRAMS/PGRC Webhook. Student reports Rs 25,000 caution deposit withheld post-graduation. Complainant Aadhaar tokenized into salted HMAC-SHA256 hash under Section 4(1) DPDP Act 2023.',
+        regulatory_ref: 'DPDP-2023 / Section 4(1)',
         conflict_type: 'NONE',
         conflict_note: 'Clean intake. No cross-bureau conflict detected.',
+        conflict_details: 'Clean intake. No cross-bureau conflict detected.',
         doc_type: 'ACKNOWLEDGEMENT RECEIPT & DPDP TOKEN',
         doc_ref: 'AICTE/PGRC/2026/ACK-014',
         doc_body: 'This acknowledges formal receipt of petition concerning caution fee deposit withholding at Mepco Schlenk Engineering College. Complainant personal credentials have been converted to irreversible salted HMAC token: 9b2d41a7c50e201f... in full compliance with DPDP Act 2023.',
-        signatory: 'Digitally Verified by Central Ingestion Gateway'
+        signatory: 'Digitally Verified by Central Ingestion Gateway',
+        document: {
+          ref_no: 'AICTE/PGRC/2026/ACK-014',
+          date: '2026-07-01',
+          type: 'ACKNOWLEDGEMENT RECEIPT & DPDP TOKEN',
+          subject: 'Formal Ingestion & Privacy Blind Indexing (DPDP Act 2023)',
+          body: 'This acknowledges formal receipt of petition concerning caution fee deposit withholding at Mepco Schlenk Engineering College. Complainant personal credentials have been converted to irreversible salted HMAC token: 9b2d41a7c50e201f... in full compliance with DPDP Act 2023.',
+          signatory: 'Digitally Verified by Central Ingestion Gateway',
+          seal: 'SHA256:7B8C90E1F42A11DEB987C4D5E6F10234'
+        }
       },
       {
         stage_num: 2,
@@ -34,15 +53,29 @@ export const DOCKET_LIFECYCLES = {
         title: '4-Tier Entity Resolution & Formal Notice of Explanation',
         status_code: 'UNDER_PROCESS',
         status_label: 'Under Scrutiny',
+        status: 'Under Scrutiny',
         bureau_code: 'PGRC',
+        bureau: 'Public Grievance Redressal Cell',
         officer: 'Smt. Anita Sharma (Section Officer)',
         action_summary: '4-Tier Cascaded Resolver matched raw input "Mepco Engg Sivakasi" to verified Permanent ID 1-1049281721 with 93.1% Jaro-Winkler confidence. Formal notice of explanation dispatched to Principal.',
+        action: '4-Tier Cascaded Resolver matched raw input "Mepco Engg Sivakasi" to verified Permanent ID 1-1049281721 with 93.1% Jaro-Winkler confidence. Formal notice of explanation dispatched to Principal.',
+        regulatory_ref: 'Clause 4.2 AICTE APH-2026',
         conflict_type: 'NONE',
         conflict_note: 'Case linked to canonical institutional registry. No conflicting dockets active as of 05 July.',
+        conflict_details: 'Case linked to canonical institutional registry. No conflicting dockets active as of 05 July.',
         doc_type: 'OFFICE MEMORANDUM & NOTICE OF EXPLANATION',
         doc_ref: 'AICTE/PGRC/2026/NOT-014/ES',
         doc_body: 'The Principal / Management of Mepco Schlenk Engineering College (PID: 1-1049281721) is hereby directed to submit an attested statement of facts regarding caution deposit refund within 7 statutory calendar days under Clause 4.2 of Approval Process Handbook.',
-        signatory: 'Smt. Anita Sharma, Public Grievance Redressal Cell'
+        signatory: 'Smt. Anita Sharma, Public Grievance Redressal Cell',
+        document: {
+          ref_no: 'AICTE/PGRC/2026/NOT-014/ES',
+          date: '2026-07-05',
+          type: 'OFFICE MEMORANDUM & NOTICE OF EXPLANATION',
+          subject: 'Formal Directive on Caution Fee Deposit Undertaking',
+          body: 'The Principal / Management of Mepco Schlenk Engineering College (PID: 1-1049281721) is hereby directed to submit an attested statement of facts regarding caution deposit refund within 7 statutory calendar days under Clause 4.2 of Approval Process Handbook.',
+          signatory: 'Smt. Anita Sharma, Public Grievance Redressal Cell',
+          seal: 'SHA256:19A3B5C7D9E0F248601A35B7C9D1E3F5'
+        }
       },
       {
         stage_num: 3,
@@ -50,15 +83,29 @@ export const DOCKET_LIFECYCLES = {
         title: 'Institutional Rebuttal & Refund Compliance Affidavit Filed',
         status_code: 'UNDER_PROCESS',
         status_label: 'Rebuttal Under Review',
+        status: 'Rebuttal Under Review',
         bureau_code: 'PGRC',
+        bureau: 'Public Grievance Redressal Cell',
         officer: 'Shri R. K. Verma (Deputy Director, PGRC)',
         action_summary: 'Institution submitted compliance affidavit claiming caution deposit was processed via RTGS and refund voucher disbursed to student account.',
+        action: 'Institution submitted compliance affidavit claiming caution deposit was processed via RTGS and refund voucher disbursed to student account.',
+        regulatory_ref: 'Rule 11(3) Redressal Regulations',
         conflict_type: 'NONE',
         conflict_note: 'Evidentiary documentation uploaded by college management.',
+        conflict_details: 'Evidentiary documentation uploaded by college management.',
         doc_type: 'AFFIDAVIT OF COMPLIANCE ON RECORD',
         doc_ref: 'MSEC/AICTE/COMP/2026/07-12',
         doc_body: 'Attested bank transfer statement received verifying disbursement of Rs 25,000 to candidate URN-4819. College requests immediate closure of docket and issuance of administrative clearance.',
-        signatory: 'Principal, Mepco Schlenk Engineering College'
+        signatory: 'Principal, Mepco Schlenk Engineering College',
+        document: {
+          ref_no: 'MSEC/AICTE/COMP/2026/07-12',
+          date: '2026-07-12',
+          type: 'AFFIDAVIT OF COMPLIANCE ON RECORD',
+          subject: 'Compliance Undertaking & Remittance Statement',
+          body: 'Attested bank transfer statement received verifying disbursement of Rs 25,000 to candidate URN-4819. College requests immediate closure of docket and issuance of administrative clearance.',
+          signatory: 'Principal, Mepco Schlenk Engineering College',
+          seal: 'SHA256:4C8E2A1B0D9F75312468ACDF013579BD'
+        }
       },
       {
         stage_num: 4,
@@ -66,15 +113,29 @@ export const DOCKET_LIFECYCLES = {
         title: 'Unilateral Disposal Drafted (Administrative Clean-Chit Attempt)',
         status_code: 'PROPOSED_DISPOSAL',
         status_label: 'Proposed Disposed',
+        status: 'Proposed Disposed',
         bureau_code: 'PGRC',
+        bureau: 'Public Grievance Redressal Cell',
         officer: 'Smt. Anita Sharma (Section Officer)',
         action_summary: 'PGRC Case Officer prepares draft closure memo accepting refund undertaking, recommending unconditional disposal without cross-cell verification.',
+        action: 'PGRC Case Officer prepares draft closure memo accepting refund undertaking, recommending unconditional disposal without cross-cell verification.',
+        regulatory_ref: 'Internal Office Procedure § 19',
         conflict_type: 'WARNING',
         conflict_note: '⚠️ High Risk: Closure memo drafted in bureau silo without checking Regulation Bureau standing hearing records.',
+        conflict_details: '⚠️ High Risk: Closure memo drafted in bureau silo without checking Regulation Bureau standing hearing records.',
         doc_type: 'DRAFT CLOSURE MEMORANDUM (PRE-INTERDICTION)',
         doc_ref: 'AICTE/PGRC/2026/DISP-DRAFT/014',
         doc_body: 'Subject to final approval: Grievance stands redressed post refund confirmation. No further punitive action recommended against the institution at this stage.',
-        signatory: 'PGRC Case Officer (Pending Dispatch)'
+        signatory: 'PGRC Case Officer (Pending Dispatch)',
+        document: {
+          ref_no: 'AICTE/PGRC/2026/DISP-DRAFT/014',
+          date: '2026-07-20',
+          type: 'DRAFT CLOSURE MEMORANDUM (PRE-INTERDICTION)',
+          subject: 'Proposed Unilateral Disposal & Closure Recommendation',
+          body: 'Subject to final approval: Grievance stands redressed post refund confirmation. No further punitive action recommended against the institution at this stage.',
+          signatory: 'PGRC Case Officer (Pending Dispatch)',
+          seal: 'SHA256:D3E5F7A9B1C302468ACDF1357902468A'
+        }
       },
       {
         stage_num: 5,
@@ -82,15 +143,29 @@ export const DOCKET_LIFECYCLES = {
         title: '🚨 CONFLICT SENTINEL INTERCEPTION (Contradictory Clean-Chit Interdicted)',
         status_code: 'ESCALATED',
         status_label: 'Blocked by AICTE Sentinel',
+        status: 'Blocked by AICTE Sentinel',
         bureau_code: 'SENTINEL',
+        bureau: 'Cross-Bureau Conflict Sentinel',
         officer: 'AICTE Cross-Bureau Conflict Sentinel Engine',
         action_summary: 'CRITICAL CONFLICT INTERCEPTED! Regulation Bureau concurrently has active punitive Show-Cause proceedings (RB/SC/2026/089) for unauthorized faculty retrenchment against same PID 1-1049281721. Unilateral disposal frozen to prevent High Court contempt.',
+        action: 'CRITICAL CONFLICT INTERCEPTED! Regulation Bureau concurrently has active punitive Show-Cause proceedings (RB/SC/2026/089) for unauthorized faculty retrenchment against same PID 1-1049281721. Unilateral disposal frozen to prevent High Court contempt.',
+        regulatory_ref: 'Rule 14(2) AICTE Coordination Framework',
         conflict_type: 'CRITICAL_CONTRADICTION',
         conflict_note: '🚨 Contradiction Interdicted: Institution cannot receive clean-chit while facing punitive proceedings in Regulation Bureau!',
+        conflict_details: '🚨 Contradiction Interdicted: Institution cannot receive clean-chit while facing punitive proceedings in Regulation Bureau!',
         doc_type: 'REGULATORY INTERDICTION ORDER (STATUTORY FREEZE)',
         doc_ref: 'AICTE/SENTINEL/2026/HALT-0992',
         doc_body: 'BY ORDER OF THE COUNCIL: Proposed disposal of docket PGRC/2026/014 is hereby INTERDICTED AND FROZEN under Rule 14(2). Contradictory clean-chit issuance while Docket RB/SC/2026/089 is pending before the Standing Hearing Committee creates severe legal exposure. Immediate Inter-Bureau Joint Conference mandated.',
-        signatory: 'Member Secretary / Central Regulatory Sentinel'
+        signatory: 'Member Secretary / Central Regulatory Sentinel',
+        document: {
+          ref_no: 'AICTE/SENTINEL/2026/HALT-0992',
+          date: '2026-07-22',
+          type: 'REGULATORY INTERDICTION ORDER (STATUTORY FREEZE)',
+          subject: 'Immediate Freeze of Unilateral Disposal Order to Prevent Sub-Judice Contempt',
+          body: 'BY ORDER OF THE COUNCIL: Proposed disposal of docket PGRC/2026/014 is hereby INTERDICTED AND FROZEN under Rule 14(2). Contradictory clean-chit issuance while Docket RB/SC/2026/089 is pending before the Standing Hearing Committee creates severe legal exposure. Immediate Inter-Bureau Joint Conference mandated.',
+          signatory: 'Member Secretary / Central Regulatory Sentinel',
+          seal: 'SHA256:FF00AA99887766554433221100EEDDCC'
+        }
       },
       {
         stage_num: 6,
@@ -98,15 +173,29 @@ export const DOCKET_LIFECYCLES = {
         title: 'Inter-Bureau Standing Conference & Harmonization Protocol',
         status_code: 'UNDER_PROCESS',
         status_label: 'Joint Review Active',
+        status: 'Joint Review Active',
         bureau_code: 'JOINT_REVIEW',
+        bureau: 'Inter-Bureau Conference Chamber',
         officer: 'Dr. K. Ramanathan (Director, RB) & Smt. Anita Sharma (SO, PGRC)',
         action_summary: 'Bureaus convene in digital joint conference. Coordination Intelligence framework reviews evidence: Student refund acknowledged, but institutional clearance conditioned on faculty hearing.',
+        action: 'Bureaus convene in digital joint conference. Coordination Intelligence framework reviews evidence: Student refund acknowledged, but institutional clearance conditioned on faculty hearing.',
+        regulatory_ref: 'Inter-Bureau Protocol 2026 § 4',
         conflict_type: 'HARMONIZING',
         conflict_note: 'Bureaus aligned. Coordination Intelligence answers all 3 legal questions.',
+        conflict_details: 'Bureaus aligned. Coordination Intelligence answers all 3 legal questions.',
         doc_type: 'INTER-BUREAU JOINT CONFERENCE MINUTES',
         doc_ref: 'AICTE/JTC/2026/MIN-004',
         doc_body: 'Joint committee determined that student monetary relief is verified and settled, but no comprehensive institutional clearance shall be issued until the Standing Hearing Committee adjudicates faculty retrenchment under Docket RB/SC/2026/089.',
-        signatory: 'Dr. K. Ramanathan (RB) & Smt. Anita Sharma (PGRC)'
+        signatory: 'Dr. K. Ramanathan (RB) & Smt. Anita Sharma (PGRC)',
+        document: {
+          ref_no: 'AICTE/JTC/2026/MIN-004',
+          date: '2026-07-26',
+          type: 'INTER-BUREAU JOINT CONFERENCE MINUTES',
+          subject: 'Minutes of Standing Inter-Bureau Coordination Session',
+          body: 'Joint committee determined that student monetary relief is verified and settled, but no comprehensive institutional clearance shall be issued until the Standing Hearing Committee adjudicates faculty retrenchment under Docket RB/SC/2026/089.',
+          signatory: 'Dr. K. Ramanathan (RB) & Smt. Anita Sharma (PGRC)',
+          seal: 'SHA256:778899AABBCCDDEEFF00112233445566'
+        }
       },
       {
         stage_num: 7,
@@ -114,24 +203,43 @@ export const DOCKET_LIFECYCLES = {
         title: 'Unified Disposal Determination Memo Signed & Sealed',
         status_code: 'DISPOSED',
         status_label: 'Harmonized & Disposed',
+        status: 'Harmonized & Disposed',
         bureau_code: 'AICTE_COUNCIL',
+        bureau: 'AICTE Statutory Council Secretariat',
         officer: 'Joint Standing Committee (Dr. Ramanathan & Smt. Sharma)',
         action_summary: 'Unified Disposal Determination Memo executed with SHA-256 digital seals. Student case disposed with prejudice; Regulation Bureau docket maintained under APH Chapter VII.',
+        action: 'Unified Disposal Determination Memo executed with SHA-256 digital seals. Student case disposed with prejudice; Regulation Bureau docket maintained under APH Chapter VII.',
+        regulatory_ref: 'APH Chapter VII / Redressal Sec 12',
         conflict_type: 'RESOLVED',
         conflict_note: '✅ 100% Resolved & Legally Defensible. Zero contradictory orders in public domain.',
+        conflict_details: '✅ 100% Resolved & Legally Defensible. Zero contradictory orders in public domain.',
         doc_type: 'UNIFIED DISPOSAL DETERMINATION MEMORANDUM',
         doc_ref: 'AICTE/REG/2026/UDDM-014-089',
         doc_body: 'FINAL ORDER: 1) Grievance PGRC/2026/014 is formally closed as monetary refund stands executed. 2) This order shall NOT be construed as an institutional clean chit for Approval Process Handbook norms, which remain sub-judice under Docket RB/SC/2026/089.',
-        signatory: 'Sealed & Digitally Signed by Joint Bureau Secretariat'
+        signatory: 'Sealed & Digitally Signed by Joint Bureau Secretariat',
+        document: {
+          ref_no: 'AICTE/REG/2026/UDDM-014-089',
+          date: '2026-08-01',
+          type: 'UNIFIED DISPOSAL DETERMINATION MEMORANDUM',
+          subject: 'Gazetted Unified Disposal Order (Council-Level Legal Harmonization)',
+          body: 'FINAL ORDER: 1) Grievance PGRC/2026/014 is formally closed as monetary refund stands executed. 2) This order shall NOT be construed as an institutional clean chit for Approval Process Handbook norms, which remain sub-judice under Docket RB/SC/2026/089.',
+          signatory: 'Sealed & Digitally Signed by Joint Bureau Secretariat',
+          seal: 'SHA256:3E5B7C9D1F2A4E68A0B2C4D6E8F01234'
+        }
       }
     ]
   },
 
   'RB/SC/2026/089': {
+    key: 'RB/SC/2026/089',
+    ref: 'RB/SC/2026/089',
     source_ref: 'RB/SC/2026/089',
+    institution: 'Mepco Schlenk Engineering College',
     institution_name: 'Mepco Schlenk Engineering College',
+    institution_pid: '1-1049281721',
     permanent_id: '1-1049281721',
     category: 'Faculty Cadre & Retrenchment',
+    subject: 'Faculty Cadre Deficit & Retrenchment Inquiry',
     bureau: 'Regulation Bureau (Approval Bureau)',
     is_conflict_case: true,
     stages: [
@@ -141,15 +249,29 @@ export const DOCKET_LIFECYCLES = {
         title: 'Whistleblower Report & Prima Facie Evidence Received',
         status_code: 'PENDING',
         status_label: 'Pending Scrutiny',
+        status: 'Pending Scrutiny',
         bureau_code: 'RB',
+        bureau: 'Regulation Bureau',
         officer: 'Dr. K. Ramanathan (Director, Regulation Bureau)',
         action_summary: 'Confidential petition alleging abrupt termination of 14 regularized assistant professors without mandatory inquiry. Salted DPDP token assigned.',
+        action: 'Confidential petition alleging abrupt termination of 14 regularized assistant professors without mandatory inquiry. Salted DPDP token assigned.',
+        regulatory_ref: 'Cadre Ratio Norms 1:15',
         conflict_type: 'NONE',
         conflict_note: 'Whistleblower protection active under DPDP Act.',
+        conflict_details: 'Whistleblower protection active under DPDP Act.',
         doc_type: 'VIGILANCE / REGULATION INTAKE MEMO',
         doc_ref: 'AICTE/RB/2026/WHISTLE-089',
         doc_body: 'Confidential whistleblower dossier received concerning faculty retrenchment violating AICTE Cadre Ratio Norms 1:15 and 7th Pay Commission service safeguards.',
-        signatory: 'Dr. K. Ramanathan, Director (Regulation Bureau)'
+        signatory: 'Dr. K. Ramanathan, Director (Regulation Bureau)',
+        document: {
+          ref_no: 'AICTE/RB/2026/WHISTLE-089',
+          date: '2026-07-03',
+          type: 'VIGILANCE / REGULATION INTAKE MEMO',
+          subject: 'Ingestion of Regulatory Whistleblower Petition',
+          body: 'Confidential whistleblower dossier received concerning faculty retrenchment violating AICTE Cadre Ratio Norms 1:15 and 7th Pay Commission service safeguards.',
+          signatory: 'Dr. K. Ramanathan, Director (Regulation Bureau)',
+          seal: 'SHA256:11223344556677889900AABBCCDDEEFF'
+        }
       },
       {
         stage_num: 2,
@@ -157,15 +279,29 @@ export const DOCKET_LIFECYCLES = {
         title: 'Statutory Show-Cause Notice Dispatched under APH Chapter VII',
         status_code: 'UNDER_PROCESS',
         status_label: 'Show-Cause Dispatched',
+        status: 'Show-Cause Dispatched',
         bureau_code: 'RB',
+        bureau: 'Regulation Bureau',
         officer: 'Dr. K. Ramanathan (Director, Regulation Bureau)',
         action_summary: 'Formal Show-Cause Notice issued to Trust and Governing Body demanding justification against punitive intake reduction.',
+        action: 'Formal Show-Cause Notice issued to Trust and Governing Body demanding justification against punitive intake reduction.',
+        regulatory_ref: 'APH Chapter VII / Rule 7.4',
         conflict_type: 'NONE',
         conflict_note: 'Statutory 14-day reply window initiated.',
+        conflict_details: 'Statutory 14-day reply window initiated.',
         doc_type: 'STATUTORY SHOW-CAUSE NOTICE (APH CHAPTER VII)',
         doc_ref: 'AICTE/RB/2026/SC-089/NORM-VII',
         doc_body: 'Whereas prima facie deficit in cadre ratios has been established; the Management is hereby summoned to show cause why punitive withdrawal of approval for Academic Year 2026-27 should not be recommended.',
-        signatory: 'Approval & Regulation Bureau Secretariat'
+        signatory: 'Approval & Regulation Bureau Secretariat',
+        document: {
+          ref_no: 'AICTE/RB/2026/SC-089/NORM-VII',
+          date: '2026-07-10',
+          type: 'STATUTORY SHOW-CAUSE NOTICE (APH CHAPTER VII)',
+          subject: 'Formal Show-Cause Notice for Breach of Faculty Ratios',
+          body: 'Whereas prima facie deficit in cadre ratios has been established; the Management is hereby summoned to show cause why punitive withdrawal of approval for Academic Year 2026-27 should not be recommended.',
+          signatory: 'Approval & Regulation Bureau Secretariat',
+          seal: 'SHA256:223344556677889900AABBCCDDEEFF11'
+        }
       },
       {
         stage_num: 3,
@@ -173,15 +309,29 @@ export const DOCKET_LIFECYCLES = {
         title: 'Standing Hearing Committee Summoned (Conflict Sentinel Interception Active)',
         status_code: 'UNDER_PROCESS',
         status_label: 'Hearing Committee Active',
+        status: 'Hearing Committee Active',
         bureau_code: 'RB',
+        bureau: 'Regulation Bureau',
         officer: 'Standing Hearing Committee Panel',
         action_summary: 'Standing Hearing Committee issues physical summons. Sentinel flags parallel PGRC attempt to issue clean-chit disposal, freezing conflicting proceedings.',
+        action: 'Standing Hearing Committee issues physical summons. Sentinel flags parallel PGRC attempt to issue clean-chit disposal, freezing conflicting proceedings.',
+        regulatory_ref: 'Standing Hearing Manual § 14',
         conflict_type: 'CRITICAL_CONTRADICTION',
         conflict_note: '🚨 Sentinel Interception Active: Cross-cell closure attempt intercepted.',
+        conflict_details: '🚨 Sentinel Interception Active: Cross-cell closure attempt intercepted.',
         doc_type: 'HEARING SUMMONS & CONFLICT SENTINEL ADVISORY',
         doc_ref: 'AICTE/SHC/2026/SUMMON-089',
         doc_body: 'Principal and Secretary directed to appear before Standing Hearing Committee with original Form-16 and salary pay sheets. Inter-Bureau freeze noted.',
-        signatory: 'Chairman, Standing Hearing Committee'
+        signatory: 'Chairman, Standing Hearing Committee',
+        document: {
+          ref_no: 'AICTE/SHC/2026/SUMMON-089',
+          date: '2026-07-22',
+          type: 'HEARING SUMMONS & CONFLICT SENTINEL ADVISORY',
+          subject: 'Summons for Personal Appearance Before Standing Hearing Panel',
+          body: 'Principal and Secretary directed to appear before Standing Hearing Committee with original Form-16 and salary pay sheets. Inter-Bureau freeze noted.',
+          signatory: 'Chairman, Standing Hearing Committee',
+          seal: 'SHA256:3344556677889900AABBCCDDEEFF1122'
+        }
       },
       {
         stage_num: 4,
@@ -189,24 +339,43 @@ export const DOCKET_LIFECYCLES = {
         title: 'Harmonized Regulatory Proceeding Order Passed',
         status_code: 'UNDER_PROCESS',
         status_label: 'Harmonized Standing Inquiry',
+        status: 'Harmonized Standing Inquiry',
         bureau_code: 'RB',
+        bureau: 'Regulation Bureau',
         officer: 'Dr. K. Ramanathan & Joint Committee',
         action_summary: 'PGRC student fee matter formally segregated; Regulation Bureau orders faculty compliance inspection while recording synchronized status.',
+        action: 'PGRC student fee matter formally segregated; Regulation Bureau orders faculty compliance inspection while recording synchronized status.',
+        regulatory_ref: 'Rule 14(4) Harmonized Order',
         conflict_type: 'RESOLVED',
         conflict_note: '✅ Clean regulatory separation: Student fee refund affirmed, faculty inquiry continued.',
+        conflict_details: '✅ Clean regulatory separation: Student fee refund affirmed, faculty inquiry continued.',
         doc_type: 'SYNCHRONIZED REGULATORY PROCEEDING ORDER',
         doc_ref: 'AICTE/RB/2026/SYNC-089',
         doc_body: 'The institutional response is taken on record. Expert inspection committee constituted for on-site verification of cadre ratio norms. No clean-chit granted.',
-        signatory: 'Director (Regulation Bureau)'
+        signatory: 'Director (Regulation Bureau)',
+        document: {
+          ref_no: 'AICTE/RB/2026/SYNC-089',
+          date: '2026-08-01',
+          type: 'SYNCHRONIZED REGULATORY PROCEEDING ORDER',
+          subject: 'Statutory Harmonization & On-Site Scrutiny Directive',
+          body: 'The institutional response is taken on record. Expert inspection committee constituted for on-site verification of cadre ratio norms. No clean-chit granted.',
+          signatory: 'Director (Regulation Bureau)',
+          seal: 'SHA256:44556677889900AABBCCDDEEFF112233'
+        }
       }
     ]
   },
 
   'PSG/2026/042': {
+    key: 'PSG/2026/042',
+    ref: 'PSG/2026/042',
     source_ref: 'PSG/2026/042',
+    institution: 'PSG College of Technology',
     institution_name: 'PSG College of Technology',
+    institution_pid: '1-429182741',
     permanent_id: '1-429182741',
     category: 'Faculty 7th Pay Arrears',
+    subject: 'Delayed Disbursement of 7th CPC Faculty Pay Arrears',
     bureau: 'Public Grievance Redressal Cell (PGRC)',
     is_conflict_case: false,
     stages: [
@@ -216,15 +385,29 @@ export const DOCKET_LIFECYCLES = {
         title: 'Grievance Ingestion & 7th Pay Deficit Report',
         status_code: 'PENDING',
         status_label: 'Pending Scrutiny',
+        status: 'Pending Scrutiny',
         bureau_code: 'PGRC',
+        bureau: 'Public Grievance Redressal Cell',
         officer: 'Shri R. K. Verma',
         action_summary: 'Staff association filed grievance regarding delayed 7th CPC arrears. Automated DPDP salted hash created.',
+        action: 'Staff association filed grievance regarding delayed 7th CPC arrears. Automated DPDP salted hash created.',
+        regulatory_ref: '7th CPC AICTE Notification 2019',
         conflict_type: 'NONE',
         conflict_note: 'Single bureau inquiry. No conflict detected.',
+        conflict_details: 'Single bureau inquiry. No conflict detected.',
         doc_type: 'GRIEVANCE REGISTRATION INTIMATION',
         doc_ref: 'AICTE/PGRC/2026/PSG-042',
         doc_body: 'Grievance registered concerning disbursement of Dearness Allowance and 7th CPC pay band scales.',
-        signatory: 'Section Officer, PGRC'
+        signatory: 'Section Officer, PGRC',
+        document: {
+          ref_no: 'AICTE/PGRC/2026/PSG-042',
+          date: '2026-06-20',
+          type: 'GRIEVANCE REGISTRATION INTIMATION',
+          subject: 'Registration of Petition Concerning Pay Scale Arrears',
+          body: 'Grievance registered concerning disbursement of Dearness Allowance and 7th CPC pay band scales.',
+          signatory: 'Section Officer, PGRC',
+          seal: 'SHA256:556677889900AABBCCDDEEFF11223344'
+        }
       },
       {
         stage_num: 2,
@@ -232,15 +415,29 @@ export const DOCKET_LIFECYCLES = {
         title: 'State Finance Department Coordination Notice Dispatched',
         status_code: 'UNDER_PROCESS',
         status_label: 'Under Inquiry',
+        status: 'Under Inquiry',
         bureau_code: 'PGRC',
+        bureau: 'Public Grievance Redressal Cell',
         officer: 'Shri R. K. Verma',
         action_summary: 'AICTE Southern Regional Office contacted state Directorate of Technical Education for grant disbursement schedule.',
+        action: 'AICTE Southern Regional Office contacted state Directorate of Technical Education for grant disbursement schedule.',
+        regulatory_ref: 'State Grant Coordination Directive',
         conflict_type: 'NONE',
         conflict_note: 'Inter-agency coordination active.',
+        conflict_details: 'Inter-agency coordination active.',
         doc_type: 'COMMUNICATION WITH DTE / REGIONAL OFFICE',
         doc_ref: 'AICTE/SRO/2026/DTE-PSG',
         doc_body: 'Requesting grant release schedule for aided faculty positions.',
-        signatory: 'Regional Officer, Southern Regional Bureau'
+        signatory: 'Regional Officer, Southern Regional Bureau',
+        document: {
+          ref_no: 'AICTE/SRO/2026/DTE-PSG',
+          date: '2026-07-08',
+          type: 'COMMUNICATION WITH DTE / REGIONAL OFFICE',
+          subject: 'Inter-Agency Coordination on Grant Disbursement',
+          body: 'Requesting grant release schedule for aided faculty positions.',
+          signatory: 'Regional Officer, Southern Regional Bureau',
+          seal: 'SHA256:6677889900AABBCCDDEEFF1122334455'
+        }
       },
       {
         stage_num: 3,
@@ -248,24 +445,43 @@ export const DOCKET_LIFECYCLES = {
         title: 'Disbursement Schedule Confirmed & Order Passed',
         status_code: 'DISPOSED',
         status_label: 'Disposed with Directions',
+        status: 'Disposed with Directions',
         bureau_code: 'PGRC',
+        bureau: 'Public Grievance Redressal Cell',
         officer: 'Director, Public Grievances',
         action_summary: 'State DTE confirmed release of arrears budget. Institution directed to disburse within 30 days. Case disposed.',
+        action: 'State DTE confirmed release of arrears budget. Institution directed to disburse within 30 days. Case disposed.',
+        regulatory_ref: 'Mandatory Compliance Order § 8',
         conflict_type: 'RESOLVED',
         conflict_note: '✅ Resolved cleanly without bureau overlap.',
+        conflict_details: '✅ Resolved cleanly without bureau overlap.',
         doc_type: 'FINAL DISPOSAL ORDER WITH STATUTORY DIRECTIVES',
         doc_ref: 'AICTE/PGRC/2026/DISP-PSG-42',
         doc_body: 'Institution shall disburse all pending arrears on or before 31st August 2026 and submit compliance audit certificate.',
-        signatory: 'Public Grievance Redressal Cell'
+        signatory: 'Public Grievance Redressal Cell',
+        document: {
+          ref_no: 'AICTE/PGRC/2026/DISP-PSG-42',
+          date: '2026-07-28',
+          type: 'FINAL DISPOSAL ORDER WITH STATUTORY DIRECTIVES',
+          subject: 'Final Disposal Order with Binding Disbursement Directions',
+          body: 'Institution shall disburse all pending arrears on or before 31st August 2026 and submit compliance audit certificate.',
+          signatory: 'Public Grievance Redressal Cell',
+          seal: 'SHA256:77889900AABBCCDDEEFF112233445566'
+        }
       }
     ]
   },
 
   'CEG/2026/031': {
+    key: 'CEG/2026/031',
+    ref: 'CEG/2026/031',
     source_ref: 'CEG/2026/031',
+    institution: 'College of Engineering Guindy, Anna Univ',
     institution_name: 'College of Engineering Guindy, Anna Univ',
+    institution_pid: '1-847291038',
     permanent_id: '1-847291038',
     category: 'Electrical Safety Violation',
+    subject: 'Hostel Infrastructure & Fire Safety Compliance',
     bureau: 'Regulation Bureau (Inspection Cell)',
     is_conflict_case: false,
     stages: [
@@ -275,15 +491,29 @@ export const DOCKET_LIFECYCLES = {
         title: 'Hazardous Wiring & Fire Safety Violation Filed',
         status_code: 'PENDING',
         status_label: 'Priority High Scrutiny',
+        status: 'Priority High Scrutiny',
         bureau_code: 'RB',
+        bureau: 'Regulation Bureau',
         officer: 'Smt. P. Lakshmi (Senior Inspector)',
         action_summary: 'Emergency safety grievance reported in Block D hostel. AI ML Severity Engine marked as HIGH PRIORITY.',
+        action: 'Emergency safety grievance reported in Block D hostel. AI ML Severity Engine marked as HIGH PRIORITY.',
+        regulatory_ref: 'National Building Code / AICTE Infra Norms',
         conflict_type: 'NONE',
         conflict_note: 'Emergency safety tag applied.',
+        conflict_details: 'Emergency safety tag applied.',
         doc_type: 'EMERGENCY INFRASTRUCTURE ALERT',
         doc_ref: 'AICTE/EMERG/2026/CEG-031',
         doc_body: 'Hazardous electrical wiring reported risking student safety. AI Severity classifier triggered priority fast-track.',
-        signatory: 'AICTE Central Emergency Cell'
+        signatory: 'AICTE Central Emergency Cell',
+        document: {
+          ref_no: 'AICTE/EMERG/2026/CEG-031',
+          date: '2026-07-02',
+          type: 'EMERGENCY INFRASTRUCTURE ALERT',
+          subject: 'Priority Infrastructure Hazard Intimation',
+          body: 'Hazardous electrical wiring reported risking student safety. AI Severity classifier triggered priority fast-track.',
+          signatory: 'AICTE Central Emergency Cell',
+          seal: 'SHA256:889900AABBCCDDEEFF11223344556677'
+        }
       },
       {
         stage_num: 2,
@@ -291,15 +521,29 @@ export const DOCKET_LIFECYCLES = {
         title: 'Mandatory Inspection Order & 48-Hour Rectification Notice',
         status_code: 'UNDER_PROCESS',
         status_label: 'Inspection Ordered',
+        status: 'Inspection Ordered',
         bureau_code: 'RB',
+        bureau: 'Regulation Bureau',
         officer: 'Executive Engineer / Inspection Officer',
         action_summary: 'Expert committee dispatched. 48-hour rectification notice issued to Registrar under threat of hostel de-licensing.',
+        action: 'Expert committee dispatched. 48-hour rectification notice issued to Registrar under threat of hostel de-licensing.',
+        regulatory_ref: 'APH Norms Clause 6.1 (Safety)',
         conflict_type: 'NONE',
         conflict_note: 'Physical inspection completed.',
+        conflict_details: 'Physical inspection completed.',
         doc_type: 'STATUTORY RECTIFICATION DIRECTIVE',
         doc_ref: 'AICTE/INSP/2026/RECT-CEG',
         doc_body: 'University Estate Officer directed to replace wiring and produce Fire and Electrical Safety Certificate immediately.',
-        signatory: 'Superintending Engineer, AICTE'
+        signatory: 'Superintending Engineer, AICTE',
+        document: {
+          ref_no: 'AICTE/INSP/2026/RECT-CEG',
+          date: '2026-07-06',
+          type: 'STATUTORY RECTIFICATION DIRECTIVE',
+          subject: 'Mandatory Rectification Notice for Electrical Safety',
+          body: 'University Estate Officer directed to replace wiring and produce Fire and Electrical Safety Certificate immediately.',
+          signatory: 'Superintending Engineer, AICTE',
+          seal: 'SHA256:9900AABBCCDDEEFF1122334455667788'
+        }
       },
       {
         stage_num: 3,
@@ -307,15 +551,29 @@ export const DOCKET_LIFECYCLES = {
         title: 'Fire Safety Certificate Produced & Clean Closure',
         status_code: 'DISPOSED',
         status_label: 'Compliance Verified & Closed',
+        status: 'Compliance Verified & Closed',
         bureau_code: 'RB',
+        bureau: 'Regulation Bureau',
         officer: 'Director, Regulation Bureau',
         action_summary: 'State Fire & Rescue Services safety compliance certificate verified and accepted. Docket closed.',
+        action: 'State Fire & Rescue Services safety compliance certificate verified and accepted. Docket closed.',
+        regulatory_ref: 'Safety Compliance Resolution § 15',
         conflict_type: 'RESOLVED',
         conflict_note: '✅ Resolved with zero contradictions.',
+        conflict_details: '✅ Resolved with zero contradictions.',
         doc_type: 'COMPLIANCE CLEARANCE CERTIFICATE',
         doc_ref: 'AICTE/RB/2026/CLR-CEG-031',
         doc_body: 'Physical inspection verified. Electrical rewiring completed. Fire NOC submitted.',
-        signatory: 'Regulation Bureau Directorate'
+        signatory: 'Regulation Bureau Directorate',
+        document: {
+          ref_no: 'AICTE/RB/2026/CLR-CEG-031',
+          date: '2026-07-18',
+          type: 'COMPLIANCE CLEARANCE CERTIFICATE',
+          subject: 'Formal Closure & Safety NOC Verification Order',
+          body: 'Physical inspection verified. Electrical rewiring completed. Fire NOC submitted.',
+          signatory: 'Regulation Bureau Directorate',
+          seal: 'SHA256:00AABBCCDDEEFF112233445566778899'
+        }
       }
     ]
   }

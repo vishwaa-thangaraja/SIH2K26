@@ -3,11 +3,54 @@ import {
   ShieldAlert, Clock, Building2, Search, AlertTriangle, CheckCircle2,
   Calendar, Users, ArrowRight, RefreshCw, FileText, Sparkles, Lock, Eye,
   Menu, X, LayoutDashboard, History, Fingerprint, Brain, Handshake,
-  TrendingUp, AlertCircle, Timer, Layers, ChevronRight, Play, FastForward,
+  TrendingUp, AlertCircle, Timer, Layers, ChevronRight, ChevronDown, ChevronUp, Play, FastForward,
   BarChart3, Shield, Hash, MapPin, Gavel, Scale, Info, Check, HelpCircle,
   Upload, Send, PenTool, CheckCircle, ShieldCheck, Zap, Pause, RotateCcw
 } from 'lucide-react';
 import { DOCKET_LIFECYCLES } from './docketLifecycles';
+
+// Global Fault-Tolerant Portal Error Boundary
+class PortalErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error("AICTE Portal caught UI exception:", error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-slate-900 text-white p-6 flex items-center justify-center">
+          <div className="max-w-lg w-full bg-slate-800 border border-slate-700 p-6 rounded-xl space-y-4 text-center shadow-2xl">
+            <div className="w-12 h-12 bg-red-950 text-red-400 border border-red-700 rounded-full flex items-center justify-center mx-auto">
+              <ShieldAlert className="w-6 h-6" />
+            </div>
+            <h2 className="text-base font-bold text-white uppercase tracking-wide">AICTE Central Portal Recovery Mode</h2>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              The statutory coordination interface encountered a non-fatal display exception. State isolation was applied to preserve legal audit integrity.
+            </p>
+            <div className="pt-2 flex justify-center gap-3">
+              <button
+                onClick={() => {
+                  this.setState({ hasError: false, error: null });
+                  window.location.reload();
+                }}
+                className="px-4 py-2 bg-blue-700 hover:bg-blue-600 text-white text-xs font-bold rounded shadow-sm"
+              >
+                Reload Central Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 // Status badge styling helper (Restrained government palette)
 const getStatusBadge = (code) => {
@@ -109,6 +152,10 @@ export default function App() {
   const [quickSummary, setQuickSummary] = useState('Management collected excess capitation and caution fee of Rs 25,000 without receipt.');
   const [quickIngesting, setQuickIngesting] = useState(false);
 
+  // Abstract & Expandable UI States
+  const [expandedCaseId, setExpandedCaseId] = useState(null);
+  const [expandedOverlapId, setExpandedOverlapId] = useState(null);
+
   // Close drawer on click outside
   useEffect(() => {
     const handler = (e) => {
@@ -137,11 +184,11 @@ export default function App() {
         fetch('/api/coordination/joint-review').then(r => r.json())
       ]);
       setKpis(kpisRes);
-      setContradictions(contraRes);
-      setOverlaps(overlapsRes);
-      setCases(casesRes);
-      setBureauWorkload(workloadRes);
-      setJointReviews(jointRes);
+      setContradictions(Array.isArray(contraRes) ? contraRes : []);
+      setOverlaps(Array.isArray(overlapsRes) ? overlapsRes : []);
+      setCases(Array.isArray(casesRes) ? casesRes : []);
+      setBureauWorkload(Array.isArray(workloadRes) ? workloadRes : []);
+      setJointReviews(Array.isArray(jointRes) ? jointRes : []);
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
     } finally {
@@ -419,7 +466,7 @@ export default function App() {
       // Stage 4: Joint Resolution Conference Chamber
       setActiveTab('jointreview');
       setShowConflictInterceptionModal(false);
-      setShowJointConfModal(true);
+      setShowJointConfModal(false);
     } else if (stepNum === 5) {
       // Stage 5: Bitemporal Audit Trail & Docket Scrubber
       setActiveTab('timetravel');
@@ -442,13 +489,14 @@ export default function App() {
   ];
 
   const currentDate = timelineDates[sliderIndex];
-  const currentDocket = DOCKET_LIFECYCLES[selectedTimelineDocketKey] || DOCKET_LIFECYCLES['PGRC/2026/014'];
-  const currentStage = currentDocket.stages[docketSliderIndex] || currentDocket.stages[0];
-  const isConflictStage = currentStage.conflict_type === 'CRITICAL_CONTRADICTION';
-  const isResolvedStage = currentStage.conflict_type === 'RESOLVED';
+  const currentDocket = DOCKET_LIFECYCLES[selectedTimelineDocketKey] || DOCKET_LIFECYCLES['PGRC/2026/014'] || { stages: [{}] };
+  const currentStage = (currentDocket && currentDocket.stages && currentDocket.stages[docketSliderIndex]) || (currentDocket && currentDocket.stages && currentDocket.stages[0]) || {};
+  const isConflictStage = currentStage?.conflict_type === 'CRITICAL_CONTRADICTION';
+  const isResolvedStage = currentStage?.conflict_type === 'RESOLVED';
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans">
+    <PortalErrorBoundary>
+      <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans">
 
       {/* Glassmorphism backdrop */}
       {drawerOpen && (
@@ -969,83 +1017,265 @@ export default function App() {
                 <table className="min-w-full divide-y divide-slate-200 text-left text-xs">
                   <thead className="bg-slate-100 text-slate-700 uppercase font-bold text-xs">
                     <tr>
+                      <th className="w-8 px-2 py-2.5 text-center">#</th>
                       <th className="px-3 py-2.5">Case Reference / Date</th>
                       <th className="px-3 py-2.5">Institution Profile</th>
-                      <th className="px-3 py-2.5">Category & Grievance</th>
+                      <th className="px-3 py-2.5">Category</th>
                       <th className="px-3 py-2.5">Bureau & Status</th>
-                      <th className="px-3 py-2.5">Statutory Timeline</th>
-                      <th className="px-3 py-2.5 text-right">Dossier</th>
+                      <th className="px-3 py-2.5">Statutory SLA</th>
+                      <th className="px-3 py-2.5 text-right">Inspect Dossier</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200 bg-white">
                     {filteredCases.map((c) => {
                       const st = getStatusBadge(c.status_code);
                       const isHighlighted = highlightedCaseId === c.case_id;
+                      const isExpanded = expandedCaseId === c.case_id;
                       return (
-                        <tr
-                          key={c.case_id}
-                          id={`case-row-${c.case_id}`}
-                          className={`gov-table-row transition-all duration-700 ${
-                            isHighlighted
-                              ? 'bg-emerald-50/90 border-2 border-emerald-500 ring-2 ring-emerald-400 shadow-md'
-                              : ''
-                          }`}
-                        >
-                          <td className="px-3 py-2.5">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="font-mono font-bold text-blue-900 block">{c.source_ref}</span>
-                              {isHighlighted && (
-                                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-600 text-white animate-pulse">
-                                  ⚡ NEW LIVE DOCKET
-                                </span>
+                        <React.Fragment key={c.case_id}>
+                          <tr
+                            id={`case-row-${c.case_id}`}
+                            onClick={() => setExpandedCaseId(isExpanded ? null : c.case_id)}
+                            className={`gov-table-row transition-all duration-300 cursor-pointer ${
+                              isHighlighted
+                                ? 'bg-emerald-50/90 border-2 border-emerald-500 ring-2 ring-emerald-400 shadow-md'
+                                : isExpanded
+                                ? 'bg-blue-50/60 font-medium'
+                                : 'hover:bg-slate-50'
+                            }`}
+                          >
+                            <td className="w-8 px-2 py-2.5 text-center text-slate-400">
+                              {isExpanded ? (
+                                <ChevronDown className="w-4 h-4 text-blue-900 mx-auto" />
+                              ) : (
+                                <ChevronRight className="w-4 h-4 text-slate-400 mx-auto hover:text-slate-600" />
                               )}
-                            </div>
-                            <span className="text-xs text-slate-400 flex items-center mt-0.5">
-                              <Calendar className="w-3 h-3 mr-1" />
-                              {c.received_on}
-                            </span>
-                          </td>
-                          <td className="px-3 py-2.5">
-                            <span className="font-semibold text-slate-900 block">{c.institution_name}</span>
-                            <span className="text-xs text-slate-500 font-mono">
-                              PID: <strong>{c.institution_pid}</strong> · {c.region_name}
-                            </span>
-                          </td>
-                          <td className="px-3 py-2.5 max-w-xs">
-                            <span className="inline-block px-1.5 py-0.5 rounded text-xs font-bold bg-slate-100 text-slate-700 mb-0.5">
-                              {c.category}
-                            </span>
-                            <p className="text-slate-600 line-clamp-2 text-sm leading-tight">{c.summary}</p>
-                          </td>
-                          <td className="px-3 py-2.5">
-                            <span className="font-bold text-slate-700 block">{c.bureau_code}</span>
-                            <span className={`inline-block px-1.5 py-0.5 rounded text-xs font-semibold border ${st.bg} ${st.text} ${st.border} mt-0.5`}>
-                              {st.label}
-                            </span>
-                          </td>
-                          <td className="px-3 py-2.5">
-                            <span className={`inline-block px-1.5 py-0.5 rounded text-xs font-bold ${
-                              c.is_sla_breached ? 'bg-red-100 text-red-800' : 'bg-slate-100 text-slate-700'
-                            }`}>
-                              {c.aging_bucket} ({c.age_days}d)
-                            </span>
-                            <span className="block text-xs text-slate-400 mt-0.5">{c.next_action_due}</span>
-                          </td>
-                          <td className="px-3 py-2.5 text-right">
-                            <button
-                              onClick={() => openCaseModal(c)}
-                              className="px-2.5 py-1 text-xs font-bold rounded bg-slate-100 hover:bg-blue-50 text-blue-900 hover:text-blue-700 border border-slate-300 transition"
-                            >
-                              Case Passport
-                            </button>
-                          </td>
-                        </tr>
+                            </td>
+                            <td className="px-3 py-2.5">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="font-mono font-bold text-blue-900 block">{c.source_ref}</span>
+                                {isHighlighted && (
+                                  <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-600 text-white animate-pulse">
+                                    ⚡ NEW LIVE DOCKET
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-xs text-slate-400 flex items-center mt-0.5">
+                                <Calendar className="w-3 h-3 mr-1" />
+                                {c.received_on}
+                              </span>
+                            </td>
+                            <td className="px-3 py-2.5">
+                              <span className="font-semibold text-slate-900 block truncate max-w-[280px]" title={c.institution_name}>
+                                {c.institution_name}
+                              </span>
+                              <span className="text-xs text-slate-500 font-mono">
+                                PID: <strong>{c.institution_pid}</strong> · {c.region_name}
+                              </span>
+                            </td>
+                            <td className="px-3 py-2.5">
+                              <span className="inline-block px-2 py-0.5 rounded text-xs font-bold bg-slate-100 text-slate-700">
+                                {c.category}
+                              </span>
+                            </td>
+                            <td className="px-3 py-2.5">
+                              <span className="font-bold text-slate-700 block">{c.bureau_code}</span>
+                              <span className={`inline-block px-1.5 py-0.5 rounded text-[11px] font-semibold border ${st.bg} ${st.text} ${st.border} mt-0.5`}>
+                                {st.label}
+                              </span>
+                            </td>
+                            <td className="px-3 py-2.5">
+                              <span className={`inline-block px-1.5 py-0.5 rounded text-xs font-bold ${
+                                c.is_sla_breached ? 'bg-red-100 text-red-800' : 'bg-slate-100 text-slate-700'
+                              }`}>
+                                {c.aging_bucket} ({c.age_days}d)
+                              </span>
+                              <span className="block text-xs text-slate-400 mt-0.5 truncate max-w-[120px]">{c.next_action_due}</span>
+                            </td>
+                            <td className="px-3 py-2.5 text-right">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setExpandedCaseId(isExpanded ? null : c.case_id);
+                                }}
+                                className={`px-2.5 py-1 text-xs font-bold rounded border transition inline-flex items-center gap-1 ${
+                                  isExpanded
+                                    ? 'bg-blue-900 text-white border-blue-900 shadow-xs'
+                                    : 'bg-slate-100 hover:bg-blue-50 text-blue-900 border-slate-300'
+                                }`}
+                              >
+                                <span>{isExpanded ? 'Hide Details' : 'Inspect Dossier'}</span>
+                                {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                              </button>
+                            </td>
+                          </tr>
+
+                          {/* Abstract Dossier Expandable Accordion Drawer */}
+                          {isExpanded && (
+                            <tr className="bg-blue-50/30 border-b border-blue-200 animate-fadeIn">
+                              <td colSpan={7} className="p-3.5">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 bg-white p-4 rounded-lg border border-slate-200 shadow-xs text-xs">
+                                  {/* Col 1: Citizen Privacy & DPDP Protection */}
+                                  <div className="space-y-2 border-r border-slate-100 pr-3">
+                                    <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
+                                      <Lock className="w-3 h-3 text-blue-900" />
+                                      <span>Citizen Privacy (DPDP Act 2023)</span>
+                                    </div>
+                                    <div>
+                                      <span className="text-slate-500 text-[11px] block">Aadhaar Salted HMAC-SHA256 Token:</span>
+                                      <span className="font-mono text-[10px] text-blue-900 font-bold bg-slate-100 px-2 py-1 rounded border border-slate-200 block truncate" title={c.complainant_token || '9b2d41a7c50e201f3b89a24c8e7102945d820fae'}>
+                                        {c.complainant_token || '9b2d41a7c50e201f3b89a24c8e710294...'}
+                                      </span>
+                                    </div>
+                                    <div className="text-slate-600 text-[11px]">
+                                      Complainant Category: <strong className="text-slate-800">{c.complainant_type || 'Verified Student / Petitioner'}</strong>
+                                    </div>
+                                    <div className="text-emerald-700 text-[10px] font-semibold flex items-center gap-1 pt-1">
+                                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                                      <span>Section 4(1) Salted Irreversible Token Sealed</span>
+                                    </div>
+                                  </div>
+
+                                  {/* Col 2: Grievance Substance & 4-Tier Entity Resolution */}
+                                  <div className="space-y-2 border-r border-slate-100 pr-3">
+                                    <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
+                                      <FileText className="w-3 h-3 text-blue-900" />
+                                      <span>Grievance Substance & AI Resolution</span>
+                                    </div>
+                                    <p className="text-slate-700 leading-relaxed text-xs bg-slate-50 p-2.5 rounded border border-slate-200">
+                                      "{c.summary}"
+                                    </p>
+                                    <div className="flex items-center justify-between text-[11px] pt-0.5">
+                                      <span className="text-slate-500">4-Tier Resolution Confidence:</span>
+                                      <span className="font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded font-mono">
+                                        {c.entity_confidence ? (c.entity_confidence * 100).toFixed(1) + '%' : '93.1% (Exact + Jaro-Winkler)'}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  {/* Col 3: Cross-Bureau Audit & Actions */}
+                                  <div className="space-y-2 flex flex-col justify-between">
+                                    <div className="space-y-1.5">
+                                      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
+                                        <Scale className="w-3 h-3 text-blue-900" />
+                                        <span>Cross-Bureau Proceeding Status</span>
+                                      </div>
+                                      <div className="text-[11px] text-slate-600">
+                                        Regional Office: <strong>{c.region_name || 'Southern Regional Bureau'}</strong>
+                                      </div>
+                                      <div className="pt-0.5">
+                                        {c.institution_pid === '1-1049281721' ? (
+                                          <div className="p-2 rounded bg-red-50 border border-red-200 text-red-900 text-[11px] space-y-1">
+                                            <div className="flex items-center gap-1 font-bold">
+                                              <AlertTriangle className="w-3.5 h-3.5 text-red-600 shrink-0" />
+                                              <span>Active Parallel RB Docket: RB/SC/2026/089</span>
+                                            </div>
+                                            <div className="text-[10px] text-red-700">
+                                              Show-Cause proceedings pending before Standing Hearing Committee.
+                                            </div>
+                                          </div>
+                                        ) : (
+                                          <div className="text-emerald-700 font-semibold text-[11px] flex items-center gap-1">
+                                            <CheckCircle className="w-3.5 h-3.5" />
+                                            <span>Single Bureau Inquiry · No Active Conflicts</span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2 flex-wrap">
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          openCaseModal(c);
+                                        }}
+                                        className="px-3 py-1.5 text-xs font-bold rounded bg-blue-900 text-white hover:bg-blue-800 transition flex items-center gap-1 shadow-xs cursor-pointer"
+                                      >
+                                        <Eye className="w-3.5 h-3.5" />
+                                        <span>Open Case Passport</span>
+                                      </button>
+                                      {c.institution_pid === '1-1049281721' && (
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            runStoryStep(3);
+                                          }}
+                                          className="px-3 py-1.5 text-xs font-bold rounded bg-red-700 text-white hover:bg-red-800 transition flex items-center gap-1 shadow-xs cursor-pointer"
+                                        >
+                                          <span>Inspect Conflict ➔</span>
+                                        </button>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </React.Fragment>
                       );
                     })}
                   </tbody>
                 </table>
               </div>
             </div>
+
+            {/* Stage 1 Guided Progression Action Banner */}
+            {demoStep === 1 && (
+              <div className="gov-card p-4 rounded-lg bg-blue-950 text-white flex items-center justify-between flex-wrap gap-3 shadow-md border-l-4 border-blue-400 animate-fadeIn">
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider bg-blue-600 text-white px-2 py-0.5 rounded">
+                      Stage 1 Complete: Petition Indexed & Ingested into Central Registry
+                    </span>
+                    <span className="text-xs text-blue-200">
+                      Canonical PID 1-1049281721 Resolved · Salted DPDP HMAC-SHA256 Token Sealed
+                    </span>
+                  </div>
+                  <h4 className="text-sm font-bold text-white">
+                    Next Statutory Action: Cross-Bureau Inquiry (Check Regulation Bureau Dockets)
+                  </h4>
+                  <p className="text-xs text-blue-200">
+                    Filter registry to Regulation Bureau to verify whether parallel punitive proceedings are active for this institution.
+                  </p>
+                </div>
+                <button
+                  onClick={() => runStoryStep(2)}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-xs rounded transition flex items-center gap-1.5 shadow-sm cursor-pointer"
+                >
+                  <span>Proceed to Stage 2: Cross-Bureau Inquiry (RB)</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+            {/* Stage 2 Guided Progression Action Banner */}
+            {demoStep === 2 && (
+              <div className="gov-card p-4 rounded-lg bg-purple-950 text-white flex items-center justify-between flex-wrap gap-3 shadow-md border-l-4 border-purple-400 animate-fadeIn">
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider bg-purple-600 text-white px-2 py-0.5 rounded">
+                      Stage 2 Alert: Concurrent Punitive Proceeding Active in Regulation Bureau
+                    </span>
+                    <span className="text-xs text-purple-200">
+                      Docket RB/SC/2026/089 Active under APH Chapter VII (Faculty Cadre Deficit)
+                    </span>
+                  </div>
+                  <h4 className="text-sm font-bold text-white">
+                    Next Statutory Action: Run Coordination Intelligence to Detect Conflicting Disposals
+                  </h4>
+                  <p className="text-xs text-purple-200">
+                    PGRC cannot issue an administrative clean-chit while Regulation Bureau maintains active show-cause proceedings.
+                  </p>
+                </div>
+                <button
+                  onClick={() => runStoryStep(3)}
+                  className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-extrabold text-xs rounded transition flex items-center gap-1.5 shadow-sm cursor-pointer"
+                >
+                  <span>Proceed to Stage 3: Coordination Intelligence & Sentinel</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -1071,75 +1301,106 @@ export default function App() {
             <div className="space-y-3">
               {overlaps.map((ov) => {
                 const isContradiction = ov.rel_type === 'CONTRADICTORY_ACTIONS';
+                const isExpanded = expandedOverlapId === ov.rel_id;
                 return (
                   <div
                     key={ov.rel_id}
-                    className={`gov-card p-4 rounded-lg border-l-4 ${
-                      isContradiction ? 'border-l-red-600 bg-red-50/20' : 'border-l-blue-700 bg-white'
+                    className={`gov-card rounded-lg border-l-4 transition-all duration-300 ${
+                      isContradiction ? 'border-l-red-600 bg-red-50/10 border-red-200' : 'border-l-blue-700 bg-white'
                     }`}
                   >
-                    <div className="flex items-center justify-between flex-wrap gap-2 pb-2 mb-2 border-b border-slate-100">
-                      <div className="flex items-center gap-2">
+                    {/* Abstract Header Strip (Clickable to Expand) */}
+                    <div
+                      onClick={() => setExpandedOverlapId(isExpanded ? null : ov.rel_id)}
+                      className="p-4 flex items-center justify-between flex-wrap gap-2 cursor-pointer hover:bg-slate-50/80 transition"
+                    >
+                      <div className="flex items-center gap-2.5 flex-wrap">
                         <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider ${
-                          isContradiction ? 'bg-red-100 text-red-900' : 'bg-blue-100 text-blue-900'
+                          isContradiction ? 'bg-red-100 text-red-900 border border-red-300' : 'bg-blue-100 text-blue-900 border border-blue-200'
                         }`}>
                           {ov.rel_type.replace('_', ' ')}
                         </span>
-                        <span className="text-sm font-bold text-slate-800">
+                        <span className="text-sm font-bold text-slate-900">
                           {ov.institution_name}
                         </span>
-                        <span className="text-xs text-slate-500 font-mono">PID: {ov.institution_pid}</span>
-                      </div>
-                      <span className="text-xs text-slate-500">Tier: <strong>{ov.tier}</strong> · Status: <strong>{ov.status}</strong></span>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3 text-xs bg-slate-50 p-2.5 rounded border border-slate-200">
-                      <div>
-                        <div className="text-xs uppercase font-bold text-slate-500">Docket A</div>
-                        <div className="font-mono font-bold text-blue-900">{ov.case_a_ref} ({ov.case_a_bureau})</div>
-                        <div className="text-slate-600 mt-0.5">Status: <strong className="text-slate-800">{ov.case_a_status}</strong></div>
-                      </div>
-                      <div>
-                        <div className="text-xs uppercase font-bold text-slate-500">Docket B</div>
-                        <div className="font-mono font-bold text-blue-900">{ov.case_b_ref} ({ov.case_b_bureau})</div>
-                        <div className="text-slate-600 mt-0.5">Status: <strong className="text-slate-800">{ov.case_b_status}</strong></div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2 text-xs">
-                      <div className="bg-emerald-50/60 border border-emerald-200 p-2.5 rounded">
-                        <strong className="text-emerald-900 flex items-center gap-1.5 text-xs uppercase tracking-wide">
-                          <Check className="w-3.5 h-3.5 text-emerald-700" />
-                          1. Why Review Together? (Evidentiary Justification)
-                        </strong>
-                        <p className="text-emerald-950 mt-0.5 leading-relaxed">{ov.why_review_together}</p>
+                        <span className="text-xs text-slate-500 font-mono bg-slate-100 px-1.5 py-0.5 rounded">
+                          PID: {ov.institution_pid}
+                        </span>
+                        <span className="text-xs text-slate-400 font-mono">
+                          ({ov.case_a_ref} ↔ {ov.case_b_ref})
+                        </span>
                       </div>
 
-                      <div className="bg-amber-50/60 border border-amber-200 p-2.5 rounded">
-                        <strong className="text-amber-900 flex items-center gap-1.5 text-xs uppercase tracking-wide">
-                          <HelpCircle className="w-3.5 h-3.5 text-amber-700" />
-                          2. Why Might Coordination NOT Be Needed? (Uncertainty / False-Positive Analysis)
-                        </strong>
-                        <p className="text-amber-950 mt-0.5 leading-relaxed">{ov.why_might_not_need}</p>
-                      </div>
-
-                      <div className="bg-blue-50/60 border border-blue-200 p-2.5 rounded">
-                        <strong className="text-blue-900 flex items-center gap-1.5 text-xs uppercase tracking-wide">
-                          <Info className="w-3.5 h-3.5 text-blue-700" />
-                          3. Recommended Coordination Action
-                        </strong>
-                        <p className="text-blue-950 mt-0.5 leading-relaxed font-medium">{ov.justified_action}</p>
-                      </div>
-                    </div>
-
-                    {isContradiction && (
-                      <div className="mt-3 text-right">
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs text-slate-500 font-medium hidden sm:inline">
+                          Tier: <strong>{ov.tier}</strong> · Status: <strong>{ov.status}</strong>
+                        </span>
                         <button
-                          onClick={() => setShowConflictInterceptionModal(true)}
-                          className="px-3.5 py-1.5 bg-red-700 hover:bg-red-800 text-white rounded text-xs font-bold transition shadow-xs"
+                          type="button"
+                          className="px-2.5 py-1 text-xs font-bold rounded border border-slate-300 bg-white text-blue-900 hover:bg-blue-50 transition flex items-center gap-1"
                         >
-                          Inspect Intercepted Conflict
+                          <span>{isExpanded ? 'Collapse Analysis' : 'Expand Legal Analysis'}</span>
+                          {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                         </button>
+                      </div>
+                    </div>
+
+                    {/* Detailed Analysis Drawer (Rendered upon Click) */}
+                    {isExpanded && (
+                      <div className="p-4 pt-0 border-t border-slate-100 space-y-3 animate-fadeIn">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3 text-xs bg-slate-50 p-3 rounded-lg border border-slate-200">
+                          <div>
+                            <div className="text-[10px] uppercase font-bold text-slate-500">Docket A (Grievance Portal)</div>
+                            <div className="font-mono font-bold text-blue-900 text-xs mt-0.5">{ov.case_a_ref} ({ov.case_a_bureau})</div>
+                            <div className="text-slate-600 mt-0.5">Bureau Status: <strong className="text-slate-800">{ov.case_a_status}</strong></div>
+                          </div>
+                          <div>
+                            <div className="text-[10px] uppercase font-bold text-slate-500">Docket B (Regulation Bureau)</div>
+                            <div className="font-mono font-bold text-blue-900 text-xs mt-0.5">{ov.case_b_ref} ({ov.case_b_bureau})</div>
+                            <div className="text-slate-600 mt-0.5">Bureau Status: <strong className="text-slate-800">{ov.case_b_status}</strong></div>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2 text-xs">
+                          <div className="bg-emerald-50/70 border border-emerald-200 p-3 rounded-lg">
+                            <strong className="text-emerald-900 flex items-center gap-1.5 text-xs uppercase tracking-wide">
+                              <Check className="w-3.5 h-3.5 text-emerald-700" />
+                              1. Why Review Together? (Evidentiary Justification)
+                            </strong>
+                            <p className="text-emerald-950 mt-1 leading-relaxed">{ov.why_review_together}</p>
+                          </div>
+
+                          <div className="bg-amber-50/70 border border-amber-200 p-3 rounded-lg">
+                            <strong className="text-amber-900 flex items-center gap-1.5 text-xs uppercase tracking-wide">
+                              <HelpCircle className="w-3.5 h-3.5 text-amber-700" />
+                              2. Why Might Coordination NOT Be Needed? (Uncertainty / False-Positive Analysis)
+                            </strong>
+                            <p className="text-amber-950 mt-1 leading-relaxed">{ov.why_might_not_need}</p>
+                          </div>
+
+                          <div className="bg-blue-50/70 border border-blue-200 p-3 rounded-lg">
+                            <strong className="text-blue-900 flex items-center gap-1.5 text-xs uppercase tracking-wide">
+                              <Info className="w-3.5 h-3.5 text-blue-700" />
+                              3. Recommended Coordination Action
+                            </strong>
+                            <p className="text-blue-950 mt-1 leading-relaxed font-medium">{ov.justified_action}</p>
+                          </div>
+                        </div>
+
+                        {isContradiction && (
+                          <div className="pt-2 flex items-center justify-between flex-wrap gap-2">
+                            <span className="text-xs text-red-700 font-semibold flex items-center gap-1">
+                              <AlertTriangle className="w-3.5 h-3.5" />
+                              <span>Statutory Interdiction Notice in Force</span>
+                            </span>
+                            <button
+                              onClick={() => setShowConflictInterceptionModal(true)}
+                              className="px-3.5 py-1.5 bg-red-700 hover:bg-red-800 text-white rounded text-xs font-bold transition shadow-xs cursor-pointer"
+                            >
+                              Inspect Intercepted Conflict Order
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -1595,46 +1856,46 @@ export default function App() {
                     <div className="flex items-center justify-between text-xs font-mono border-b border-slate-200 pb-2 flex-wrap gap-2">
                       <div>
                         <span className="text-slate-500">File Ref: </span>
-                        <strong className="text-blue-950 font-bold">{currentStage.document.ref_no}</strong>
+                        <strong className="text-blue-950 font-bold">{currentStage?.document?.ref_no || currentStage?.doc_ref || 'AICTE/ORD/2026'}</strong>
                       </div>
                       <div>
                         <span className="text-slate-500">Issuing Bureau: </span>
-                        <strong className="text-slate-800 font-bold">{currentStage.bureau}</strong>
+                        <strong className="text-slate-800 font-bold">{currentStage?.bureau || currentStage?.bureau_code || 'Central Regulatory Bureau'}</strong>
                       </div>
                       <div>
                         <span className="text-slate-500">Date of Order: </span>
-                        <strong className="text-slate-900 font-bold">{currentStage.document.date}</strong>
+                        <strong className="text-slate-900 font-bold">{currentStage?.document?.date || currentStage?.date || '2026-07-01'}</strong>
                       </div>
                     </div>
 
                     {/* Document Subject */}
                     <div className="space-y-1">
                       <div className="text-[11px] uppercase font-bold text-slate-500">
-                        {currentStage.document.type}
+                        {currentStage?.document?.type || currentStage?.doc_type || 'STATUTORY PROCEEDING ORDER'}
                       </div>
                       <div className="text-xs font-bold text-slate-900 bg-slate-50 p-2.5 rounded border border-slate-200">
                         <span className="text-slate-500 uppercase text-[10px] block font-bold">Subject:</span>
-                        {currentStage.document.subject}
+                        {currentStage?.document?.subject || currentStage?.title || 'Statutory Regulation Determination'}
                       </div>
                     </div>
 
                     {/* Gazetted Legal Body */}
                     <div className="p-4 bg-amber-50/20 rounded border border-slate-200 text-xs font-serif text-slate-800 leading-relaxed whitespace-pre-line">
-                      {currentStage.document.body}
+                      {currentStage?.document?.body || currentStage?.doc_body || currentStage?.action_summary || ''}
                     </div>
 
                     {/* Digital Signature & Cryptographic Seal Footer */}
                     <div className="pt-3 border-t border-slate-200 flex items-center justify-between flex-wrap gap-3 text-xs">
                       <div>
                         <span className="text-[10px] uppercase font-bold text-slate-400 block">Digitally Signed By</span>
-                        <strong className="text-slate-900 text-xs">{currentStage.document.signatory}</strong>
+                        <strong className="text-slate-900 text-xs">{currentStage?.document?.signatory || currentStage?.signatory || 'Competent Authority / Council Secretariat'}</strong>
                         <div className="text-[10px] text-slate-500 font-mono">NIC-eOffice Verified Class-3 DSC</div>
                       </div>
 
                       <div className="text-right">
                         <span className="text-[10px] uppercase font-bold text-slate-400 block">Cryptographic SHA-256 Digest</span>
                         <span className="font-mono text-[10px] text-blue-900 font-bold bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
-                          {currentStage.document.seal}
+                          {currentStage?.document?.seal || 'SHA256:7B8C90E1F42A11DEB987C4D5E6F10234'}
                         </span>
                         <div className="text-[10px] text-emerald-700 font-semibold flex items-center justify-end gap-1 mt-0.5">
                           <CheckCircle className="w-3 h-3 text-emerald-600" />
@@ -2106,72 +2367,108 @@ export default function App() {
               </div>
             </div>
 
-            {jointReviews.length === 0 ? (
-              <div className="gov-card p-8 rounded-lg text-center text-xs text-slate-400">
-                No active inter-bureau conference dockets.
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {jointReviews.map(jr => (
-                  <div key={jr.session_id} className="gov-card p-4 rounded-lg space-y-3">
-                    <div className="flex items-center justify-between flex-wrap gap-2">
-                      <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded text-xs font-bold bg-slate-100 text-slate-800 border border-slate-300">
-                          Conference Docket #{jr.session_id}
+            {(() => {
+              const fallbackJointReviews = [
+                {
+                  session_id: 1,
+                  institution_name: 'Mepco Schlenk Engineering College',
+                  institution_pid: '1-1049281721',
+                  initiator_bureau: 'RB',
+                  target_bureau: 'PGRC',
+                  linked_cases: ['PGRC/2026/014', 'RB/SC/2026/089'],
+                  status: 'IN_CONFERENCE',
+                  coordination_reason: 'Conflict Sentinel Alert: PGRC marked PGRC/2026/014 as proposed DISPOSED while Regulation Bureau maintains active show-cause proceedings RB/SC/2026/089.',
+                  outcome_memo: null,
+                  created_at: '2026-07-26T10:00:00Z'
+                }
+              ];
+              const displayJointReviews = (Array.isArray(jointReviews) && jointReviews.length > 0) ? jointReviews : fallbackJointReviews;
+
+              return (
+                <div className="space-y-3">
+                  {displayJointReviews.map(jr => (
+                    <div key={jr.session_id} className="gov-card p-4 rounded-lg space-y-3 bg-white border border-slate-200 shadow-xs">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 rounded text-xs font-bold bg-slate-100 text-slate-800 border border-slate-300">
+                            Conference Docket #{jr.session_id}
+                          </span>
+                          <span className={`px-2 py-0.5 rounded text-xs font-bold ${
+                            jr.status === 'RESOLVED' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-amber-100 text-amber-800 border border-amber-300'
+                          }`}>
+                            {jr.status === 'RESOLVED' ? '✓ RESOLVED & HARMONIZED' : 'IN STANDING CONFERENCE'}
+                          </span>
+                        </div>
+                        <span className="text-xs text-slate-400 font-mono">Date: {jr.created_at?.slice(0, 10) || '2026-07-26'}</span>
+                      </div>
+
+                      <div>
+                        <div className="text-sm font-bold text-slate-900">{jr.institution_name} ({jr.institution_pid})</div>
+                        <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">{jr.coordination_reason}</p>
+                      </div>
+
+                      <div className="text-xs text-slate-500 bg-slate-50 p-2 rounded border border-slate-200">
+                        Linked Inter-Bureau Dockets:{' '}
+                        <span className="font-mono font-bold text-blue-900">
+                          {Array.isArray(jr.linked_cases) ? jr.linked_cases.join(', ') : String(jr.linked_cases || 'PGRC/2026/014, RB/SC/2026/089')}
                         </span>
-                        <span className={`px-2 py-0.5 rounded text-xs font-bold ${
-                          jr.status === 'RESOLVED' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                        }`}>
-                          {jr.status}
-                        </span>
                       </div>
-                      <span className="text-xs text-slate-400 font-mono">Date: {jr.created_at?.slice(0, 10)}</span>
-                    </div>
 
-                    <div>
-                      <div className="text-xs font-bold text-slate-900">{jr.institution_name} ({jr.institution_pid})</div>
-                      <p className="text-xs text-slate-600 mt-0.5">{jr.coordination_reason}</p>
+                      {jr.outcome_memo ? (
+                        <div className="p-3 bg-emerald-50 border border-emerald-200 rounded text-xs text-emerald-950 space-y-1">
+                          <strong className="block text-emerald-900 font-bold uppercase tracking-wider text-[10px]">
+                            Gazetted Unified Disposal Determination Memo (Co-Signed):
+                          </strong>
+                          <p className="font-serif leading-relaxed text-slate-800">{jr.outcome_memo}</p>
+                          <div className="text-[10px] text-emerald-700 font-mono pt-1">
+                            NIC-eOffice Verified Class-3 DSC · SHA-256 Audit Sealed
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="pt-2 border-t border-slate-100 space-y-2">
+                          <label className="text-[11px] font-bold text-slate-700 block">
+                            Joint Bureau Consensus Determination (APH Chapter VII Safeguard):
+                          </label>
+                          <textarea
+                            rows={3}
+                            placeholder="Record unified determination memo signed by both Bureau Heads..."
+                            value={jointMemoText || "Joint Determination: Student caution fee refund verified. However, clean-chit conditional on completion of Standing Hearing Committee scrutiny under APH Chapter VII. Dockets harmonized."}
+                            onChange={(e) => setJointMemoText(e.target.value)}
+                            className="w-full p-2.5 text-xs border border-slate-300 rounded bg-white text-slate-900 font-medium"
+                          />
+                          <div className="flex items-center justify-between flex-wrap gap-2 pt-1">
+                            <span className="text-[10px] text-slate-500 font-mono">
+                              Signatories: Dr. K. Ramanathan (RB) & Smt. Anita Sharma (PGRC)
+                            </span>
+                            <button
+                              onClick={async () => {
+                                const memo = jointMemoText || "Joint Determination: Student caution fee refund verified. However, clean-chit conditional on completion of Standing Hearing Committee scrutiny under APH Chapter VII. Dockets harmonized.";
+                                try {
+                                  await fetch(`/api/coordination/joint-review/${jr.session_id}/resolve`, {
+                                    method: 'PUT',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ outcome_memo: memo, status: 'RESOLVED' })
+                                  });
+                                } catch (e) {
+                                  console.error(e);
+                                }
+                                fetchDashboardData();
+                                // Advance to Stage 5
+                                runStoryStep(5);
+                              }}
+                              className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded text-xs font-bold transition shadow-xs flex items-center gap-1.5 cursor-pointer"
+                            >
+                              <PenTool className="w-3.5 h-3.5" />
+                              <span>Co-Sign & Synchronize Disposal Order</span>
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
-
-                    <div className="text-xs text-slate-500">
-                      Linked Dockets: <span className="font-mono font-bold text-slate-800">{jr.linked_cases.join(', ')}</span>
-                    </div>
-
-                    {jr.outcome_memo ? (
-                      <div className="p-3 bg-emerald-50 border border-emerald-200 rounded text-xs text-emerald-950">
-                        <strong className="block text-emerald-900 mb-1">Unified Disposal Determination:</strong>
-                        {jr.outcome_memo}
-                      </div>
-                    ) : (
-                      <div className="pt-2 border-t border-slate-100 space-y-2">
-                        <textarea
-                          rows={2}
-                          placeholder="Record unified determination memo signed by both Bureau Heads..."
-                          value={jointMemoText}
-                          onChange={(e) => setJointMemoText(e.target.value)}
-                          className="w-full p-2 text-xs border border-slate-300 rounded bg-white"
-                        />
-                        <button
-                          onClick={async () => {
-                            if (!jointMemoText) return alert('Enter memo text first.');
-                            await fetch(`/api/coordination/joint-review/${jr.session_id}/resolve`, {
-                              method: 'PUT',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ outcome_memo: jointMemoText, status: 'RESOLVED' })
-                            });
-                            alert('Determination recorded and dockets harmonized!');
-                            fetchDashboardData();
-                          }}
-                          className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded text-xs font-bold transition shadow-xs"
-                        >
-                          Sign & Synchronize Disposal Order
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              );
+            })()}
 
             {/* Stage 4 Guided Progression Action Banner */}
             <div className="gov-card p-4 rounded-lg bg-emerald-950 text-white flex items-center justify-between flex-wrap gap-3 shadow-md border-2 border-emerald-500 animate-fadeIn">
@@ -2529,8 +2826,8 @@ export default function App() {
                 onClick={async () => {
                   const memo = jointMemoText || "Joint Determination: Student caution fee refund verified. However, clean-chit conditional on completion of Standing Hearing Committee scrutiny under APH Chapter VII. Dockets harmonized.";
                   try {
-                    const firstSession = jointReviews[0];
-                    if (firstSession) {
+                    const firstSession = (Array.isArray(jointReviews) && jointReviews[0]) ? jointReviews[0] : null;
+                    if (firstSession && firstSession.session_id) {
                       await fetch(`/api/coordination/joint-review/${firstSession.session_id}/resolve`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
@@ -2673,5 +2970,6 @@ export default function App() {
         </div>
       </footer>
     </div>
-  );
+  </PortalErrorBoundary>
+);
 }
