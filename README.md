@@ -8,14 +8,15 @@ This repository contains hackathon solutions developed by the team for **Smart I
 
 ```text
 SIH2K26/
-├── aicte-aegis/         # AEGIS — AICTE Governance & Integrated Compliance System (PS: 26262) [ACTIVE]
+├── 26262/               # Problem Statement 26262: AEGIS — AICTE Governance & Integrated Compliance System [ACTIVE]
 │   ├── src/             # React 18 + Vite 5 Interactive Approval Workflow UI (Port 5173)
 │   ├── run.bat          # 1-Click Launch Script
-│   ├── PRESENTATION_AND_VIDEO_SCRIPT.md # Official Pitch Deck & 3.5 Min Voiceover Script
+│   ├── VIDEO_PRESENTATION_SCRIPT.md     # Official 3.5 Min Voiceover Script & Walkthrough Flow
+│   ├── PRESENTATION_AND_VIDEO_SCRIPT.md # 10-Slide Pitch Deck Specification
 │   ├── SYSTEM_DESIGN_DESCRIPTION.md     # Production Hexagonal SDD & DDL Schemas
 │   └── README.md        # Technical Documentation & Architecture Overview
 │
-├── aicte-irccip/        # AICTE Regulatory Case Coordination & Monitoring Platform (PS: 26264)
+├── aicte-irccip/        # Problem Statement 26264: AICTE Complaint Cases & Grievance Platform
 │   ├── backend/         # FastAPI REST API & Core Intelligence Services (Port 8000)
 │   ├── frontend/        # React + Vite Interactive Dashboard UI (Port 3000)
 │   ├── ml/              # Standalone CaseLink ML Training & Evaluation Pipelines
@@ -33,7 +34,7 @@ SIH2K26/
 
 ---
 
-## 🚀 Active Project: AICTE AEGIS (`aicte-aegis`)
+## 🚀 Active Project: AICTE AEGIS (`26262`)
 
 **Problem Statement ID:** 26262  
 **Project Name:** AEGIS — AICTE Governance & Integrated Compliance System  
@@ -50,7 +51,7 @@ SIH2K26/
 
 ### ⚡ Quick Start (1-Click Run)
 ```bash
-cd aicte-aegis
+cd 26262
 run.bat
 ```
 Launches [http://localhost:5173/](http://localhost:5173/) automatically.
