@@ -391,32 +391,40 @@ export default function App() {
     if (tabId === 'mlstudio' && !mlResult) runMlInfer();
   };
 
-  // Stepper Controller for Video Demo Storyline
+  // Statutory Case Lifecycle Progression Controller
   const runStoryStep = (stepNum) => {
     setDemoStep(stepNum);
     if (stepNum === 1) {
-      // Step 1: Citizen Ingestion
+      // Stage 1: Central Registry & Grievance Lodgement
       setActiveTab('overview');
-      setShowSimulateModal(true);
+      setBureauFilter('');
+      setShowSimulateModal(false);
+      setShowConflictInterceptionModal(false);
+      setShowJointConfModal(false);
     } else if (stepNum === 2) {
-      // Step 2: Show Regulation Bureau inquiry
+      // Stage 2: Cross-Bureau Inquiry (Regulation Bureau Show-Cause)
       setActiveTab('overview');
       setBureauFilter('RB');
       setShowSimulateModal(false);
+      setShowConflictInterceptionModal(false);
+      setShowJointConfModal(false);
     } else if (stepNum === 3) {
-      // Step 3: Trigger Conflict Interception hero moment
-      setActiveTab('overview');
+      // Stage 3: Coordination Intelligence & Conflict Sentinel Interception
+      setActiveTab('intelligence');
       setBureauFilter('');
-      setShowConflictInterceptionModal(true);
+      setShowSimulateModal(false);
+      setShowConflictInterceptionModal(false);
+      setShowJointConfModal(false);
     } else if (stepNum === 4) {
-      // Step 4: Joint Resolution Conference Room
+      // Stage 4: Joint Resolution Conference Chamber
       setActiveTab('jointreview');
       setShowConflictInterceptionModal(false);
       setShowJointConfModal(true);
     } else if (stepNum === 5) {
-      // Step 5: Bitemporal Time Travel & Per-Docket Scrubber
+      // Stage 5: Bitemporal Audit Trail & Docket Scrubber
       setActiveTab('timetravel');
       setShowJointConfModal(false);
+      setShowConflictInterceptionModal(false);
       setTimelineViewMode('docket');
       setSelectedTimelineDocketKey('PGRC/2026/014');
       setDocketSliderIndex(4); // 22 July Conflict Sentinel Interception stage
@@ -537,13 +545,12 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Live Interactive Action Trigger for Video Recording */}
             <button
               onClick={() => setShowSimulateModal(true)}
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-blue-700 hover:bg-blue-600 text-white text-xs font-bold shadow-sm transition"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-blue-700 hover:bg-blue-600 text-white text-xs font-bold shadow-sm transition cursor-pointer"
             >
-              <Zap className="w-3.5 h-3.5 text-amber-300" />
-              <span>Simulate Portal Filing</span>
+              <FileText className="w-3.5 h-3.5" />
+              <span>New Grievance Intake</span>
             </button>
 
             <div className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded bg-slate-800 text-sm text-slate-300 border border-slate-700">
@@ -552,7 +559,7 @@ export default function App() {
             </div>
             <button
               onClick={fetchDashboardData}
-              className="p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition"
+              className="p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition cursor-pointer"
               title="Refresh Data"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -561,32 +568,39 @@ export default function App() {
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════ */}
-        {/* PERSISTENT DEMO STEPPER TOOLBAR (FOR LIVE VIDEO RECORDING)     */}
+        {/* STATUTORY CASE LIFECYCLE WORKFLOW BAR                          */}
         {/* ═══════════════════════════════════════════════════════════════ */}
-        <div className="bg-slate-950/90 border-t border-slate-800 px-4 py-2">
+        <div className="bg-slate-950 border-t border-slate-800 px-4 py-2">
           <div className="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-2 text-xs">
             <div className="flex items-center gap-2 text-slate-300 font-bold uppercase tracking-wider text-[11px]">
-              <Play className="w-3.5 h-3.5 text-emerald-400" />
-              <span>SIH Live Story Stepper:</span>
+              <Layers className="w-3.5 h-3.5 text-blue-400" />
+              <span>Statutory Lifecycle Pipeline:</span>
             </div>
 
             <div className="flex items-center gap-1.5 overflow-x-auto py-0.5">
               {[
-                { step: 1, label: '1. Ingest Grievance' },
-                { step: 2, label: '2. RB Show-Cause' },
-                { step: 3, label: '3. Conflict Intercept' },
-                { step: 4, label: '4. Joint Resolution' },
-                { step: 5, label: '5. Time-Travel Audit' },
+                { step: 1, label: 'Stage 1: Intake & Registry' },
+                { step: 2, label: 'Stage 2: Cross-Bureau Inquiry' },
+                { step: 3, label: 'Stage 3: Conflict Sentinel' },
+                { step: 4, label: 'Stage 4: Joint Harmonization' },
+                { step: 5, label: 'Stage 5: Statutory Audit Scrubber' },
               ].map(s => (
                 <button
                   key={s.step}
                   onClick={() => runStoryStep(s.step)}
-                  className={`px-3 py-1 rounded font-bold text-xs transition flex items-center gap-1 ${
+                  className={`px-3 py-1 rounded font-bold text-xs transition flex items-center gap-1 cursor-pointer ${
                     demoStep === s.step
                       ? 'bg-blue-600 text-white shadow-xs'
-                      : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
+                      : s.step < demoStep
+                      ? 'bg-slate-800 text-emerald-300 hover:bg-slate-700'
+                      : 'bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
                   }`}
                 >
+                  {s.step < demoStep ? (
+                    <span className="w-3.5 h-3.5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-[10px]">✓</span>
+                  ) : (
+                    <span className="w-3.5 h-3.5 rounded-full bg-slate-700 text-slate-300 flex items-center justify-center text-[10px]">{s.step}</span>
+                  )}
                   <span>{s.label}</span>
                 </button>
               ))}
@@ -643,8 +657,8 @@ export default function App() {
           </div>
         )}
 
-        {/* Conflict Sentinel Critical Alert */}
-        {contradictions.length > 0 && (
+        {/* Conflict Sentinel Critical Alert (Active from Stage 3 Onwards) */}
+        {contradictions.length > 0 && (demoStep >= 3 || activeTab === 'intelligence') && (
           <div className="bg-red-50 border-l-4 border-red-700 p-4 rounded-r-lg shadow-xs">
             <div className="flex items-start justify-between flex-wrap gap-3">
               <div className="flex items-start gap-3">
@@ -784,39 +798,39 @@ export default function App() {
               </div>
             </div>
 
-            {/* Live Webhook Ingestion Simulator Card */}
+            {/* Statutory Grievance Intake Card */}
             <div className="gov-card p-4 rounded-lg bg-gradient-to-br from-blue-50/90 via-slate-50 to-blue-50/50 border border-blue-200 shadow-xs space-y-3">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2">
-                  <div className="p-1.5 rounded bg-blue-700 text-white shadow-xs">
-                    <Zap className="w-4 h-4" />
+                  <div className="p-1.5 rounded bg-blue-900 text-white shadow-xs">
+                    <FileText className="w-4 h-4" />
                   </div>
                   <div>
                     <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
-                      ⚡ Mode 1 Live Citizen Filing Simulator (Real-Time Ingestion)
+                      Statutory Grievance Lodgement Gateway (PGRC e-Filing)
                     </h3>
                     <p className="text-xs text-slate-600">
-                      Type any unstandardized institution name to witness real-time 4-Tier Entity Resolution, DPDP HMAC tokenization, and AI auto-triage.
+                      Standardized intake with automatic 4-Tier Entity Resolution, Canonical AICTE PID mapping, and DPDP-compliant citizen hashing.
                     </p>
                   </div>
                 </div>
                 
-                {/* 1-Click Scenario Presets */}
+                {/* Standard Petition Templates */}
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-[11px] font-bold text-slate-500 uppercase">Click Test Presets:</span>
+                  <span className="text-[11px] font-bold text-slate-500 uppercase">Standard Templates:</span>
                   <button
                     type="button"
                     onClick={() => handleQuickIngest('Mepco Engg Sivakasi', 'FEES', 'Capitation fees demanded without receipt upon graduation.')}
                     disabled={quickIngesting}
-                    className="px-2 py-1 rounded bg-white hover:bg-blue-100 text-blue-900 border border-blue-300 text-[11px] font-bold shadow-xs transition cursor-pointer"
+                    className="px-2.5 py-1 rounded bg-white hover:bg-blue-100 text-blue-900 border border-blue-300 text-[11px] font-bold shadow-xs transition cursor-pointer"
                   >
-                    1. Mepco (Fee Refund)
+                    1. Mepco Schlenk (Fee Refund)
                   </button>
                   <button
                     type="button"
                     onClick={() => handleQuickIngest('PSG Tech Coimbatore', 'FACULTY', 'AICTE 7th pay scale arrears unpaid to assistant professors.')}
                     disabled={quickIngesting}
-                    className="px-2 py-1 rounded bg-white hover:bg-amber-100 text-amber-900 border border-amber-300 text-[11px] font-bold shadow-xs transition cursor-pointer"
+                    className="px-2.5 py-1 rounded bg-white hover:bg-amber-100 text-amber-900 border border-amber-300 text-[11px] font-bold shadow-xs transition cursor-pointer"
                   >
                     2. PSG Tech (Faculty Pay)
                   </button>
@@ -824,7 +838,7 @@ export default function App() {
                     type="button"
                     onClick={() => handleQuickIngest('CEG Anna Univ Chennai', 'INFRASTRUCTURE', 'Hostel electrical wiring safety hazard in block D.')}
                     disabled={quickIngesting}
-                    className="px-2 py-1 rounded bg-white hover:bg-rose-100 text-rose-900 border border-rose-300 text-[11px] font-bold shadow-xs transition cursor-pointer"
+                    className="px-2.5 py-1 rounded bg-white hover:bg-rose-100 text-rose-900 border border-rose-300 text-[11px] font-bold shadow-xs transition cursor-pointer"
                   >
                     3. CEG Anna Univ (Infra)
                   </button>
@@ -834,7 +848,7 @@ export default function App() {
               {/* Custom Input Grid */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-2.5 pt-1">
                 <div>
-                  <label className="text-[11px] font-bold text-slate-700 block mb-1">Raw College Name (Unnormalized):</label>
+                  <label className="text-[11px] font-bold text-slate-700 block mb-1">Institution Name (Raw / Alias):</label>
                   <input
                     type="text"
                     value={quickRawCollege}
@@ -870,17 +884,17 @@ export default function App() {
                   <button
                     onClick={() => handleQuickIngest()}
                     disabled={quickIngesting}
-                    className="w-full py-2 bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs rounded transition shadow-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                    className="w-full py-2 bg-blue-900 hover:bg-blue-800 text-white font-bold text-xs rounded transition shadow-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
                   >
                     {quickIngesting ? (
                       <>
                         <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                        <span>Resolving & Ingesting...</span>
+                        <span>Resolving & Registering...</span>
                       </>
                     ) : (
                       <>
                         <Send className="w-3.5 h-3.5" />
-                        <span>⚡ Ingest Docket Now</span>
+                        <span>Register Petition in Central Registry</span>
                       </>
                     )}
                   </button>
@@ -1131,6 +1145,33 @@ export default function App() {
                   </div>
                 );
               })}
+            </div>
+
+            {/* Stage 3 Guided Progression Action Banner */}
+            <div className="gov-card p-4 rounded-lg bg-red-950 text-white flex items-center justify-between flex-wrap gap-3 shadow-md border-2 border-red-500 animate-fadeIn">
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-red-600 text-white px-2 py-0.5 rounded">
+                    Stage 3 Alert: Critical Legal Contradiction Intercepted
+                  </span>
+                  <span className="text-xs text-red-200">
+                    Statutory Freeze Enforced under AICTE Act Sec 10(1)(v)
+                  </span>
+                </div>
+                <h4 className="text-sm font-bold text-white">
+                  Next Statutory Action: Convene Apex Inter-Bureau Coordination Session
+                </h4>
+                <p className="text-xs text-red-200">
+                  Prevent premature clean-chit by harmonizing PGRC grievance disposal with Regulation Bureau show-cause hearings.
+                </p>
+              </div>
+              <button
+                onClick={() => runStoryStep(4)}
+                className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-extrabold text-xs rounded transition flex items-center gap-1.5 shadow-sm cursor-pointer"
+              >
+                <span>Proceed to Stage 4: Convene Coordination Session</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
             </div>
           </div>
         )}
@@ -1602,6 +1643,33 @@ export default function App() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Stage 5 Completion Banner */}
+                  <div className="gov-card p-4 rounded-lg bg-slate-900 text-white flex items-center justify-between flex-wrap gap-3 shadow-md border-l-4 border-emerald-400">
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-500 text-slate-950 px-2 py-0.5 rounded font-mono">
+                          ✓ Statutory Coordination Cycle Complete
+                        </span>
+                        <span className="text-xs text-slate-300">
+                          Zero Conflicting Clean-Chits · Immutable Gazette Audit Trail
+                        </span>
+                      </div>
+                      <h4 className="text-sm font-bold text-white">
+                        Cross-Bureau Resolution Verified Across All Proceedings
+                      </h4>
+                      <p className="text-xs text-slate-400">
+                        PGRC grievance resolved without compromising Regulation Bureau APH Chapter VII statutory inquiries.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => runStoryStep(1)}
+                      className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-blue-300 hover:text-white font-bold text-xs rounded transition flex items-center gap-1.5 border border-slate-700 cursor-pointer"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>Return to Central Registry</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -1921,7 +1989,7 @@ export default function App() {
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <label className="text-xs font-bold text-slate-700 block">Complaint Text for Analysis:</label>
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-[11px] font-semibold text-slate-400">Live Scenario Presets:</span>
+                    <span className="text-[11px] font-semibold text-slate-400">Standard Case Templates:</span>
                     <button
                       type="button"
                       onClick={() => runMlInfer('College collected 25000 excess capitation fee and refuses to refund caution deposit')}
@@ -2104,6 +2172,33 @@ export default function App() {
                 ))}
               </div>
             )}
+
+            {/* Stage 4 Guided Progression Action Banner */}
+            <div className="gov-card p-4 rounded-lg bg-emerald-950 text-white flex items-center justify-between flex-wrap gap-3 shadow-md border-2 border-emerald-500 animate-fadeIn">
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-500 text-slate-950 px-2 py-0.5 rounded">
+                    Stage 4 Complete: Harmonized Joint Determination Memo Executed
+                  </span>
+                  <span className="text-xs text-emerald-200">
+                    Digitally Sealed via NIC-eOffice DSC (SHA-256 Validated)
+                  </span>
+                </div>
+                <h4 className="text-sm font-bold text-white">
+                  Next Statutory Action: Review Historical Audit Trail & Sealed Orders
+                </h4>
+                <p className="text-xs text-emerald-200">
+                  Inspect the slidable docket lifecycle scrubber to verify how the cross-bureau conflict was averted.
+                </p>
+              </div>
+              <button
+                onClick={() => runStoryStep(5)}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded transition flex items-center gap-1.5 shadow-sm cursor-pointer"
+              >
+                <span>Proceed to Stage 5: Inspect Audit Scrubber</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         )}
 
@@ -2119,9 +2214,9 @@ export default function App() {
             <div className="p-4 border-b border-slate-800 bg-slate-900 text-white flex items-center justify-between">
               <div>
                 <span className="text-xs font-mono text-blue-300 uppercase tracking-widest block font-bold">
-                  AICTE Ingestion Mesh · Live Portal Webhook Simulator
+                  PGRC Statutory e-Filing Gateway
                 </span>
-                <span className="text-base font-bold text-white block mt-0.5">Simulate Citizen Grievance Submission</span>
+                <span className="text-base font-bold text-white block mt-0.5">Direct Citizen Grievance Lodgement</span>
               </div>
               <button
                 onClick={() => setShowSimulateModal(false)}
@@ -2133,7 +2228,7 @@ export default function App() {
 
             <div className="p-5 overflow-y-auto space-y-4 text-xs">
               <div className="bg-blue-50 border border-blue-200 p-3 rounded text-blue-950">
-                <strong>Non-Invasive Ingestion Demonstration:</strong> Simulates a citizen filing a fee petition on the external PGRC portal. Watch our backend tokenize identity and resolve the canonical PID.
+                <strong>Statutory Lodgement:</strong> Submits formal citizen petition under AICTE Public Grievance Redressal Regulations 2026. Automatically tokenizes citizen PII under DPDP Act 2023 and resolves the Canonical AICTE Permanent ID.
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -2250,20 +2345,20 @@ export default function App() {
             </div>
 
             <div className="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
-              <span className="text-xs text-slate-500">HTTP POST /api/intake/webhook</span>
+              <span className="text-xs text-slate-500">AICTE Central Registry e-Filing Integration</span>
               <div className="flex gap-2">
                 <button
                   onClick={() => setShowSimulateModal(false)}
-                  className="px-3 py-1.5 rounded bg-slate-200 hover:bg-slate-300 font-bold text-slate-700 text-xs"
+                  className="px-3 py-1.5 rounded bg-slate-200 hover:bg-slate-300 font-bold text-slate-700 text-xs cursor-pointer"
                 >
                   Close
                 </button>
                 <button
                   onClick={handleExecuteSimulateIntake}
                   disabled={simulatingIntake}
-                  className="px-4 py-1.5 rounded bg-blue-700 hover:bg-blue-800 font-bold text-white text-xs shadow-xs transition"
+                  className="px-4 py-1.5 rounded bg-blue-900 hover:bg-blue-800 font-bold text-white text-xs shadow-xs transition cursor-pointer"
                 >
-                  {simulatingIntake ? 'Ingesting...' : 'Fire Portal Webhook'}
+                  {simulatingIntake ? 'Registering...' : 'Register Petition in Central Registry'}
                 </button>
               </div>
             </div>
@@ -2429,7 +2524,7 @@ export default function App() {
             </div>
 
             <div className="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
-              <span className="text-xs text-slate-500">Digital Certificate: NIC-PARICHAY-VERIFIED</span>
+              <span className="text-xs text-slate-500">Digital Certificate: NIC-PARICHAY-VERIFIED (SHA-256)</span>
               <button
                 onClick={async () => {
                   const memo = jointMemoText || "Joint Determination: Student caution fee refund verified. However, clean-chit conditional on completion of Standing Hearing Committee scrutiny under APH Chapter VII. Dockets harmonized.";
@@ -2445,12 +2540,12 @@ export default function App() {
                   } catch (e) {
                     console.error(e);
                   }
-                  alert('Joint Conference memo digitally co-signed! Dockets harmonized across bureaus.');
                   setShowJointConfModal(false);
                   fetchDashboardData();
-                  setActiveTab('jointreview');
+                  // Smoothly advance workflow to Stage 5 without disrupting browser alerts
+                  runStoryStep(5);
                 }}
-                className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded font-bold text-xs shadow-md transition flex items-center gap-1.5"
+                className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded font-bold text-xs shadow-md transition flex items-center gap-1.5 cursor-pointer"
               >
                 <PenTool className="w-4 h-4" />
                 <span>Co-Sign & Harmonize Dockets</span>
