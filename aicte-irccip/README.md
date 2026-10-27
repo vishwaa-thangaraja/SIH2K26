@@ -8,7 +8,7 @@ This repository contains hackathon solutions developed by the team for **Smart I
 
 ```text
 SIH2K26/
-├── aicte-irccip/        # AICTE Regulatory Case Coordination & Monitoring Platform [ACTIVE]
+├── aicte-irccip/        # AICTE AEGIS · AI-Enabled Governance & Institutional Surveillance [ACTIVE]
 │   ├── backend/         # FastAPI REST API & Core Intelligence Services (Port 8000)
 │   ├── frontend/        # React + Vite Interactive Dashboard UI (Port 3000)
 │   ├── ml/              # Standalone CaseLink ML Training & Evaluation Pipelines
@@ -26,10 +26,11 @@ SIH2K26/
 
 ---
 
-## 🚀 Active Project: AICTE Case Coordination & Regulatory Intelligence Platform (`aicte-irccip`)
+## 🚀 Active Project: AICTE AEGIS (`aicte-irccip`)
 
 **Problem Statement ID:** 26264  
-**Title:** Integrated Regulatory Case Coordination & Monitoring Platform (IRCCIP)  
+**Project Name:** AICTE AEGIS — AI-Enabled Governance & Institutional Surveillance  
+**Official Focus:** Integrated Dashboard for Monitoring and Tracking Institution-Related Complaint Cases Across AICTE Bureaus/Cells  
 
 ### Core Highlights
 - **Case Passport**: Interactive Case Dossier & Complete Event Audit Trail.
