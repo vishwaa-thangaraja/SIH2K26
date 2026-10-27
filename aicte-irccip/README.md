@@ -1,46 +1,76 @@
-# AICTE Case Coordination & Regulatory Intelligence Platform
-**Smart India Hackathon 2026 | Problem Statement ID: 26264**  
+# Smart India Hackathon 2026 (SIH 2K26) Repository
+
+This repository contains hackathon solutions developed by the team for **Smart India Hackathon 2026**.
 
 ---
 
-## 1. Problem Landscape
-1. **Scattered Records**: Complaint records are scattered across different bureaus (Regulation Bureau, PGRC, Approval Bureau, Regional Offices).
-2. **Naming Discrepancies**: The same institution may appear under different names or abbreviations across portals.
-3. **Conflicting Decisions**: Different bureaus may make conflicting decisions (e.g. PGRC clean-chit while Regulation Bureau has an active Show-Cause notice).
-4. **Untracked Case History**: Important case history and evidentiary audit trails are difficult to track across time.
-5. **Confidentiality Risks**: Sensitive whistleblower testimony and sub-judice documents need strict protection without breaking inter-bureau coordination.
+## 📁 Repository Directory Structure
+
+```text
+SIH2K26/
+├── aicte-irccip/        # AICTE Regulatory Case Coordination & Monitoring Platform [ACTIVE]
+│   ├── backend/         # FastAPI REST API & Core Intelligence Services (Port 8000)
+│   ├── frontend/        # React + Vite Interactive Dashboard UI (Port 3000)
+│   ├── ml/              # Standalone CaseLink ML Training & Evaluation Pipelines
+│   ├── docs/            # Technical Architecture, SRS & Solution Specifications
+│   ├── schema.sql       # 3NF PostgreSQL Relational Schema (55 tables/views/triggers)
+│   ├── tests.sql        # Automated SQL Verification Test Suites (T1-T10)
+│   └── README.md        # Detailed Documentation & Setup Instructions
+│
+└── continuum/           # Continuum Project
+    ├── backend/         # FastAPI Backend & Integration Connectors
+    ├── frontend/        # Next.js Application
+    ├── ML/              # Machine Learning Models & Skill Gap Analysis
+    └── README.md        # Continuum Documentation
+```
 
 ---
 
-## 2. Core Innovations & Implementation Mapping
-All innovations are fully embedded and operational in this system:
+## 🚀 Active Project: AICTE Case Coordination & Regulatory Intelligence Platform (`aicte-irccip`)
 
-| Innovation Mandate | Implemented Component in System | Technical Detail |
-| :--- | :--- | :--- |
-| **Case Passport** | Interactive Case Dossier & Event Log | Maintains complete chronological history of every case update, officer assignment, and status change. |
-| **Conflict Detection System (Contradiction Detection)** | Contradiction Sentinel (`v_cross_bureau_contradictions` & Red Banner) | Identifies conflicting actions between bureaus and halts unilateral disposal before a case is closed. |
-| **Secure Duplicate Detection** | Air-Gapped Blind Handshake Protocol | Finds related complaints using salted HMAC-SHA256 tokens without exposing sensitive citizen/whistleblower identities. |
-| **Smart Institution Matching** | 4-Tier Cascaded Entity Resolver | Identifies the same institution even when names differ (Exact PID $\to$ Geo Blocking $\to$ RapidFuzz $\to$ Jaro-Winkler). |
-| **Explainable AI** | Multi-Signal Reason Codes & NLP Service | Shows why cases are considered related with statutory reason codes (`SAME_INST_HIGH`, `CLAUSE_OVERLAP`). |
-| **Unified Complaint Registry** | Master Complaint Ledger | Centralized record of complaints using unique case IDs and verified AICTE Permanent IDs (PID). |
-| **Cross-Bureau Case Tracker** | Real-time Searchable Case Table | Tracks complaint progress across AICTE bureaus and surfaces overlapping proceedings. |
-| **Case History and Audit Trail** | Bitemporal "As-of" Time Travel Machine | Reconstructs past case statuses as of any historical calendar date (`case_state_asof`). |
-| **Coordination Dashboard** | Executive Single-Window UI | Displays pending cases, delays (>45 days), bureau workload, and resolution status. |
+**Problem Statement ID:** 26264  
+**Title:** Integrated Regulatory Case Coordination & Monitoring Platform (IRCCIP)  
+
+### Core Highlights
+- **Case Passport**: Interactive Case Dossier & Complete Event Audit Trail.
+- **Contradiction Sentinel**: Cross-bureau conflict detection halting unilateral case closures.
+- **Air-Gapped Blind Handshake**: Salted HMAC-SHA256 duplicate detection safeguarding whistleblower confidentiality.
+- **4-Tier Cascaded Entity Resolution**: Normalizes and matches institutions across disparate registries (Exact PID $\to$ Geo Blocking $\to$ RapidFuzz $\to$ Jaro-Winkler).
+- **Bitemporal "As-Of" Time Travel**: Historical snapshot reconstruction of case states as of any past calendar date.
+
+### ⚡ Quick Start Guide (Zero-Effort 1-Click Launch)
+
+#### Option A: Windows 1-Click (Recommended for Evaluators & ZIP Downloads)
+Just double-click:
+👉 **`1_CLICK_RUN_ALL.bat`** (at the root of this repository)
+
+*It automatically sets up Python `venv`, installs `requirements.txt`, runs `npm install`, starts Backend (port 8000) and Frontend (port 3000), and auto-launches your browser at `http://localhost:3000`!*
 
 ---
 
-## 3. How to Run
+#### Option B: Manual Terminal Execution
 
-### Backend (Port 8000)
+##### 1. Backend Setup
 ```bash
-cd backend
+cd aicte-irccip/backend
+python -m venv venv
+# Windows: venv\Scripts\activate | Mac/Linux: source venv/bin/activate
+pip install -r requirements.txt
 python run.py
 ```
-* API Documentation: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+* API Server: [http://127.0.0.1:8000](http://127.0.0.1:8000)
+* Interactive Swagger Docs: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
-### Frontend (Port 3000)
+##### 2. Frontend Setup
 ```bash
-cd frontend
+cd aicte-irccip/frontend
+npm install
 npm run dev
 ```
-* Dashboard URL: [http://localhost:3000](http://localhost:3000)
+* Web Dashboard: [http://localhost:3000](http://localhost:3000)
+
+---
+
+## 📦 Archived Project: Continuum (`continuum`)
+
+See [continuum/README.md](continuum/README.md) for full instructions and architecture details for the Continuum application.

@@ -14,9 +14,11 @@ designed, written, tested, and running in this project repository.
 Root Project Directory: D:\Documents\SEM V\SIH 2026
 Implementation Directory: D:\Documents\SEM V\SIH 2026\IMP
 ML Directory: D:\Documents\SEM V\SIH 2026\ml\caselink-ml
+Active Git Repository: https://github.com/vishwaa-thangaraja/SIH2K26
 
 Both backend (FastAPI, port 8000) and frontend (React/Vite, port 3000) are fully 
-implemented, connected to actual trained Scikit-Learn ML models, and running live.
+implemented, connected to actual trained Scikit-Learn ML models, equipped with 
+zero-effort 1-click batch installers, and running live.
 
 
 2. CORE ARCHITECTURAL & SPECIFICATION DOCUMENTS
@@ -159,11 +161,29 @@ B. Interactive "Story Mode" Video Stepper:
      -> [Step 4: Joint Resolution] -> [Step 5: Audit Check].
    - Clicking steps triggers live UI navigation, numbers, modals, and dockets.
 
-C. Live Action Modals & Components:
+C. Real-Time Reactive Ingestion Experience:
+   - Dedicated "Mode 1 Live Citizen Filing Simulator" card positioned directly above 
+     the central docket registry.
+   - 3 Instant Click Test Presets:
+     * [1. Mepco (Fee Refund)]: Ingests raw name "Mepco Engg Sivakasi" -> Resolves to PID 1-1049281721
+     * [2. PSG Tech (Faculty Pay)]: Ingests faculty arrears grievance -> Resolves to PSG Tech PID
+     * [3. CEG Anna Univ (Infra)]: Ingests safety violation -> Resolves to CEG Anna Univ PID
+   - Custom Ingestion Bar allowing freeform entry of unstandardized college names, 
+     categories, and grievance narratives.
+   - Real-Time Reactive State Updates:
+     * Total Dockets counter increments immediately (+1) on the KPI cards.
+     * Persistent glowing green notification banner appears at the top displaying the 
+       resolved PID, DPDP token, and AI auto-triage results.
+     * Newly ingested docket drops into Row 1 of the registry table with an animated 
+       glowing border and pulsing "⚡ NEW LIVE DOCKET" badge.
+
+D. Live Action Modals & Components:
    1. Live Simulated Portal Filing Modal:
       - Interactive webhook submission simulating citizen filing on PGRC/CPGRAMS.
       - Resolves unnormalized college names to permanent AICTE PIDs in real-time.
       - Displays instant DPDP blind hash and AI Auto-Triage prediction.
+      - Direct "View on Live Dashboard" link that auto-closes the modal and smoothly 
+        scrolls to the newly ingested docket row.
    2. Conflict Sentinel Interception Alert:
       - Flashing government interdiction modal highlighting concurrent contradictory 
         orders (e.g. PGRC unilateral closure vs. Regulation Bureau punitive inquiry).
@@ -183,13 +203,23 @@ C. Live Action Modals & Components:
       - Instant prediction cards showing Category, Confidence %, Priority, Bureau, 
         and Duplicate Similarity Score.
 
+E. 1-Click Zero-Effort Smart Launchers:
+   - 1_CLICK_RUN_ALL.bat: Master launcher at repository root.
+     * Automatically checks for Python venv and installs requirements.txt if first run.
+     * Automatically checks for node_modules and executes npm install if first run.
+     * Launches FastAPI backend on port 8000 and Vite frontend on port 3000.
+     * Automatically opens default web browser to http://localhost:3000.
+   - start_backend.bat & start_frontend.bat: Modular smart launchers in aicte-irccip/.
+
 
 5. SCRIPT & RECORDING BLUEPRINT
 --------------------------------------------------------------------------------
 Located in root folder: D:\Documents\SEM V\SIH 2026\video_recording_script.txt
-- Comprehensive 3:30 minute timestamped, step-by-step narration script.
-- Matches every click on the interactive Stepper, Portal Simulator, Conflict Alert, 
-  Joint Chamber, Time-Travel Slider, and ML Presets.
+- Comprehensive 3:45 to 4:00 minute timestamped, step-by-step master director's runsheet.
+- Includes PPT Slide 1 (Title/Team) & PPT Slide 2 (Problem Context), followed by 
+  seamless transition to http://localhost:3000.
+- Complete button-by-button action map: exactly what button to click, its color and 
+  screen location, what UI animations fire, and word-for-word spoken voiceover.
 
 
 6. CURRENT STATUS & VERIFICATION
@@ -198,5 +228,7 @@ Located in root folder: D:\Documents\SEM V\SIH 2026\video_recording_script.txt
 - Frontend Server: ACTIVE on http://localhost:3000 (Vite / React)
 - Trained ML Pipelines: Verified active and loaded from .joblib models
 - Cloud Deployment Ready: PostgreSQL connection pool and render.yaml ready
+- Smart 1-Click Launchers: Tested, verified, and committed to git
+- GitHub Repository: Fully synchronized with main branch at https://github.com/vishwaa-thangaraja/SIH2K26
 - All 10 verification test suites in tests.sql validated.
-===============================================================================
+================================================================================
