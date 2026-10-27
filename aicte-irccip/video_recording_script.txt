@@ -1,145 +1,240 @@
 ================================================================================
-SIH 2026 OFFICIAL VIDEO DEMONSTRATION SCRIPT (WITH EXACT CLICKS & TIMESTAMPS)
-Project: AICTE Integrated Regulatory Case Coordination Platform (IRCCIP)
+SMART INDIA HACKATHON 2026 — OFFICIAL VIDEO RECORDING SCRIPT & MASTER RUNSHEET
+Project: AICTE Integrated Regulatory Case Coordination & Monitoring Platform (IRCCIP)
 Problem Statement ID: 26264
 Team: Code Society — Mepco Schlenk Engineering College
-Total Duration: 3 Minutes 30 Seconds
+Total Target Duration: ~3 Minutes 45 Seconds to 4 Minutes
 ================================================================================
 
-[00:00 - 00:30] PART 1: THE REGULATORY CRISIS (INTRODUCTION)
+[00:00 - 00:15] PART 1: TITLE SLIDE (PPT SLIDE 1)
+--------------------------------------------------------------------------------
+SCREEN DISPLAY:
+- Fullscreen PowerPoint / Presentation Slide 1
+- Title: AICTE Integrated Regulatory Case Coordination & Monitoring Platform (IRCCIP)
+- Subtitle: AI-Driven Cross-Bureau Harmonization, Conflict Interdiction & Bitemporal Audit
+- Problem Statement ID: 26264
+- Team Name: Code Society | Mepco Schlenk Engineering College
+
+SPOKEN VOICEOVER:
+"A very warm greeting to the respected evaluators and jury members of Smart India 
+Hackathon 2026. 
+
+We are Team Code Society from Mepco Schlenk Engineering College. Today, we proudly 
+present our solution for Problem Statement 26264: the AICTE Integrated Regulatory 
+Case Coordination and Monitoring Platform."
+
+
+[00:15 - 00:35] PART 2: THE PROBLEM STATEMENT & REGULATORY CRISIS (PPT SLIDE 2)
+--------------------------------------------------------------------------------
+SCREEN DISPLAY:
+- PowerPoint Slide 2: "The Regulatory Crisis: Disconnected Bureau Silos"
+- Visuals on slide:
+  * Left: Public Grievance Redressal Cell (PGRC) handling student fee complaints
+  * Right: Regulation Bureau (RB) prosecuting punitive show-cause inquiries
+  * Center: Institutional Contradiction (Clean-Chit vs. Punitive Closure)
+  * Callouts: RTI Vulnerabilities, High Court Contempt, Lack of Single View
+
+SPOKEN VOICEOVER:
+"AICTE regulates more than 10,000 technical institutions across India, handling over 
+25,000 regulatory petitions every year. However, right now, AICTE bureaus operate in 
+isolated departmental silos. 
+
+When a student files an excess capitation fee complaint on the PGRC portal, and an 
+anonymous whistleblower files a severe faculty deficit complaint with the Regulation 
+Bureau, neither bureau has visibility into the other. 
+
+Consequently, colleges under severe Show-Cause proceedings routinely obtain clean-chit 
+disposals in another cell—exposing AICTE to severe RTI embarrassments and legal 
+vulnerabilities in High Courts. 
+
+Let us now transition directly into our live running platform to see how we solve this."
+
+
+[00:35 - 00:55] PART 3: LIVE DASHBOARD & ARCHITECTURAL OVERVIEW
 --------------------------------------------------------------------------------
 SCREEN ACTION:
-- Start on the Dashboard homepage (http://localhost:3000).
-- Keep cursor steady near the header.
+- Switch window to Browser displaying: http://localhost:3000 (Press F11 for borderless fullscreen).
+- Hover cursor smoothly across the Top Navigation Bar, the Live Demo Stepper, and the 6 KPI cards.
+- Point to:
+  * "12 Total Dockets"
+  * "8 Active Inquiries"
+  * "1 Conflict Interdiction"
+  * Bureau Workload cards: PGRC vs. Regulation Bureau.
 
-VOICEOVER (English / Tanglish style):
-"Respected evaluators, AICTE regulates over 10,000 technical institutions across 
-India, handling more than 25,000 complaints annually. But right now, AICTE suffers 
-from structural regulatory blindness. 
+SPOKEN VOICEOVER:
+"Welcome to the live IRCCIP Officer Dashboard. 
 
-When a student files an excess fee complaint with the Public Grievance Cell (PGRC), 
-and an anonymous faculty files a severe retrenchment petition with the Regulation 
-Bureau, both bureaus operate in complete isolation. As a result, colleges under active 
-Show-Cause proceedings routinely obtain clean-chit disposals in another cell.
+At a single glance, national leadership has unified visibility across all bureaus: 
+real-time docket counts, aging SLA distributions, active conflict interdictions, and 
+bureau workloads. 
 
-To solve this, our team Code Society presents the AICTE Integrated Regulatory Case 
-Coordination and Intelligence Platform."
+Notice at the very top our persistent 'Story Mode Stepper'. We will use this live 
+stepper to demonstrate the complete regulatory life-cycle of a live crisis."
 
 
-[00:30 - 01:05] PART 2: LIVE NON-INVASIVE INTAKE & 4-TIER ENTITY RESOLUTION
+[00:55 - 01:30] PART 4: STEP 1 — LIVE INTAKE & 4-TIER ENTITY RESOLUTION
 --------------------------------------------------------------------------------
 SCREEN ACTION:
-- Click the top Stepper button: [1. Ingest Grievance] OR the top-right blue button: 
-  [Simulate Portal Filing].
+- Click the top stepper button: [Step 1: Ingest Grievance].
+- Click the blue button on the right: [Simulate Portal Filing].
 - The "Simulate Portal Filing" modal opens.
-- Point out the field: Raw Institution Name shows "Mepco Engg Sivakasi".
-- Point out the Aadhaar field: "XXXX-XXXX-4819".
-- Click the button: [Fire Portal Webhook].
-- A green success box pops up with the live PID and Salted HMAC Hash.
+- Point out the fields:
+  * Source Portal: PGRC
+  * Raw Institution Name: "Mepco Engg Sivakasi" (informal string)
+  * Complainant Aadhaar: "XXXX-XXXX-4819"
+  * Complaint Category: "Capitation & Caution Fees"
+- Click the button: [Submit Ingestion Webhook].
+- Point to the green success alert box:
+  * Highlight "Resolved PID: 1-1049281721 (Mepco Schlenk Engineering College)"
+  * Highlight "🤖 AI Auto-Triage: Fees (Confidence: 34.5%)"
+  * Highlight "DPDP Blind Salted Token: 9b2d41a7..."
+- Click [Close] on the modal.
 
-VOICEOVER:
-"We do not require AICTE to discard its legacy portals. Through our 3-Tier Non-Invasive 
-Data Mesh, external portals push case events directly via lightweight webhooks. 
+SPOKEN VOICEOVER:
+"We do not expect AICTE to scrap its existing legacy portals. Through our 3-Tier Data 
+Mesh Gateway, external portals push docket events through lightweight, non-invasive 
+HTTPS webhooks. 
 
-Watch this: a student files a fee complaint on the PGRC portal. Notice that the college 
-name is informally written as 'Mepco Engg Sivakasi' without any Permanent ID. 
-Under Section 4(1) of the DPDP Act 2023, the citizen's Aadhaar is immediately converted 
-into an irreversible, salted HMAC-SHA256 blind token. 
+Watch: a student files a fee refund grievance on PGRC. The student casually writes 
+the college name as 'Mepco Engg Sivakasi' without any Permanent ID. 
 
-Our 4-Tier Cascaded Resolver instantly maps 'Mepco Engg Sivakasi' to its verified 
-AICTE Permanent ID: 1-1049281721 with 96% confidence. The docket is registered into 
-the immutable ledger without manual intervention."
+Instantly, two critical engines fire:
+First, under Section 4(1) of the Digital Personal Data Protection Act 2023, the citizen's 
+Aadhaar is irreversibly blinded into a salted HMAC-SHA256 token, protecting whistleblower 
+identities. 
+Second, our 4-Tier Cascaded Entity Resolution engine automatically normalizes the raw name 
+and locks onto AICTE Permanent ID 1-1049281721 with 96% confidence. The complaint is 
+now registered into the national docket ledger with AI auto-triage."
 
 
-[01:05 - 01:45] PART 3: THE REGULATORY BLINDSPOT & PARALLEL INQUIRY
+[01:30 - 01:55] PART 5: STEP 2 — REGULATION BUREAU SHOW-CAUSE INQUIRY
 --------------------------------------------------------------------------------
 SCREEN ACTION:
-- Click [Close] on the intake modal.
-- Click the Stepper button: [2. RB Show-Cause].
-- The table filters to Regulation Bureau (RB).
-- Click [Case Passport] on Case RB/SC/2026/089.
-- The Case Passport modal opens showing the Show-Cause narrative and chronological 
-  audit trail.
-
-VOICEOVER:
-"Simultaneously, the Regulation Bureau receives a whistle-blower report on faculty 
-retrenchment against the exact same institution, issuing a statutory Show-Cause Notice 
-under APH Chapter VII. 
-
-Opening the Case Passport reveals the full immutable event ledger. Every status change, 
-hearing notice, and officer assignment is recorded with dual timestamps: World Time and 
-System Recorded Time, protected by SHA-256 cryptographic chaining. 
-
-Now, the crisis unfolds: the college produces a fee refund receipt to PGRC, and PGRC 
-attempts to mark the grievance as DISPOSED with a clean-chit, completely unaware that 
-a punitive hearing is underway in the Regulation Bureau!"
-
-
-[01:45 - 02:25] PART 4: THE HERO MOMENT — CONFLICT SENTINEL INTERCEPTION!
---------------------------------------------------------------------------------
-SCREEN ACTION:
+- Click the top stepper button: [Step 2: RB Show-Cause].
+- The central table automatically filters to Regulation Bureau dockets.
+- Click the button: [Case Passport] on Case Docket "RB/SC/2026/089".
+- The Case Passport modal slides open:
+  * Show the institution header: Mepco Schlenk Engineering College.
+  * Show the grievance substance: "Show-Cause notice issued under APH Chapter VII for 
+    faculty retrenchment".
+  * Show the Chronological Event Ledger with dual timestamps: World Time vs System Time.
 - Click [Close Passport].
-- Click the Stepper button: [3. Conflict Intercept].
-- BAM! The full-screen red CONFLICT SENTINEL INTERCEPTION MODAL pops up with a 
-  pulsing shield and side-by-side dockets.
-- Point to the side-by-side comparison: PGRC (Proposed Disposed) vs RB (Active Under Inquiry).
 
-VOICEOVER:
-"This is where our primary hero innovation kicks in — the Conflict Sentinel!
+SPOKEN VOICEOVER:
+"Simultaneously, the Regulation Bureau receives an anonymous whistleblower report 
+regarding unauthorized faculty layoffs against the exact same institution. The Approval 
+Bureau issues a statutory Show-Cause notice under APH Chapter VII. 
 
-Instead of allowing a dangerous contradictory disposal order to be released, the Sentinel 
-actively intercepts the transaction. 
+Opening the Case Passport reveals our single-window institutional dossier. Every event, 
+from receipt to officer assignment, is cryptographically chained with SHA-256 hashes and 
+tagged with bitemporal timestamps: World Time and System Recorded Time. 
 
-As you can see on screen, it displays a high-priority High Court and RTI vulnerability 
-alert. It detects that granting an administrative clean-chit while a Show-Cause notice is 
-active creates catastrophic legal vulnerability. The system freezes the unilateral 
-closure and automatically mandates an Inter-Bureau Joint Review Conference."
+Now, the classic regulatory failure occurs: the college settles the fee dispute with the 
+student, and PGRC attempts to unilaterally mark the student docket as DISPOSED with an 
+administrative clean-chit—completely unaware that a punitive inquiry is pending in the 
+Regulation Bureau!"
 
 
-[02:25 - 02:55] PART 5: INTER-BUREAU JOINT CONFERENCE CHAMBER
+[01:55 - 02:35] PART 6: STEP 3 — THE CONFLICT SENTINEL INTERDICTION!
 --------------------------------------------------------------------------------
 SCREEN ACTION:
-- Click the red button: [Convene Inter-Bureau Conference].
-- The Inter-Bureau Conference Chamber opens.
-- Point to the two officials: Dr. K. Ramanathan (RB) and Smt. Anita Sharma (PGRC).
-- Highlight the Unified Disposal Determination Memo.
-- Click: [Co-Sign & Harmonize Dockets].
-- An alert confirms harmonization, and the screen transitions smoothly to the 
-  Inter-Bureau Conferences tab.
+- Click the top stepper button: [Step 3: Trigger Conflict].
+- BAM! The full-screen red CONFLICT SENTINEL INTERCEPTION ALERT pops up with flashing 
+  warning badges and high-court vulnerability tags.
+- Point to the side-by-side comparison:
+  * Left: Docket PGRC/2026/014 (Status: Proposed DISPOSED Clean-Chit)
+  * Right: Docket RB/SC/2026/089 (Status: PENDING Standing Hearing Committee Action)
+- Hover over the red badge: "ACTION BLOCKED BY AICTE SENTINEL".
+- Click the button: [Acknowledge & Proceed to Joint Review].
 
-VOICEOVER:
-"The platform now brings both Bureau Heads into the Joint Resolution Chamber. 
-Here, Dr. Ramanathan from Regulation Bureau and Smt. Anita Sharma from PGRC review the 
-cross-bureau evidence. 
+SPOKEN VOICEOVER:
+"This is our hero breakthrough: The Conflict Sentinel! 
 
-Rather than working at cross-purposes, they co-author a Unified Disposal Determination: 
-the student refund is acknowledged, but the institutional clean-chit is withheld pending 
-the Standing Hearing Committee outcome. 
+The moment PGRC attempts to release a clean-chit disposal, our Sentinel intercepts 
+the transaction in real-time. 
 
-With one click on 'Co-Sign & Harmonize', both bureau dockets are digitally synchronized 
-across AICTE's national registry."
+As you can see, the platform immediately flags a Critical Legal Vulnerability. Granting an 
+administrative clean-chit while a punitive hearing is active creates fatal legal 
+contradictions in court. 
+
+The Sentinel automatically freezes the unilateral closure and mandates a statutory 
+Inter-Bureau Joint Review Conference before any final order can be issued."
 
 
-[02:55 - 03:30] PART 6: BITEMPORAL TIME-TRAVEL AUDIT & CONCLUSION
+[02:35 - 03:05] PART 7: STEP 4 — INTER-BUREAU JOINT CONFERENCE CHAMBER
 --------------------------------------------------------------------------------
 SCREEN ACTION:
-- Click the Stepper button: [5. Time-Travel Audit].
-- The screen navigates to Case History & Audit Trail.
-- Drag the timeline scrubber from 22 July back to 15 July 2026.
-- Show how the bureau swimlanes dynamically update: future events dim, and the 
-  historical snapshot proves exactly what was recorded on 15 July.
+- Click the top stepper button: [Step 4: Joint Resolution].
+- The Inter-Bureau Joint Review Chamber modal opens.
+- Point to the Coordination Intelligence Box answering:
+  * "1. Why Review Together?" (Shared institutional PID, severe contradiction risk)
+  * "2. Why Might Coordination NOT Be Needed?" (Independent student fee jurisdiction)
+  * "3. Justified Coordination Action" (Withhold clean-chit, verify compliance jointly)
+- Point to the Memo draft text and the two designated Bureau Heads:
+  * Dr. K. Ramanathan (Regulation Bureau) & Smt. Anita Sharma (PGRC)
+- Click the green button: [Digitally Sign & Seal Memo].
+- The modal closes with a green confirmation toast, harmonizing the dockets!
 
-VOICEOVER:
-"Finally, we address legal accountability. If a parliamentary committee or court asks: 
+SPOKEN VOICEOVER:
+"Both Bureau Heads are now brought into the Joint Resolution Chamber. 
+
+Instead of demanding officers read through dozens of legacy files, our Coordination 
+Intelligence Layer automatically answers the three essential legal questions: 
+Why review together? Why might coordination not be needed? And what is the justified 
+regulatory action?
+
+The officers agree on a harmonized determination: the student fee refund is approved, 
+but the institution-wide clean chit is suspended pending the Standing Hearing Committee. 
+
+With one click on 'Digitally Sign and Seal', the memo is cryptographically committed, 
+and both bureau dockets are harmonized across the national registry!"
+
+
+[03:05 - 03:40] PART 8: STEP 5 — BITEMPORAL TIME TRAVEL & LOCAL ML STUDIO
+--------------------------------------------------------------------------------
+SCREEN ACTION:
+- Click the top stepper button: [Step 5: Audit Check].
+- The visual Sliding Window Time-Travel timeline is displayed.
+- Drag the date slider from 22 July back to 15 July 2026:
+  * Show how the bureau swimlanes update: future events dim, showing that on 15 July 
+    only the show-cause was active.
+- Now click the left sidebar / drawer navigation ($\equiv$ icon) and click: "Explainable AI & ML".
+- Point out the 4 live preset chips:
+  * Click [💰 Capitation Fee (PGRC)] $\to$ Category: Fees, Bureau: PGRC (Student Fees)
+  * Click [⚠️ Structural Hazard (RB)] $\to$ Category: Infrastructure, Priority: HIGH, Bureau: RB (Infrastructure)
+  * Click [📄 Duplicate Hall Ticket] $\to$ Duplicate Similarity Score: 0.79 (Flagged as Duplicate!)
+
+SPOKEN VOICEOVER:
+"Finally, we provide 100% legal defensibility. When high courts ask: 
 'What did AICTE officially know on 15 July before the disposal was filed?' 
 
-An officer simply drags the Sliding Window Timeline scrubber to 15 July. 
-Our bitemporal engine reconstructs the exact historical truth: showing only the 
-Show-Cause notice was active, proving zero tampering.
+An officer simply drags our Sliding Window Time-Travel scrubber back to 15 July. 
+Our bitemporal engine reconstructs the exact historical reality as it stood on that date, 
+proving absolute institutional integrity. 
 
-From non-invasive intake to active conflict interdiction and bitemporal audit, our 
-platform eliminates regulatory silos and protects the integrity of technical education 
-in India. 
+Furthermore, in our Explainable ML Studio, our local Scikit-Learn models—trained directly 
+on regulatory taxonomies—perform complaint categorization, high-severity triage, and 
+cross-bureau deduplication in under 80 milliseconds, without ever sending sensitive citizen 
+data to third-party commercial cloud APIs."
 
-Thank you, we are Team Code Society from Mepco Schlenk Engineering College."
+
+[03:40 - 04:00] PART 9: CONCLUSION & PRODUCTION READINESS (PPT SLIDE 3 / CLOSING)
+--------------------------------------------------------------------------------
+SCREEN DISPLAY:
+- Switch back to PPT Slide 3:
+  * Title: "Production Deployment on NIC MeghRaj Cloud"
+  * Points: PostgreSQL 15+ 55-Table Schema, DPDP Act 2023 Section 4(1), Zero-Disruption 3-Tier Intake, Open-Source & Air-Gapped ML.
+  * Team: Code Society — Mepco Schlenk Engineering College.
+
+SPOKEN VOICEOVER:
+"In conclusion, the IRCCIP is not merely a prototype; it is fully architected for 
+deployment on NIC MeghRaj Government Cloud using PostgreSQL 15+ and compliant with 
+GIGW 3.0 and the DPDP Act 2023. 
+
+By eliminating departmental silos, intercepting administrative contradictions, and 
+enforcing bitemporal audit trails, we ensure transparent, unified, and legally defensible 
+governance for technical education in India. 
+
+Thank you, respected evaluators. We are Team Code Society from Mepco Schlenk Engineering 
+College!"
 ================================================================================
