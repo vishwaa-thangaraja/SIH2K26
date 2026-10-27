@@ -95,9 +95,9 @@ def receive_portal_webhook(payload: WebhookComplaintPayload, db: Session = Depen
     # 6. Insert Case Text
     case_txt = CaseText(
         case_id=new_case.case_id,
+        complainant_name="Confidential Complainant",
         summary=payload.summary,
-        relief_sought="Investigation & Statutory Relief",
-        source_doc_hash=hashlib.sha256(payload.summary.encode("utf-8")).hexdigest()
+        full_text=payload.summary
     )
     db.add(case_txt)
 

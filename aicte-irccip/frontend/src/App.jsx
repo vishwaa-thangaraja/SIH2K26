@@ -92,6 +92,7 @@ export default function App() {
   const [simSummary, setSimSummary] = useState('Management refusing refund of Rs 25,000 caution deposit post completion.');
   const [simulatingIntake, setSimulatingIntake] = useState(false);
   const [intakeSuccessResult, setIntakeSuccessResult] = useState(null);
+  const [intakeError, setIntakeError] = useState(null);
 
   // Close drawer on click outside
   useEffect(() => {
@@ -226,6 +227,7 @@ export default function App() {
   // Execute Simulated Intake
   const handleExecuteSimulateIntake = async () => {
     setSimulatingIntake(true);
+    setIntakeError(null);
     try {
       const res = await fetch('/api/intake/webhook', {
         method: 'POST',
@@ -243,10 +245,16 @@ export default function App() {
         })
       });
       const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.detail || 'Webhook submission failed');
+      }
       setIntakeSuccessResult(data);
+      // Generate a fresh random docket reference for subsequent simulations
+      setSimRef(`PGRC/2026/${Math.floor(100 + Math.random() * 900)}`);
       await fetchDashboardData();
     } catch (err) {
       console.error(err);
+      setIntakeError(err.message || 'Error executing intake webhook');
     } finally {
       setSimulatingIntake(false);
     }
@@ -1450,14 +1458,32 @@ export default function App() {
                 />
               </div>
 
+              {intakeError && (
+                <div className="p-3 bg-red-50 border border-red-300 rounded text-red-800 text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                  <span>{intakeError}</span>
+                </div>
+              )}
+
               {intakeSuccessResult && (
                 <div className="p-3 bg-emerald-50 border border-emerald-300 rounded space-y-1.5">
-                  <div className="flex items-center gap-1.5 text-emerald-900 font-bold">
-                    <CheckCircle className="w-4 h-4 text-emerald-600" />
-                    <span>Live Webhook Ingestion Successful!</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-emerald-900 font-bold">
+                      <CheckCircle className="w-4 h-4 text-emerald-600" />
+                      <span>Live Ingestion & Entity Resolution Complete!</span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setShowSimulateModal(false);
+                        setActiveTab('overview');
+                      }}
+                      className="text-[11px] font-bold bg-emerald-700 hover:bg-emerald-800 text-white px-2.5 py-1 rounded shadow-xs transition"
+                    >
+                      View on Live Dashboard &rarr;
+                    </button>
                   </div>
                   <div className="text-emerald-950 font-mono text-[11px]">
-                    Resolved PID: <strong>{intakeSuccessResult.institution_pid}</strong> ({intakeSuccessResult.institution_name})
+                    Docket Ref: <strong className="text-blue-900">{intakeSuccessResult.source_ref}</strong> | Resolved PID: <strong>{intakeSuccessResult.institution_pid}</strong> ({intakeSuccessResult.institution_name})
                   </div>
                   {intakeSuccessResult.ai_category && (
                     <div className="text-emerald-900 text-[11px] font-semibold flex items-center gap-2">

@@ -23,7 +23,7 @@ def list_cases(
     sla_breached_only: bool = Query(False, description="Filter only SLA breached cases"),
     db: Session = Depends(get_db)
 ):
-    cases = db.query(ComplaintCase).all()
+    cases = db.query(ComplaintCase).order_by(ComplaintCase.case_id.desc()).all()
     summaries = []
 
     for c in cases:
