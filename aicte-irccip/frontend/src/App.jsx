@@ -5,8 +5,9 @@ import {
   Menu, X, LayoutDashboard, History, Fingerprint, Brain, Handshake,
   TrendingUp, AlertCircle, Timer, Layers, ChevronRight, Play, FastForward,
   BarChart3, Shield, Hash, MapPin, Gavel, Scale, Info, Check, HelpCircle,
-  Upload, Send, PenTool, CheckCircle, ShieldCheck, Zap
+  Upload, Send, PenTool, CheckCircle, ShieldCheck, Zap, Pause, RotateCcw
 } from 'lucide-react';
+import { DOCKET_LIFECYCLES } from './docketLifecycles';
 
 // Status badge styling helper (Restrained government palette)
 const getStatusBadge = (code) => {
@@ -60,6 +61,12 @@ export default function App() {
   const [timeTravelBasis, setTimeTravelBasis] = useState('RECORDED');
   const [timeTravelData, setTimeTravelData] = useState(null);
   const [timeTravelLoading, setTimeTravelLoading] = useState(false);
+
+  // Per-Docket Lifecycle & Dispute Scrubber States
+  const [timelineViewMode, setTimelineViewMode] = useState('docket'); // 'docket' | 'council'
+  const [selectedTimelineDocketKey, setSelectedTimelineDocketKey] = useState('PGRC/2026/014');
+  const [docketSliderIndex, setDocketSliderIndex] = useState(4); // Default to conflict stage (22 Jul)
+  const [isAutoPlayingDocket, setIsAutoPlayingDocket] = useState(false);
 
   // Entity Resolution Review Queue
   const [entityQuery, setEntityQuery] = useState('Mepco College of Engg, Sivakasi');
@@ -193,6 +200,25 @@ export default function App() {
       executeTimeTravel(timelineDates[sliderIndex], timeTravelBasis);
     }
   }, [activeTab, sliderIndex, timeTravelBasis, executeTimeTravel]);
+
+  // Auto-play progression timer for Docket Lifecycle Scrubber
+  useEffect(() => {
+    let timer;
+    if (isAutoPlayingDocket) {
+      timer = setInterval(() => {
+        setDocketSliderIndex((prev) => {
+          const currentDocket = DOCKET_LIFECYCLES[selectedTimelineDocketKey];
+          if (!currentDocket) return 0;
+          if (prev >= currentDocket.stages.length - 1) {
+            setIsAutoPlayingDocket(false);
+            return prev;
+          }
+          return prev + 1;
+        });
+      }, 2500);
+    }
+    return () => clearInterval(timer);
+  }, [isAutoPlayingDocket, selectedTimelineDocketKey]);
 
   // Entity Resolution
   const runEntityResolve = async () => {
@@ -388,10 +414,13 @@ export default function App() {
       setShowConflictInterceptionModal(false);
       setShowJointConfModal(true);
     } else if (stepNum === 5) {
-      // Step 5: Bitemporal Time Travel Check
+      // Step 5: Bitemporal Time Travel & Per-Docket Scrubber
       setActiveTab('timetravel');
       setShowJointConfModal(false);
-      setSliderIndex(3); // 15 July checkpoint
+      setTimelineViewMode('docket');
+      setSelectedTimelineDocketKey('PGRC/2026/014');
+      setDocketSliderIndex(4); // 22 July Conflict Sentinel Interception stage
+      setSliderIndex(3); // 15 July checkpoint for council mode
     }
   };
 
@@ -405,6 +434,10 @@ export default function App() {
   ];
 
   const currentDate = timelineDates[sliderIndex];
+  const currentDocket = DOCKET_LIFECYCLES[selectedTimelineDocketKey] || DOCKET_LIFECYCLES['PGRC/2026/014'];
+  const currentStage = currentDocket.stages[docketSliderIndex] || currentDocket.stages[0];
+  const isConflictStage = currentStage.conflict_type === 'CRITICAL_CONTRADICTION';
+  const isResolvedStage = currentStage.conflict_type === 'RESOLVED';
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans">
@@ -1107,187 +1140,660 @@ export default function App() {
         {/* ═══════════════════════════════════════════════════════════════ */}
         {activeTab === 'timetravel' && (
           <div className="space-y-4">
-            <div className="gov-card p-4 rounded-lg bg-white">
-              <div className="flex items-start justify-between flex-wrap gap-3">
+            {/* View Mode Selector Banner */}
+            <div className="gov-card p-4 rounded-lg bg-white border border-slate-200 shadow-xs">
+              <div className="flex items-center justify-between flex-wrap gap-3">
                 <div className="flex items-start gap-3">
                   <Clock className="w-5 h-5 text-blue-900 mt-0.5 shrink-0" />
                   <div>
                     <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
-                      Case History & Bitemporal Audit Trail
+                      Statutory Audit Scrubber & Temporal Progression Engine
                     </h2>
                     <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">
-                      Drag the sliding window timeline scrubber to reconstruct exactly what AICTE officially knew at any historical checkpoint.
+                      Reconstruct case progression milestones, trace conflict genesis across bureaus, and verify gazetted legal orders.
                     </p>
                   </div>
                 </div>
 
-                <div className="flex rounded border border-slate-300 overflow-hidden text-xs">
+                <div className="flex rounded-lg border border-slate-300 p-0.5 bg-slate-100 text-xs shadow-xs">
                   <button
-                    onClick={() => setTimeTravelBasis('RECORDED')}
-                    className={`px-3 py-1 font-semibold ${timeTravelBasis === 'RECORDED' ? 'bg-blue-900 text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
+                    onClick={() => {
+                      setTimelineViewMode('docket');
+                      setIsAutoPlayingDocket(false);
+                    }}
+                    className={`px-3.5 py-1.5 rounded font-bold transition flex items-center gap-1.5 ${
+                      timelineViewMode === 'docket'
+                        ? 'bg-blue-900 text-white shadow-xs'
+                        : 'text-slate-700 hover:text-slate-900'
+                    }`}
                   >
-                    Recorded Time (System Known)
+                    <FileText className="w-3.5 h-3.5" />
+                    <span>Docket Lifecycle Scrubber</span>
+                    <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${
+                      timelineViewMode === 'docket' ? 'bg-blue-800 text-blue-100' : 'bg-slate-200 text-slate-600'
+                    }`}>
+                      Per-Case
+                    </span>
                   </button>
+
                   <button
-                    onClick={() => setTimeTravelBasis('WORLD')}
-                    className={`px-3 py-1 font-semibold ${timeTravelBasis === 'WORLD' ? 'bg-blue-900 text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
+                    onClick={() => {
+                      setTimelineViewMode('council');
+                      setIsAutoPlayingDocket(false);
+                    }}
+                    className={`px-3.5 py-1.5 rounded font-bold transition flex items-center gap-1.5 ${
+                      timelineViewMode === 'council'
+                        ? 'bg-blue-900 text-white shadow-xs'
+                        : 'text-slate-700 hover:text-slate-900'
+                    }`}
                   >
-                    World Time (Event Occurred)
+                    <History className="w-3.5 h-3.5" />
+                    <span>Council-Wide Chronology</span>
+                    <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${
+                      timelineViewMode === 'council' ? 'bg-blue-800 text-blue-100' : 'bg-slate-200 text-slate-600'
+                    }`}>
+                      Bitemporal
+                    </span>
                   </button>
                 </div>
               </div>
             </div>
 
-            {/* INTERACTIVE SLIDING WINDOW TIMELINE */}
-            <div className="gov-card p-4 rounded-lg bg-white space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="text-xs uppercase font-bold text-slate-400">Audit Scrubber Position</span>
-                  <div className="text-base font-bold font-mono text-blue-950">
-                    {currentDate}
-                  </div>
-                </div>
-
-                {timeTravelData?.conflict_detected && (
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-red-100 text-red-900 text-xs font-bold border border-red-300">
-                    <AlertTriangle className="w-4 h-4 text-red-700" />
-                    <span>Conflict Sentinel Active at this Date</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Range Slider */}
-              <div className="relative pt-2 pb-1">
-                <input
-                  type="range"
-                  min="0"
-                  max={timelineDates.length - 1}
-                  step="1"
-                  value={sliderIndex}
-                  onChange={(e) => setSliderIndex(parseInt(e.target.value))}
-                  className="timeline-scrubber"
-                />
-
-                <div className="flex justify-between text-xs font-mono text-slate-400 mt-2 px-1">
-                  {timelineDates.map((dt, idx) => (
-                    <button
-                      key={dt}
-                      onClick={() => setSliderIndex(idx)}
-                      className={`text-center transition ${
-                        idx === sliderIndex ? 'font-bold text-blue-900 scale-110' : 'hover:text-slate-700'
-                      }`}
-                    >
-                      {dt.slice(5)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* VISUAL SWIMLANES */}
-              <div className="border border-slate-200 rounded p-3 bg-slate-50 space-y-3">
-                <div className="text-xs uppercase font-bold text-slate-500">
-                  Inter-Bureau Chronological Swimlanes (Active Window Indicator)
-                </div>
-
-                {/* PGRC */}
-                <div className="flex items-center gap-3">
-                  <div className="w-16 text-right font-bold text-xs text-slate-700 shrink-0">PGRC</div>
-                  <div className="flex-1 relative h-7 bg-white rounded border border-slate-200 flex items-center px-2 overflow-hidden">
-                    <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-slate-200 -translate-y-1/2" />
-                    {timeTravelData?.timeline_milestones?.filter(m => m.bureau_code === 'PGRC').map((m) => {
-                      const isPast = m.is_known_at_asof;
-                      return (
-                        <div
-                          key={m.event_id}
-                          title={`${m.case_ref} · ${m.event_date}: ${m.remarks}`}
-                          className={`relative z-10 mx-2 px-2 py-0.5 rounded text-xs font-mono font-bold transition ${
-                            isPast
-                              ? m.status_code === 'DISPOSED'
-                                ? 'bg-emerald-700 text-white shadow-xs'
-                                : 'bg-blue-800 text-white shadow-xs'
-                              : 'bg-slate-200 text-slate-400 opacity-40'
-                          }`}
-                        >
-                          {m.event_date.slice(5)}: {m.event_type}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Regulation Bureau */}
-                <div className="flex items-center gap-3">
-                  <div className="w-16 text-right font-bold text-xs text-slate-700 shrink-0">RB</div>
-                  <div className="flex-1 relative h-7 bg-white rounded border border-slate-200 flex items-center px-2 overflow-hidden">
-                    <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-slate-200 -translate-y-1/2" />
-                    {timeTravelData?.timeline_milestones?.filter(m => m.bureau_code === 'RB').map((m) => {
-                      const isPast = m.is_known_at_asof;
-                      return (
-                        <div
-                          key={m.event_id}
-                          title={`${m.case_ref} · ${m.event_date}: ${m.remarks}`}
-                          className={`relative z-10 mx-2 px-2 py-0.5 rounded text-xs font-mono font-bold transition ${
-                            isPast
-                              ? 'bg-purple-800 text-white shadow-xs'
-                              : 'bg-slate-200 text-slate-400 opacity-40'
-                          }`}
-                        >
-                          {m.event_date.slice(5)}: {m.event_type}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Results */}
-            {timeTravelLoading ? (
-              <div className="text-center py-8 text-xs text-slate-400">Reconstructing historical bitemporal state...</div>
-            ) : timeTravelData ? (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between text-xs bg-slate-100 p-2.5 rounded border border-slate-200">
-                  <span>
-                    Historical Knowledge as of: <strong className="font-mono text-slate-900">{timeTravelData.asof_timestamp}</strong> ({timeTravelData.basis} basis)
-                  </span>
-                  <span>
-                    Active Dockets Known: <strong className="text-slate-900 font-bold">{timeTravelData.active_case_count}</strong>
-                  </span>
-                </div>
-
-                {timeTravelData.conflict_summary && (
-                  <div className="p-3 bg-red-50 border border-red-200 rounded text-xs text-red-900">
-                    <strong>Historical Finding:</strong> {timeTravelData.conflict_summary}
-                  </div>
-                )}
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {timeTravelData.cases.map(tc => {
-                    const st = getStatusBadge(tc.status_code);
+            {/* ───────────────────────────────────────────────────────────── */}
+            {/* VIEW MODE A: PER-DOCKET LIFECYCLE & DISPUTE SCRUBBER          */}
+            {/* ───────────────────────────────────────────────────────────── */}
+            {timelineViewMode === 'docket' && (
+              <div className="space-y-4">
+                {/* Docket Selection Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {Object.entries(DOCKET_LIFECYCLES).map(([key, d]) => {
+                    const isSelected = selectedTimelineDocketKey === key;
+                    const hasConflict = d.stages.some(s => s.conflict_type === 'CRITICAL_CONTRADICTION');
                     return (
-                      <div key={tc.case_id} className="gov-card p-3 rounded-lg text-xs">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="font-mono font-bold text-blue-900">{tc.source_ref}</span>
-                          <span className={`px-1.5 py-0.5 rounded text-xs font-bold border ${st.bg} ${st.text} ${st.border}`}>
-                            {tc.status_code}
-                          </span>
-                        </div>
-                        <div className="font-semibold text-slate-900">{tc.institution_name}</div>
-                        <div className="text-slate-500 text-xs mt-0.5">
-                          Bureau: <strong className="text-slate-700">{tc.bureau_code}</strong>
-                        </div>
-                        <p className="text-slate-600 line-clamp-2 mt-1 text-xs">{tc.summary}</p>
-                        {tc.remarks && (
-                          <div className="mt-2 text-xs text-slate-600 bg-slate-50 p-1.5 rounded border border-slate-200">
-                            <strong>Latest Recorded Action:</strong> {tc.remarks}
+                      <button
+                        key={key}
+                        onClick={() => {
+                          setSelectedTimelineDocketKey(key);
+                          setDocketSliderIndex(hasConflict ? 4 : d.stages.length - 1);
+                          setIsAutoPlayingDocket(false);
+                        }}
+                        className={`text-left p-3 rounded-lg border transition cursor-pointer flex flex-col justify-between ${
+                          isSelected
+                            ? 'bg-blue-50/70 border-blue-800 ring-2 ring-blue-800/20 shadow-sm'
+                            : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                        }`}
+                      >
+                        <div>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="font-mono font-bold text-xs text-blue-900">{d.ref}</span>
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-300">
+                              {d.bureau}
+                            </span>
                           </div>
-                        )}
-                      </div>
+                          <div className="font-bold text-xs text-slate-900 line-clamp-1">{d.institution}</div>
+                          <div className="text-[11px] text-slate-500 line-clamp-2 mt-1">{d.subject}</div>
+                        </div>
+
+                        <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                          <span className="text-slate-400 font-mono">{d.stages.length} Milestones</span>
+                          {hasConflict && (
+                            <span className="inline-flex items-center gap-1 font-bold text-red-700 bg-red-100 px-1.5 py-0.5 rounded text-[10px]">
+                              <AlertTriangle className="w-3 h-3 text-red-600" />
+                              Conflict Detected
+                            </span>
+                          )}
+                        </div>
+                      </button>
                     );
                   })}
                 </div>
+
+                {/* Main Docket Lifecycle Scrubber Card */}
+                <div className="gov-card p-5 rounded-lg bg-white border border-slate-200 space-y-5 shadow-sm">
+                  {/* Institutional Header Banner */}
+                  <div className="bg-slate-900 text-white rounded-lg p-4 flex flex-wrap items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="px-2 py-0.5 bg-blue-700 text-white text-[11px] font-bold rounded font-mono">
+                          {currentDocket.bureau} DOCKET
+                        </span>
+                        <span className="font-mono text-sm font-bold text-amber-300">
+                          {currentDocket.ref}
+                        </span>
+                        <span className="text-slate-400 text-xs">|</span>
+                        <span className="text-xs font-mono text-slate-300">PID: {currentDocket.institution_pid}</span>
+                      </div>
+                      <h3 className="text-sm font-bold text-white">{currentDocket.institution}</h3>
+                      <p className="text-xs text-slate-300 max-w-2xl">{currentDocket.subject}</p>
+                    </div>
+
+                    <div className="text-right text-xs">
+                      <span className="text-slate-400 block uppercase font-bold text-[10px]">Active Scrubber Stage</span>
+                      <div className="font-bold text-lg text-white font-mono">
+                        Stage {docketSliderIndex + 1} <span className="text-xs text-slate-400">/ {currentDocket.stages.length}</span>
+                      </div>
+                      <span className="text-[11px] font-mono text-emerald-400 font-bold">{currentStage.date}</span>
+                    </div>
+                  </div>
+
+                  {/* Horizontal Range Scrubber */}
+                  <div className="space-y-3 pt-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-slate-700 uppercase tracking-wider text-[11px]">Timeline Position:</span>
+                        <span className="font-bold text-blue-900 font-mono text-sm">{currentStage.date}</span>
+                        <span className="text-slate-400">—</span>
+                        <span className="font-bold text-slate-800">{currentStage.title}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {(() => {
+                          const st = getStatusBadge(currentStage.status);
+                          return (
+                            <span className={`px-2 py-0.5 rounded text-xs font-bold border ${st.bg} ${st.text} ${st.border}`}>
+                              {st.label}
+                            </span>
+                          );
+                        })()}
+                      </div>
+                    </div>
+
+                    {/* Range Input Slider */}
+                    <div className="relative pt-1 pb-2">
+                      <input
+                        type="range"
+                        min="0"
+                        max={currentDocket.stages.length - 1}
+                        step="1"
+                        value={docketSliderIndex}
+                        onChange={(e) => {
+                          setDocketSliderIndex(parseInt(e.target.value));
+                          setIsAutoPlayingDocket(false);
+                        }}
+                        className="timeline-scrubber w-full cursor-pointer accent-blue-900"
+                      />
+
+                      {/* Milestone Dots Along The Slider */}
+                      <div className="flex justify-between items-start text-xs font-mono mt-3 px-1">
+                        {currentDocket.stages.map((stage, idx) => {
+                          const isActive = idx === docketSliderIndex;
+                          const isPassed = idx < docketSliderIndex;
+                          const isConflict = stage.conflict_type === 'CRITICAL_CONTRADICTION';
+                          const isResolved = stage.conflict_type === 'RESOLVED';
+
+                          return (
+                            <button
+                              key={stage.stage_id}
+                              onClick={() => {
+                                setDocketSliderIndex(idx);
+                                setIsAutoPlayingDocket(false);
+                              }}
+                              className={`flex flex-col items-center group transition text-center focus:outline-hidden ${
+                                isActive ? 'scale-105' : 'hover:scale-105 opacity-85'
+                              }`}
+                              style={{ width: `${100 / currentDocket.stages.length}%` }}
+                            >
+                              <div
+                                className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-[10px] transition border-2 shadow-xs ${
+                                  isActive
+                                    ? isConflict
+                                      ? 'bg-red-700 border-red-900 text-white ring-4 ring-red-300 animate-pulse'
+                                      : isResolved
+                                      ? 'bg-emerald-700 border-emerald-900 text-white ring-4 ring-emerald-300'
+                                      : 'bg-blue-900 border-blue-950 text-white ring-4 ring-blue-200'
+                                    : isPassed
+                                    ? 'bg-emerald-600 border-emerald-700 text-white'
+                                    : isConflict
+                                    ? 'bg-red-100 border-red-500 text-red-800'
+                                    : 'bg-slate-200 border-slate-300 text-slate-600'
+                                }`}
+                              >
+                                {isConflict ? '!' : isResolved ? '✓' : idx + 1}
+                              </div>
+                              <span className={`text-[11px] font-bold mt-1.5 block ${
+                                isActive ? 'text-blue-950 font-extrabold' : 'text-slate-600'
+                              }`}>
+                                {stage.date.slice(5)}
+                              </span>
+                              <span className="text-[10px] text-slate-500 max-w-[85px] leading-tight line-clamp-1 hidden sm:block">
+                                {stage.title}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Scrubber Playback Controls & Quick Jumps */}
+                    <div className="flex items-center justify-between flex-wrap gap-2 pt-2 border-t border-slate-100 text-xs">
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => {
+                            setDocketSliderIndex(0);
+                            setIsAutoPlayingDocket(false);
+                          }}
+                          className="px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold transition flex items-center gap-1"
+                          title="Rewind to Stage 1"
+                        >
+                          <RotateCcw className="w-3 h-3" />
+                          <span>Start</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            setDocketSliderIndex(prev => Math.max(0, prev - 1));
+                            setIsAutoPlayingDocket(false);
+                          }}
+                          disabled={docketSliderIndex === 0}
+                          className="px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold transition disabled:opacity-40"
+                        >
+                          ◀ Prev
+                        </button>
+                        <button
+                          onClick={() => setIsAutoPlayingDocket(!isAutoPlayingDocket)}
+                          className={`px-3 py-1 rounded font-bold transition flex items-center gap-1.5 shadow-xs ${
+                            isAutoPlayingDocket
+                              ? 'bg-amber-600 text-white hover:bg-amber-700'
+                              : 'bg-blue-900 text-white hover:bg-blue-800'
+                          }`}
+                        >
+                          {isAutoPlayingDocket ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+                          <span>{isAutoPlayingDocket ? 'Pause' : 'Auto-Play Story'}</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            setDocketSliderIndex(prev => Math.min(currentDocket.stages.length - 1, prev + 1));
+                            setIsAutoPlayingDocket(false);
+                          }}
+                          disabled={docketSliderIndex === currentDocket.stages.length - 1}
+                          className="px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold transition disabled:opacity-40"
+                        >
+                          Next ▶
+                        </button>
+                      </div>
+
+                      {/* Quick Jump Stage Shortcuts for Video Demo */}
+                      <div className="flex items-center gap-1.5">
+                        {currentDocket.key === 'PGRC/2026/014' && (
+                          <>
+                            <button
+                              onClick={() => {
+                                setDocketSliderIndex(4);
+                                setIsAutoPlayingDocket(false);
+                              }}
+                              className={`px-2.5 py-1 rounded font-bold transition flex items-center gap-1 text-[11px] ${
+                                docketSliderIndex === 4
+                                  ? 'bg-red-700 text-white ring-2 ring-red-400'
+                                  : 'bg-red-100 text-red-800 hover:bg-red-200 border border-red-300'
+                              }`}
+                            >
+                              <AlertTriangle className="w-3 h-3 text-red-600" />
+                              <span>Jump: 22 Jul Conflict Sentinel</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                setDocketSliderIndex(6);
+                                setIsAutoPlayingDocket(false);
+                              }}
+                              className={`px-2.5 py-1 rounded font-bold transition flex items-center gap-1 text-[11px] ${
+                                docketSliderIndex === 6
+                                  ? 'bg-emerald-700 text-white ring-2 ring-emerald-400'
+                                  : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border border-emerald-300'
+                              }`}
+                            >
+                              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                              <span>Jump: 01 Aug Joint Resolution</span>
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Contextual Conflict / Resolution Callout Banner */}
+                  {isConflictStage && (
+                    <div className="p-4 rounded-lg bg-red-50 border-2 border-red-500 text-red-950 space-y-2.5 shadow-sm animate-pulse-subtle">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <div className="flex items-center gap-2">
+                          <AlertTriangle className="w-5 h-5 text-red-700 shrink-0" />
+                          <span className="font-extrabold text-xs tracking-wider uppercase text-red-900">
+                            Statutory Conflict Sentinel Interception Active at this Milestone
+                          </span>
+                        </div>
+                        <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-red-200 text-red-900">
+                          BITEMPORAL INTERCEPTION #SEC-10(1)
+                        </span>
+                      </div>
+                      <p className="text-xs leading-relaxed font-medium">
+                        {currentStage.conflict_details}
+                      </p>
+                      <div className="pt-2 border-t border-red-200 flex items-center justify-between flex-wrap gap-2 text-xs">
+                        <span className="font-semibold text-red-800">
+                          Automatic Action: Docket closure frozen. Joint Conference summoned.
+                        </span>
+                        <button
+                          onClick={() => setShowConflictInterceptionModal(true)}
+                          className="px-3.5 py-1.5 bg-red-700 hover:bg-red-800 text-white rounded font-bold shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <ShieldAlert className="w-3.5 h-3.5" />
+                          <span>Open Statutory Conflict Protocol</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {isResolvedStage && (
+                    <div className="p-4 rounded-lg bg-emerald-50 border-2 border-emerald-500 text-emerald-950 space-y-2.5 shadow-sm">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle2 className="w-5 h-5 text-emerald-700 shrink-0" />
+                          <span className="font-extrabold text-xs tracking-wider uppercase text-emerald-900">
+                            Inter-Bureau Harmonized Disposal Executed
+                          </span>
+                        </div>
+                        <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-emerald-200 text-emerald-900">
+                          SYNCHRONIZED DISPOSAL CERTIFICATE
+                        </span>
+                      </div>
+                      <p className="text-xs leading-relaxed font-medium">
+                        {currentStage.conflict_details}
+                      </p>
+                      <div className="pt-2 border-t border-emerald-200 flex items-center justify-between flex-wrap gap-2 text-xs">
+                        <span className="font-semibold text-emerald-800">
+                          Cross-Bureau Coordination Memo co-signed by both Bureau Chiefs.
+                        </span>
+                        <button
+                          onClick={() => setShowJointConfModal(true)}
+                          className="px-3.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded font-bold shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <Handshake className="w-3.5 h-3.5" />
+                          <span>View Signed Joint Resolution Memo</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Stage Summary & Regulatory Action Details */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 bg-slate-50 p-4 rounded-lg border border-slate-200 text-xs">
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-slate-500 block">Milestone Title</span>
+                      <strong className="text-slate-900 text-xs">{currentStage.title}</strong>
+                      <div className="mt-1 text-slate-600 font-mono text-[11px]">Bureau: {currentStage.bureau}</div>
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-slate-500 block">Official Action Taken</span>
+                      <p className="text-slate-700 leading-relaxed text-xs">{currentStage.action}</p>
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-slate-500 block">Statutory Reference</span>
+                      <span className="font-mono font-semibold text-blue-900 text-[11px] block">{currentStage.regulatory_ref}</span>
+                      <div className="mt-1">
+                        <span className="text-slate-400 text-[10px] block">Bureau Docket Status:</span>
+                        <span className="font-bold text-slate-800">{currentStage.status}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Gazetted Legal Order Preview (Original Government Portal UI) */}
+                  <div className="rounded-lg border-2 border-slate-300 bg-white p-6 shadow-sm space-y-4">
+                    {/* Official Letterhead Header */}
+                    <div className="text-center border-b-2 border-slate-900 pb-4 space-y-1">
+                      <div className="inline-block p-1.5 bg-blue-950 text-white rounded font-serif font-black text-xs tracking-widest uppercase mb-1">
+                        AICTE · सत्यमेव जयते
+                      </div>
+                      <h4 className="text-sm font-serif font-extrabold text-slate-950 uppercase tracking-wider">
+                        All India Council for Technical Education
+                      </h4>
+                      <p className="text-[11px] text-slate-700 font-serif">
+                        (A Statutory Body of the Government of India under Ministry of Education)
+                      </p>
+                      <p className="text-[10px] text-slate-500 font-mono">
+                        Nelson Mandela Marg, Vasant Kunj, New Delhi - 110070 | www.aicte-india.org
+                      </p>
+                    </div>
+
+                    {/* Metadata Strip */}
+                    <div className="flex items-center justify-between text-xs font-mono border-b border-slate-200 pb-2 flex-wrap gap-2">
+                      <div>
+                        <span className="text-slate-500">File Ref: </span>
+                        <strong className="text-blue-950 font-bold">{currentStage.document.ref_no}</strong>
+                      </div>
+                      <div>
+                        <span className="text-slate-500">Issuing Bureau: </span>
+                        <strong className="text-slate-800 font-bold">{currentStage.bureau}</strong>
+                      </div>
+                      <div>
+                        <span className="text-slate-500">Date of Order: </span>
+                        <strong className="text-slate-900 font-bold">{currentStage.document.date}</strong>
+                      </div>
+                    </div>
+
+                    {/* Document Subject */}
+                    <div className="space-y-1">
+                      <div className="text-[11px] uppercase font-bold text-slate-500">
+                        {currentStage.document.type}
+                      </div>
+                      <div className="text-xs font-bold text-slate-900 bg-slate-50 p-2.5 rounded border border-slate-200">
+                        <span className="text-slate-500 uppercase text-[10px] block font-bold">Subject:</span>
+                        {currentStage.document.subject}
+                      </div>
+                    </div>
+
+                    {/* Gazetted Legal Body */}
+                    <div className="p-4 bg-amber-50/20 rounded border border-slate-200 text-xs font-serif text-slate-800 leading-relaxed whitespace-pre-line">
+                      {currentStage.document.body}
+                    </div>
+
+                    {/* Digital Signature & Cryptographic Seal Footer */}
+                    <div className="pt-3 border-t border-slate-200 flex items-center justify-between flex-wrap gap-3 text-xs">
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Digitally Signed By</span>
+                        <strong className="text-slate-900 text-xs">{currentStage.document.signatory}</strong>
+                        <div className="text-[10px] text-slate-500 font-mono">NIC-eOffice Verified Class-3 DSC</div>
+                      </div>
+
+                      <div className="text-right">
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Cryptographic SHA-256 Digest</span>
+                        <span className="font-mono text-[10px] text-blue-900 font-bold bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                          {currentStage.document.seal}
+                        </span>
+                        <div className="text-[10px] text-emerald-700 font-semibold flex items-center justify-end gap-1 mt-0.5">
+                          <CheckCircle className="w-3 h-3 text-emerald-600" />
+                          <span>Tamper-Proof Audit Sealed</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-            ) : null}
+            )}
+
+            {/* ───────────────────────────────────────────────────────────── */}
+            {/* VIEW MODE B: COUNCIL-WIDE MULTI-BUREAU CHRONOLOGY            */}
+            {/* ───────────────────────────────────────────────────────────── */}
+            {timelineViewMode === 'council' && (
+              <div className="space-y-4">
+                <div className="gov-card p-4 rounded-lg bg-white">
+                  <div className="flex items-start justify-between flex-wrap gap-3">
+                    <div className="flex items-start gap-3">
+                      <Clock className="w-5 h-5 text-blue-900 mt-0.5 shrink-0" />
+                      <div>
+                        <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
+                          Council-Wide Bitemporal Audit Trail
+                        </h2>
+                        <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">
+                          Drag the sliding window timeline scrubber to reconstruct exactly what AICTE officially knew at any historical checkpoint.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex rounded border border-slate-300 overflow-hidden text-xs">
+                      <button
+                        onClick={() => setTimeTravelBasis('RECORDED')}
+                        className={`px-3 py-1 font-semibold ${timeTravelBasis === 'RECORDED' ? 'bg-blue-900 text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
+                      >
+                        Recorded Time (System Known)
+                      </button>
+                      <button
+                        onClick={() => setTimeTravelBasis('WORLD')}
+                        className={`px-3 py-1 font-semibold ${timeTravelBasis === 'WORLD' ? 'bg-blue-900 text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
+                      >
+                        World Time (Event Occurred)
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* INTERACTIVE SLIDING WINDOW TIMELINE */}
+                <div className="gov-card p-4 rounded-lg bg-white space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-xs uppercase font-bold text-slate-400">Audit Scrubber Position</span>
+                      <div className="text-base font-bold font-mono text-blue-950">
+                        {currentDate}
+                      </div>
+                    </div>
+
+                    {timeTravelData?.conflict_detected && (
+                      <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-red-100 text-red-900 text-xs font-bold border border-red-300">
+                        <AlertTriangle className="w-4 h-4 text-red-700" />
+                        <span>Conflict Sentinel Active at this Date</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Range Slider */}
+                  <div className="relative pt-2 pb-1">
+                    <input
+                      type="range"
+                      min="0"
+                      max={timelineDates.length - 1}
+                      step="1"
+                      value={sliderIndex}
+                      onChange={(e) => setSliderIndex(parseInt(e.target.value))}
+                      className="timeline-scrubber"
+                    />
+
+                    <div className="flex justify-between text-xs font-mono text-slate-400 mt-2 px-1">
+                      {timelineDates.map((dt, idx) => (
+                        <button
+                          key={dt}
+                          onClick={() => setSliderIndex(idx)}
+                          className={`text-center transition ${
+                            idx === sliderIndex ? 'font-bold text-blue-900 scale-110' : 'hover:text-slate-700'
+                          }`}
+                        >
+                          {dt.slice(5)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* VISUAL SWIMLANES */}
+                  <div className="border border-slate-200 rounded p-3 bg-slate-50 space-y-3">
+                    <div className="text-xs uppercase font-bold text-slate-500">
+                      Inter-Bureau Chronological Swimlanes (Active Window Indicator)
+                    </div>
+
+                    {/* PGRC */}
+                    <div className="flex items-center gap-3">
+                      <div className="w-16 text-right font-bold text-xs text-slate-700 shrink-0">PGRC</div>
+                      <div className="flex-1 relative h-7 bg-white rounded border border-slate-200 flex items-center px-2 overflow-hidden">
+                        <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-slate-200 -translate-y-1/2" />
+                        {timeTravelData?.timeline_milestones?.filter(m => m.bureau_code === 'PGRC').map((m) => {
+                          const isPast = m.is_known_at_asof;
+                          return (
+                            <div
+                              key={m.event_id}
+                              title={`${m.case_ref} · ${m.event_date}: ${m.remarks}`}
+                              className={`relative z-10 mx-2 px-2 py-0.5 rounded text-xs font-mono font-bold transition ${
+                                isPast
+                                  ? m.status_code === 'DISPOSED'
+                                    ? 'bg-emerald-700 text-white shadow-xs'
+                                    : 'bg-blue-800 text-white shadow-xs'
+                                  : 'bg-slate-200 text-slate-400 opacity-40'
+                              }`}
+                            >
+                              {m.event_date.slice(5)}: {m.event_type}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Regulation Bureau */}
+                    <div className="flex items-center gap-3">
+                      <div className="w-16 text-right font-bold text-xs text-slate-700 shrink-0">RB</div>
+                      <div className="flex-1 relative h-7 bg-white rounded border border-slate-200 flex items-center px-2 overflow-hidden">
+                        <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-slate-200 -translate-y-1/2" />
+                        {timeTravelData?.timeline_milestones?.filter(m => m.bureau_code === 'RB').map((m) => {
+                          const isPast = m.is_known_at_asof;
+                          return (
+                            <div
+                              key={m.event_id}
+                              title={`${m.case_ref} · ${m.event_date}: ${m.remarks}`}
+                              className={`relative z-10 mx-2 px-2 py-0.5 rounded text-xs font-mono font-bold transition ${
+                                isPast
+                                  ? 'bg-purple-800 text-white shadow-xs'
+                                  : 'bg-slate-200 text-slate-400 opacity-40'
+                              }`}
+                            >
+                              {m.event_date.slice(5)}: {m.event_type}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Results */}
+                {timeTravelLoading ? (
+                  <div className="text-center py-8 text-xs text-slate-400">Reconstructing historical bitemporal state...</div>
+                ) : timeTravelData ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between text-xs bg-slate-100 p-2.5 rounded border border-slate-200">
+                      <span>
+                        Historical Knowledge as of: <strong className="font-mono text-slate-900">{timeTravelData.asof_timestamp}</strong> ({timeTravelData.basis} basis)
+                      </span>
+                      <span>
+                        Active Dockets Known: <strong className="text-slate-900 font-bold">{timeTravelData.active_case_count}</strong>
+                      </span>
+                    </div>
+
+                    {timeTravelData.conflict_summary && (
+                      <div className="p-3 bg-red-50 border border-red-200 rounded text-xs text-red-900">
+                        <strong>Historical Finding:</strong> {timeTravelData.conflict_summary}
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {timeTravelData.cases.map(tc => {
+                        const st = getStatusBadge(tc.status_code);
+                        return (
+                          <div key={tc.case_id} className="gov-card p-3 rounded-lg text-xs">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="font-mono font-bold text-blue-900">{tc.source_ref}</span>
+                              <span className={`px-1.5 py-0.5 rounded text-xs font-bold border ${st.bg} ${st.text} ${st.border}`}>
+                                {tc.status_code}
+                              </span>
+                            </div>
+                            <div className="font-semibold text-slate-900">{tc.institution_name}</div>
+                            <div className="text-slate-500 text-xs mt-0.5">
+                              Bureau: <strong className="text-slate-700">{tc.bureau_code}</strong>
+                            </div>
+                            <p className="text-slate-600 line-clamp-2 mt-1 text-xs">{tc.summary}</p>
+                            {tc.remarks && (
+                              <div className="mt-2 text-xs text-slate-600 bg-slate-50 p-1.5 rounded border border-slate-200">
+                                <strong>Latest Recorded Action:</strong> {tc.remarks}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            )}
           </div>
         )}
 
@@ -2033,7 +2539,26 @@ export default function App() {
               </div>
             </div>
 
-            <div className="p-3 bg-slate-50 border-t border-slate-200 text-right">
+            <div className="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+              <button
+                onClick={() => {
+                  const key = selectedCase.source_ref;
+                  if (DOCKET_LIFECYCLES[key]) {
+                    setSelectedTimelineDocketKey(key);
+                    setDocketSliderIndex(DOCKET_LIFECYCLES[key].stages.length - 1);
+                  } else {
+                    setSelectedTimelineDocketKey('PGRC/2026/014');
+                    setDocketSliderIndex(4);
+                  }
+                  setTimelineViewMode('docket');
+                  setActiveTab('timetravel');
+                  setSelectedCase(null);
+                }}
+                className="px-3.5 py-1.5 rounded bg-blue-900 hover:bg-blue-800 font-bold text-white text-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer"
+              >
+                <Clock className="w-3.5 h-3.5" />
+                <span>Open in Docket Lifecycle Scrubber</span>
+              </button>
               <button
                 onClick={() => setSelectedCase(null)}
                 className="px-3.5 py-1.5 rounded bg-slate-200 hover:bg-slate-300 font-bold text-slate-700 text-xs transition"
