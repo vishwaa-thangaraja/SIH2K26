@@ -94,6 +94,14 @@ export default function App() {
   const [intakeSuccessResult, setIntakeSuccessResult] = useState(null);
   const [intakeError, setIntakeError] = useState(null);
 
+  // Live Reactive Ingested State & Notification
+  const [highlightedCaseId, setHighlightedCaseId] = useState(null);
+  const [liveNotification, setLiveNotification] = useState(null);
+  const [quickRawCollege, setQuickRawCollege] = useState('Mepco College Sivakasi');
+  const [quickCategory, setQuickCategory] = useState('FEES');
+  const [quickSummary, setQuickSummary] = useState('Management collected excess capitation and caution fee of Rs 25,000 without receipt.');
+  const [quickIngesting, setQuickIngesting] = useState(false);
+
   // Close drawer on click outside
   useEffect(() => {
     const handler = (e) => {
@@ -224,7 +232,7 @@ export default function App() {
     }
   };
 
-  // Execute Simulated Intake
+  // Execute Simulated Intake from Modal
   const handleExecuteSimulateIntake = async () => {
     setSimulatingIntake(true);
     setIntakeError(null);
@@ -241,7 +249,7 @@ export default function App() {
           complainant_type: 'STUDENT',
           complainant_id_raw: simAadhaar,
           summary: simSummary,
-          event_timestamp: '2026-07-01T10:00:00'
+          event_timestamp: new Date().toISOString()
         })
       });
       const data = await res.json();
@@ -249,6 +257,15 @@ export default function App() {
         throw new Error(data.detail || 'Webhook submission failed');
       }
       setIntakeSuccessResult(data);
+      setHighlightedCaseId(data.case_id);
+      setLiveNotification({
+        title: 'New Docket Ingested via Webhook!',
+        docket: data.source_ref,
+        institution: `${data.institution_name} (PID: ${data.institution_pid})`,
+        aiCategory: data.ai_category || 'Fees',
+        aiConf: data.ai_confidence ? (data.ai_confidence * 100).toFixed(1) : '85.0',
+        token: data.tokenized_blind_hash
+      });
       // Generate a fresh random docket reference for subsequent simulations
       setSimRef(`PGRC/2026/${Math.floor(100 + Math.random() * 900)}`);
       await fetchDashboardData();
@@ -257,6 +274,64 @@ export default function App() {
       setIntakeError(err.message || 'Error executing intake webhook');
     } finally {
       setSimulatingIntake(false);
+    }
+  };
+
+  // Quick Ingest from the Dashboard Card (Real-Time Reactive)
+  const handleQuickIngest = async (customCollege, customCategory, customSummary) => {
+    const collegeToUse = customCollege || quickRawCollege;
+    const catToUse = customCategory || quickCategory;
+    const sumToUse = customSummary || quickSummary;
+    const randomDocket = `PGRC/2026/${Math.floor(100 + Math.random() * 900)}`;
+
+    setQuickIngesting(true);
+    try {
+      const res = await fetch('/api/intake/webhook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          source_portal: 'PGRC',
+          source_ref: randomDocket,
+          institution_raw_name: collegeToUse,
+          category_code: catToUse,
+          priority: 'HIGH',
+          complainant_type: 'STUDENT',
+          complainant_id_raw: 'XXXX-XXXX-4819',
+          summary: sumToUse,
+          event_timestamp: new Date().toISOString()
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Webhook submission failed');
+
+      await fetchDashboardData();
+
+      setHighlightedCaseId(data.case_id);
+      setLiveNotification({
+        title: 'New Docket Live Ingested!',
+        docket: data.source_ref,
+        institution: `${data.institution_name} (PID: ${data.institution_pid})`,
+        aiCategory: data.ai_category || 'Grievance',
+        aiConf: data.ai_confidence ? (data.ai_confidence * 100).toFixed(1) : '85.0',
+        token: data.tokenized_blind_hash
+      });
+
+      // Clear filters so the new case is visible immediately at row 1
+      setSearchQuery('');
+      setBureauFilter('');
+      setStatusFilter('');
+      setActiveTab('overview');
+
+      setTimeout(() => {
+        const el = document.getElementById(`case-row-${data.case_id}`);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 300);
+
+    } catch (err) {
+      console.error(err);
+      alert('Ingestion error: ' + (err.message || err));
+    } finally {
+      setQuickIngesting(false);
     }
   };
 
@@ -490,6 +565,51 @@ export default function App() {
       {/* Main Content Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-5">
 
+        {/* Live Reactive Webhook Notification Banner */}
+        {liveNotification && (
+          <div className="bg-gradient-to-r from-emerald-900 via-slate-900 to-emerald-950 text-white p-4 rounded-lg shadow-lg border border-emerald-500/80 flex items-center justify-between flex-wrap gap-3 animate-fadeIn">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-400 flex items-center justify-center shrink-0">
+                <CheckCircle className="w-6 h-6 text-emerald-400" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[11px] font-bold uppercase tracking-wider bg-emerald-500 text-emerald-950 px-2 py-0.5 rounded">
+                    ⚡ Live Webhook Ingested & Resolved
+                  </span>
+                  <span className="font-mono text-sm font-bold text-emerald-300">
+                    {liveNotification.docket}
+                  </span>
+                  <span className="text-xs text-slate-300">
+                    (Added to Central Registry & KPIs updated)
+                  </span>
+                </div>
+                <div className="text-xs text-slate-200 mt-1">
+                  Resolved Institution: <strong className="text-white">{liveNotification.institution}</strong> · 🤖 AI Triage: <span className="bg-emerald-400/20 text-emerald-300 px-1.5 py-0.5 rounded font-bold">{liveNotification.aiCategory}</span> ({liveNotification.aiConf}%) · DPDP Token: <span className="font-mono text-slate-300">{liveNotification.token}</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  const el = document.getElementById(`case-row-${highlightedCaseId}`);
+                  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }}
+                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded transition shadow-xs cursor-pointer flex items-center gap-1"
+              >
+                <span>View Row in Table</span>
+                <span>&darr;</span>
+              </button>
+              <button
+                onClick={() => setLiveNotification(null)}
+                className="text-slate-400 hover:text-white text-xs px-2 py-1 font-bold cursor-pointer"
+              >
+                ✕ Dismiss
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Conflict Sentinel Critical Alert */}
         {contradictions.length > 0 && (
           <div className="bg-red-50 border-l-4 border-red-700 p-4 rounded-r-lg shadow-xs">
@@ -631,6 +751,110 @@ export default function App() {
               </div>
             </div>
 
+            {/* Live Webhook Ingestion Simulator Card */}
+            <div className="gov-card p-4 rounded-lg bg-gradient-to-br from-blue-50/90 via-slate-50 to-blue-50/50 border border-blue-200 shadow-xs space-y-3">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded bg-blue-700 text-white shadow-xs">
+                    <Zap className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
+                      ⚡ Mode 1 Live Citizen Filing Simulator (Real-Time Ingestion)
+                    </h3>
+                    <p className="text-xs text-slate-600">
+                      Type any unstandardized institution name to witness real-time 4-Tier Entity Resolution, DPDP HMAC tokenization, and AI auto-triage.
+                    </p>
+                  </div>
+                </div>
+                
+                {/* 1-Click Scenario Presets */}
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase">Click Test Presets:</span>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickIngest('Mepco Engg Sivakasi', 'FEES', 'Capitation fees demanded without receipt upon graduation.')}
+                    disabled={quickIngesting}
+                    className="px-2 py-1 rounded bg-white hover:bg-blue-100 text-blue-900 border border-blue-300 text-[11px] font-bold shadow-xs transition cursor-pointer"
+                  >
+                    1. Mepco (Fee Refund)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickIngest('PSG Tech Coimbatore', 'FACULTY', 'AICTE 7th pay scale arrears unpaid to assistant professors.')}
+                    disabled={quickIngesting}
+                    className="px-2 py-1 rounded bg-white hover:bg-amber-100 text-amber-900 border border-amber-300 text-[11px] font-bold shadow-xs transition cursor-pointer"
+                  >
+                    2. PSG Tech (Faculty Pay)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickIngest('CEG Anna Univ Chennai', 'INFRASTRUCTURE', 'Hostel electrical wiring safety hazard in block D.')}
+                    disabled={quickIngesting}
+                    className="px-2 py-1 rounded bg-white hover:bg-rose-100 text-rose-900 border border-rose-300 text-[11px] font-bold shadow-xs transition cursor-pointer"
+                  >
+                    3. CEG Anna Univ (Infra)
+                  </button>
+                </div>
+              </div>
+
+              {/* Custom Input Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-2.5 pt-1">
+                <div>
+                  <label className="text-[11px] font-bold text-slate-700 block mb-1">Raw College Name (Unnormalized):</label>
+                  <input
+                    type="text"
+                    value={quickRawCollege}
+                    onChange={(e) => setQuickRawCollege(e.target.value)}
+                    placeholder="e.g. Mepco College Sivakasi"
+                    className="w-full p-2 text-xs border border-slate-300 rounded bg-white focus:ring-1 focus:ring-blue-600"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold text-slate-700 block mb-1">Grievance Category:</label>
+                  <select
+                    value={quickCategory}
+                    onChange={(e) => setQuickCategory(e.target.value)}
+                    className="w-full p-2 text-xs border border-slate-300 rounded bg-white text-slate-700 font-medium"
+                  >
+                    <option value="FEES">Fees & Caution Deposit</option>
+                    <option value="FACULTY">Faculty Norms & Pay</option>
+                    <option value="INFRASTRUCTURE">Campus Infrastructure</option>
+                    <option value="ADMISSION">Admission Quota Violations</option>
+                  </select>
+                </div>
+                <div className="md:col-span-1">
+                  <label className="text-[11px] font-bold text-slate-700 block mb-1">Grievance Substance:</label>
+                  <input
+                    type="text"
+                    value={quickSummary}
+                    onChange={(e) => setQuickSummary(e.target.value)}
+                    placeholder="Brief description..."
+                    className="w-full p-2 text-xs border border-slate-300 rounded bg-white focus:ring-1 focus:ring-blue-600"
+                  />
+                </div>
+                <div className="flex items-end">
+                  <button
+                    onClick={() => handleQuickIngest()}
+                    disabled={quickIngesting}
+                    className="w-full py-2 bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs rounded transition shadow-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  >
+                    {quickIngesting ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        <span>Resolving & Ingesting...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-3.5 h-3.5" />
+                        <span>⚡ Ingest Docket Now</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+
             {/* Central Registry Table */}
             <div className="gov-card rounded-lg overflow-hidden">
               <div className="p-3.5 border-b border-slate-200 bg-slate-50 flex items-center justify-between flex-wrap gap-2">
@@ -709,10 +933,26 @@ export default function App() {
                   <tbody className="divide-y divide-slate-200 bg-white">
                     {filteredCases.map((c) => {
                       const st = getStatusBadge(c.status_code);
+                      const isHighlighted = highlightedCaseId === c.case_id;
                       return (
-                        <tr key={c.case_id} className="gov-table-row">
+                        <tr
+                          key={c.case_id}
+                          id={`case-row-${c.case_id}`}
+                          className={`gov-table-row transition-all duration-700 ${
+                            isHighlighted
+                              ? 'bg-emerald-50/90 border-2 border-emerald-500 ring-2 ring-emerald-400 shadow-md'
+                              : ''
+                          }`}
+                        >
                           <td className="px-3 py-2.5">
-                            <span className="font-mono font-bold text-blue-900 block">{c.source_ref}</span>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="font-mono font-bold text-blue-900 block">{c.source_ref}</span>
+                              {isHighlighted && (
+                                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-600 text-white animate-pulse">
+                                  ⚡ NEW LIVE DOCKET
+                                </span>
+                              )}
+                            </div>
                             <span className="text-xs text-slate-400 flex items-center mt-0.5">
                               <Calendar className="w-3 h-3 mr-1" />
                               {c.received_on}
@@ -1476,8 +1716,12 @@ export default function App() {
                       onClick={() => {
                         setShowSimulateModal(false);
                         setActiveTab('overview');
+                        setTimeout(() => {
+                          const el = document.getElementById(`case-row-${intakeSuccessResult.case_id}`);
+                          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }, 300);
                       }}
-                      className="text-[11px] font-bold bg-emerald-700 hover:bg-emerald-800 text-white px-2.5 py-1 rounded shadow-xs transition"
+                      className="text-[11px] font-bold bg-emerald-700 hover:bg-emerald-800 text-white px-2.5 py-1 rounded shadow-xs transition cursor-pointer"
                     >
                       View on Live Dashboard &rarr;
                     </button>
