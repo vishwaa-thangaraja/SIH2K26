@@ -16,13 +16,14 @@ SIH2K26/
 │   ├── SYSTEM_DESIGN_DESCRIPTION.md     # Production Hexagonal SDD & DDL Schemas
 │   └── README.md        # Technical Documentation & Architecture Overview
 │
-├── aicte-irccip/        # Problem Statement 26264: AICTE Complaint Cases & Grievance Platform
+├── 26264/               # Problem Statement 26264: AICTE AEGIS — AI-Enabled Governance & Institutional Surveillance
 │   ├── backend/         # FastAPI REST API & Core Intelligence Services (Port 8000)
 │   ├── frontend/        # React + Vite Interactive Dashboard UI (Port 3000)
 │   ├── ml/              # Standalone CaseLink ML Training & Evaluation Pipelines
 │   ├── docs/            # Technical Architecture, SRS & Solution Specifications
 │   ├── schema.sql       # 3NF PostgreSQL Relational Schema (55 tables/views/triggers)
 │   ├── tests.sql        # Automated SQL Verification Test Suites (T1-T10)
+│   ├── AICTE_AEGIS_VIDEO_PRESENTATION_SCRIPT.md # 3.5-Min Master Video Script & Filming Guide
 │   └── README.md        # Detailed Documentation & Setup Instructions
 │
 └── continuum/           # Continuum Project
@@ -58,7 +59,7 @@ Launches [http://localhost:5173/](http://localhost:5173/) automatically.
 
 ---
 
-## 🚀 Active Project: AICTE AEGIS (`aicte-irccip`)
+## 🚀 Active Project: AICTE AEGIS (`26264`)
 
 **Problem Statement ID:** 26264  
 **Project Name:** AICTE AEGIS — AI-Enabled Governance & Institutional Surveillance  
@@ -85,7 +86,7 @@ Just double-click:
 
 ##### 1. Backend Setup
 ```bash
-cd aicte-irccip/backend
+cd 26264/backend
 python -m venv venv
 # Windows: venv\Scripts\activate | Mac/Linux: source venv/bin/activate
 pip install -r requirements.txt
@@ -96,7 +97,7 @@ python run.py
 
 ##### 2. Frontend Setup
 ```bash
-cd aicte-irccip/frontend
+cd 26264/frontend
 npm install
 npm run dev
 ```
