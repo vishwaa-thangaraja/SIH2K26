@@ -513,12 +513,12 @@ export default function App() {
         <div className="p-5 border-b border-slate-800">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-blue-700 flex items-center justify-center text-white font-bold text-sm tracking-wider shadow-inner">
-                AICTE
+              <div className="w-10 h-10 rounded-lg bg-blue-700 flex items-center justify-center text-white font-black text-xs tracking-wider shadow-inner">
+                AEGIS
               </div>
               <div>
-                <div className="text-xs uppercase tracking-wider text-slate-400 font-semibold">Government of India</div>
-                <div className="text-sm font-bold text-white">Central Complaint Portal</div>
+                <div className="text-xs uppercase tracking-wider text-slate-400 font-semibold">Government of India · AICTE</div>
+                <div className="text-sm font-bold text-white">AICTE AEGIS Portal</div>
               </div>
             </div>
             <button
@@ -560,7 +560,7 @@ export default function App() {
         <div className="p-4 border-t border-slate-800 text-sm text-slate-400">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-400 gov-live-dot" />
-            <span>AICTE Statutory Sentinel Online</span>
+            <span>AICTE AEGIS Conflict Sentinel Online</span>
           </div>
           <div className="mt-1 text-xs text-slate-500">PS ID: 26264 · Code Society</div>
         </div>
@@ -578,16 +578,22 @@ export default function App() {
               <Menu className="w-5 h-5" />
             </button>
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded bg-blue-700 flex items-center justify-center font-bold text-xs tracking-wider text-white">
-                AICTE
+              <div className="w-8 h-8 rounded bg-blue-700 flex items-center justify-center font-black text-[10px] tracking-wider text-white shadow-xs">
+                AEGIS
               </div>
               <div>
-                <div className="text-xs uppercase tracking-wider text-slate-300 font-semibold leading-none">
-                  All India Council for Technical Education · Ministry of Education
+                <div className="text-xs uppercase tracking-wider text-slate-300 font-semibold leading-none flex items-center gap-2">
+                  <span>All India Council for Technical Education · Ministry of Education</span>
+                  <span className="hidden lg:inline-block px-1.5 py-0.2 rounded bg-blue-800 text-blue-200 text-[10px] font-mono font-bold">
+                    PS ID: 26264
+                  </span>
                 </div>
-                <h1 className="text-sm font-bold text-white mt-0.5 leading-tight">
-                  Integrated Complaint Monitoring & Cross-Bureau Tracking System
-                </h1>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <h1 className="text-sm font-bold text-white leading-tight">
+                    <span className="text-amber-400 font-extrabold mr-1.5">AICTE AEGIS</span>
+                    <span className="text-slate-200 text-xs sm:text-sm font-medium">| AI-Enabled Governance &amp; Institutional Surveillance</span>
+                  </h1>
+                </div>
               </div>
             </div>
           </div>
@@ -2965,8 +2971,8 @@ export default function App() {
       {/* Footer */}
       <footer className="bg-slate-900 border-t border-slate-800 text-slate-400 py-3 text-center text-xs">
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between flex-wrap gap-2">
-          <span>Smart India Hackathon (SIH) 2026 · Problem Statement ID: 26264</span>
-          <span>Designed for All India Council for Technical Education (AICTE)</span>
+          <span>AICTE AEGIS · AI-Enabled Governance &amp; Institutional Surveillance</span>
+          <span>Smart India Hackathon (SIH) 2026 · Problem Statement ID: 26264 · Code Society</span>
         </div>
       </footer>
     </div>

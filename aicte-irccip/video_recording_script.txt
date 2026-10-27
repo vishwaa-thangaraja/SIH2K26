@@ -1,14 +1,14 @@
 ================================================================================
 SMART INDIA HACKATHON 2026 — MASTER VIDEO RECORDING SCRIPT & RUNSHEET
-Project: AICTE Integrated Case Monitoring & Cross-Bureau Tracking System
+Project: AICTE AEGIS · AI-Enabled Governance & Institutional Surveillance
 Problem Statement ID: 26264
 Team: Code Society — Mepco Schlenk Engineering College
 Total Duration: Strictly 3 Minutes 30 Seconds (Max 3.5 Min)
 ================================================================================
 
 TIMELINE BREAKDOWN AT A GLANCE:
-  • 00:00 - 00:20 (20s) : PPT Slide 1 — Title, Team, PS ID 26264
-  • 00:20 - 00:50 (30s) : PPT Slide 2 — Problem Statement & Bureau Silos
+  • 00:00 - 00:20 (20s) : PPT Slide 1 — Title, AICTE AEGIS, Team, PS ID 26264
+  • 00:20 - 00:50 (30s) : PPT Slide 2 — Problem Statement & Departmental Silos
   • 00:50 - 01:25 (35s) : Stage 1 — Citizen Ingestion & Canonical PID Resolution
   • 01:25 - 01:55 (30s) : Stage 2 — Cross-Bureau Inquiry (Regulation Bureau Show-Cause)
   • 01:55 - 02:30 (35s) : Stage 3 — Statutory Conflict Sentinel Interception (Sec 10(1)(v))
@@ -21,15 +21,16 @@ TIMELINE BREAKDOWN AT A GLANCE:
 ================================================================================
 SCREEN DISPLAY:
   • Fullscreen Slide 1 (PPT)
-  • Title: AICTE Integrated Complaint Monitoring & Cross-Bureau Tracking System
+  • Project Title: AICTE AEGIS
+  • Subtitle: AI-Enabled Governance & Institutional Surveillance
   • Problem Statement ID: 26264
   • Team: Code Society — Mepco Schlenk Engineering College
 
 SPOKEN WORDS (RECORD THIS AUDIO):
 "A very warm greeting to the respected evaluators and jury of Smart India Hackathon 2026. 
 We are Team Code Society from Mepco Schlenk Engineering College. 
-Today, we present our complete solution for Problem Statement 26264: the AICTE Integrated 
-Complaint Monitoring and Cross-Bureau Tracking System."
+Today, we present our solution for Problem Statement 26264: AICTE AEGIS — 
+AI-Enabled Governance & Institutional Surveillance."
 
 
 ================================================================================
@@ -68,7 +69,7 @@ WHAT TO DO ON SCREEN:
   5. Scroll down to the bottom of the table to the big green action banner!
 
 SPOKEN WORDS (RECORD THIS AUDIO):
-"Here is our AICTE Central Registry. Notice our e-Filing Gateway. 
+"Here is AICTE AEGIS Central Registry. Notice our e-Filing Gateway. 
 When a citizen enters an unstandardized name like 'Mepco Engg Sivakasi', our 4-Tier 
 Cascading Entity Resolution Engine immediately normalizes it and locks it to Canonical 
 AICTE Permanent ID 1-1049281. Citizen PII is blinded under the DPDP Act 2023.
@@ -174,7 +175,7 @@ the inconsistent closure.
 At Milestone 7 on August 1st, we view the official Gazetted Joint Determination Order, complete 
 with legal citations and cryptographic SHA-256 tamper-proof seals. 
 
-Our platform transforms AICTE from fragmented departmental silos into a unified, legally robust, 
+AICTE AEGIS transforms AICTE from fragmented departmental silos into a unified, legally robust, 
 and proactive regulatory intelligence authority. 
 
 Thank you!"
