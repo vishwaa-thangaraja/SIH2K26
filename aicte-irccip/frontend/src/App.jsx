@@ -1845,7 +1845,7 @@ export default function App() {
                     {/* Official Letterhead Header */}
                     <div className="text-center border-b-2 border-slate-900 pb-4 space-y-1">
                       <div className="inline-block p-1.5 bg-blue-950 text-white rounded font-serif font-black text-xs tracking-widest uppercase mb-1">
-                        AICTE · सत्यमेव जयते
+                        AICTE · GOVERNMENT OF INDIA
                       </div>
                       <h4 className="text-sm font-serif font-extrabold text-slate-950 uppercase tracking-wider">
                         All India Council for Technical Education
@@ -2827,7 +2827,7 @@ export default function App() {
             </div>
 
             <div className="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
-              <span className="text-xs text-slate-500">Digital Certificate: NIC-PARICHAY-VERIFIED (SHA-256)</span>
+              <span className="text-xs text-slate-500">Digital Certificate: NIC-eOFFICE-VERIFIED (SHA-256)</span>
               <button
                 onClick={async () => {
                   const memo = jointMemoText || "Joint Determination: Student caution fee refund verified. However, clean-chit conditional on completion of Standing Hearing Committee scrutiny under APH Chapter VII. Dockets harmonized.";
