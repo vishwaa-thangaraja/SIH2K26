@@ -8,7 +8,7 @@ This repository contains hackathon solutions developed by the team for **Smart I
 
 ```text
 SIH2K26/
-├── aicte-pravaah/       # AICTE PRAVAAH — Approval Workflow Automation & Compliance (PS: 26262) [ACTIVE]
+├── aicte-aegis/         # AEGIS — AICTE Governance & Integrated Compliance System (PS: 26262) [ACTIVE]
 │   ├── src/             # React 18 + Vite 5 Interactive Approval Workflow UI (Port 5173)
 │   ├── run.bat          # 1-Click Launch Script
 │   ├── PRESENTATION_AND_VIDEO_SCRIPT.md # Official Pitch Deck & 3.5 Min Voiceover Script
@@ -33,10 +33,10 @@ SIH2K26/
 
 ---
 
-## 🚀 Active Project: AICTE PRAVAAH (`aicte-pravaah`)
+## 🚀 Active Project: AICTE AEGIS (`aicte-aegis`)
 
 **Problem Statement ID:** 26262  
-**Project Name:** AICTE PRAVAAH — Integrated Approval Workflow Automation, Compliance Monitoring and Alert Management System  
+**Project Name:** AEGIS — AICTE Governance & Integrated Compliance System  
 **Organization:** All India Council for Technical Education (AICTE)  
 **Theme:** Smart Automation  
 
@@ -50,7 +50,7 @@ SIH2K26/
 
 ### ⚡ Quick Start (1-Click Run)
 ```bash
-cd aicte-pravaah
+cd aicte-aegis
 run.bat
 ```
 Launches [http://localhost:5173/](http://localhost:5173/) automatically.

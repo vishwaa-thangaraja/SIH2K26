@@ -1,5 +1,5 @@
 # Software Architecture & System Design Description (SDD)
-## AICTE PRAVAAH-SMART: Unified Approval Workflow, Compliance Monitoring & Escalation System
+## AICTE AEGIS-SMART: Unified Approval Workflow, Compliance Monitoring & Escalation System
 
 **Document Version:** 2.4.0 (Production & Future-Proof Engineering Release)  
 **Problem Statement ID:** 26262  
@@ -11,7 +11,7 @@
 
 ## 1. Executive Summary & Design Philosophy
 
-The **AICTE PRAVAAH-SMART** platform is engineered as an **Event-Driven, Metadata-Configurable, Hexagonal (Ports & Adapters) Regulatory Operating System**. 
+The **AICTE AEGIS-SMART** platform is engineered as an **Event-Driven, Metadata-Configurable, Hexagonal (Ports & Adapters) Regulatory Operating System**. 
 
 The fundamental failure of legacy government workflow systems stems from **rigid, procedural hardcoding**: when policies change (e.g., APH norms revised, new committee types added, document requirements altered), traditional codebases require deep refactoring. 
 

@@ -1,8 +1,8 @@
-# AICTE PRAVAAH-SMART: Presentation Deck & Video Voiceover Script
+# AICTE AEGIS-SMART: Presentation Deck & Video Voiceover Script
 **Problem Statement ID:** 26262  
 **Theme:** Smart Automation  
 **Organization:** All India Council for Technical Education (AICTE)  
-**System Name:** AICTE PRAVAAH-SMART *(Predictive Regulatory Automation, Vigilance, Undertakings & Alert Hub)*  
+**System Name:** AICTE AEGIS-SMART *(Predictive Regulatory Automation, Vigilance, Undertakings & Alert Hub)*  
 **Live URL:** `http://localhost:5173/`
 
 ---
@@ -14,12 +14,12 @@ Use this scene-by-scene script while screen-recording `http://localhost:5173/`.
 ### Scene 1: Introduction & National Problem (0:00 - 0:35)
 - **Visual Action:** Start on the **Executive Cockpit** (`Executive Overview`). Point cursor at the national tricolor banner, regional jurisdiction matrix, and real-time KPI cards.
 - **Voiceover:**  
-  *"Namaskar evaluators. Every year, the All India Council for Technical Education processes over 10,000 applications across 10 Regional Offices—ranging from new campus setups and intake expansions to annual Extensions of Approval (EoA). Today, this ecosystem faces three critical vulnerabilities: First, multi-stage workflow fragmentation between Scrutiny, EVC, and SAC/SHC. Second, silent expiration of mandatory 30-year registered land lease deeds and fire NOCs. And third, compliance amnesia—where institutions receive conditional approvals under time-bound undertakings but the obligations are never verified once admissions open. We present **AICTE PRAVAAH-SMART**—a unified, self-healing regulatory orchestration engine that automates workflows, monitors institutional obligations, and prevents regulatory drift with zero administrative follow-up."*
+  *"Namaskar evaluators. Every year, the All India Council for Technical Education processes over 10,000 applications across 10 Regional Offices—ranging from new campus setups and intake expansions to annual Extensions of Approval (EoA). Today, this ecosystem faces three critical vulnerabilities: First, multi-stage workflow fragmentation between Scrutiny, EVC, and SAC/SHC. Second, silent expiration of mandatory 30-year registered land lease deeds and fire NOCs. And third, compliance amnesia—where institutions receive conditional approvals under time-bound undertakings but the obligations are never verified once admissions open. We present **AICTE AEGIS-SMART**—a unified, self-healing regulatory orchestration engine that automates workflows, monitors institutional obligations, and prevents regulatory drift with zero administrative follow-up."*
 
 ### Scene 2: APH Multi-Track Approval Routing & Deficiency Returns (0:35 - 1:15)
 - **Visual Action:** Switch tab to **APH Workflow Engine**. Filter by Track B (Scrutiny + EVC). Click on **"Delhi Institute of Technology & Science"**. Show the multi-stage visual stepper. Click **"Authorized Regulatory Actions"** -> show checkboxes -> show **"Return / Revert with Deficiency Note"** and show that reasons are mandatory.
 - **Voiceover:**  
-  *"Unlike generic task trackers, PRAVAAH is strictly built on the AICTE Approval Process Handbook (APH). It natively enforces multi-track routing: Track A for standard EoAs, Track B for New Campuses requiring Expert Visit Committees, and Track C for Appeals through Standing Hearing and Appellate Committees. When an authorized scrutiny convener evaluates an application, statutory checklists—including land norms, carpet area, and faculty cadre ratios—are digitally recorded. If deficient, the system rejects arbitrary returns: an officer must cite the exact APH clause, which is instantly converted into an authenticated deficiency notice and dispatched to the institute with an immutable digital timestamp."*
+  *"Unlike generic task trackers, AEGIS is strictly built on the AICTE Approval Process Handbook (APH). It natively enforces multi-track routing: Track A for standard EoAs, Track B for New Campuses requiring Expert Visit Committees, and Track C for Appeals through Standing Hearing and Appellate Committees. When an authorized scrutiny convener evaluates an application, statutory checklists—including land norms, carpet area, and faculty cadre ratios—are digitally recorded. If deficient, the system rejects arbitrary returns: an officer must cite the exact APH clause, which is instantly converted into an authenticated deficiency notice and dispatched to the institute with an immutable digital timestamp."*
 
 ### Scene 3: EVC Command Center & GPS Geofenced Verification (1:15 - 1:55)
 - **Visual Action:** Switch tab to **EVC Command Center**. Click on **"Vidyapeeth Academy of Engineering"**. Highlight the 3-member expert panel and the GPS Geofence audit card (`Within 250m Verified`). Click **"Affix 3-Member Digital Signatures & Transmit Inspection Report"**.
@@ -29,7 +29,7 @@ Use this scene-by-scene script while screen-recording `http://localhost:5173/`.
 ### Scene 4: Innovation 1 — Autonomous SLA Predictor & Cascading Auto-Escalation (1:55 - 2:40)
 - **Visual Action:** Move to the top bar. Point to the **Simulated Date** (`2026-10-27`). Click the **"+7d Fast-Fwd"** or **"+30d Leap"** button! Watch the dashboard update, see the notification badge tick up, and navigate to **SLA Escalations**. Show the 3-Tier Escalation Ladder and click **"Auto-Reassign Committee"**.
 - **Voiceover:**  
-  *"Now, let us demonstrate our first major innovation: **The Cascading SLA Auto-Escalation Engine**. Traditional government portals merely report delays after the damage is done. In PRAVAAH, we have built a self-healing hierarchy. At T minus 2 days, the assigned reviewer receives an automated Tier-1 nudge. If an officer remains inactive for 120 hours, the system automatically reassigns the application to a parallel standby committee pool without human intervention. If chronic stagnation occurs, it escalates to Tier-3 straight to the Member Secretary and Central Vigilance console with an explainable diagnostic root-cause summary. By clicking our built-in time simulator, you can witness the automated daemon re-indexing bottlenecks and triggering escalations in real time."*
+  *"Now, let us demonstrate our first major innovation: **The Cascading SLA Auto-Escalation Engine**. Traditional government portals merely report delays after the damage is done. In AEGIS, we have built a self-healing hierarchy. At T minus 2 days, the assigned reviewer receives an automated Tier-1 nudge. If an officer remains inactive for 120 hours, the system automatically reassigns the application to a parallel standby committee pool without human intervention. If chronic stagnation occurs, it escalates to Tier-3 straight to the Member Secretary and Central Vigilance console with an explainable diagnostic root-cause summary. By clicking our built-in time simulator, you can witness the automated daemon re-indexing bottlenecks and triggering escalations in real time."*
 
 ### Scene 5: Innovation 2 — Document Pulse & Provisional Undertaking Lock (2:40 - 3:30)
 - **Visual Action:** Switch tab to **Time-Bound Undertakings**. Point out the **"Provisional Approval Active"** status and countdown timer. Then switch to **Lease & Doc Sentinel**. Point out the **SHA-256 Checksum**, the **Land Lease Expiry Radar**, and click **"Dispatch Statutory Renewal Notice"**.
@@ -44,14 +44,14 @@ Use this scene-by-scene script while screen-recording `http://localhost:5173/`.
 ### Scene 7: Conclusion & Impact (4:05 - 4:30)
 - **Visual Action:** Switch back to the **Executive Cockpit**.
 - **Voiceover:**  
-  *"AICTE PRAVAAH-SMART transforms institutional approval from a reactive, manual paper-chase into a proactive, transparent, and self-healing regulatory engine. It protects students, empowers honest institutions, and equips AICTE with uncompromising governance. Thank you."*
+  *"AICTE AEGIS-SMART transforms institutional approval from a reactive, manual paper-chase into a proactive, transparent, and self-healing regulatory engine. It protects students, empowers honest institutions, and equips AICTE with uncompromising governance. Thank you."*
 
 ---
 
 ## 📊 Part 2: 10-Slide PPT Deck Outline
 
 ### Slide 1: Title & Cover
-- **Header:** AICTE PRAVAAH-SMART
+- **Header:** AICTE AEGIS-SMART
 - **Sub-header:** Integrated AICTE Approval Workflow Automation, Compliance Monitoring and Alert Management System
 - **Metadata:** Problem Statement ID: 26262 | Theme: Smart Automation | Category: Software
 - **Team Name & Member Details:** [Insert Team Names]

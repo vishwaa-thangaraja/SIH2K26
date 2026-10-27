@@ -147,7 +147,7 @@ export function AuditTrail({ auditLogs }) {
             {/* Certificate Body */}
             <div className="text-xs text-slate-700 space-y-3 leading-relaxed">
               <p>
-                This certifies that all application movements, scrutiny checklists, EVC physical inspection allocations, conditional undertakings, and lease document validity monitoring records captured within the <strong>AICTE PRAVAAH System</strong> are recorded in an immutable, cryptographically verifiable digital event stream.
+                This certifies that all application movements, scrutiny checklists, EVC physical inspection allocations, conditional undertakings, and lease document validity monitoring records captured within the <strong>AICTE AEGIS System</strong> are recorded in an immutable, cryptographically verifiable digital event stream.
               </p>
               <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 font-mono text-[11px] space-y-1">
                 <div>Total Verified Audit Events: <strong>1,492 Records</strong></div>

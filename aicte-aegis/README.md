@@ -1,4 +1,4 @@
-# AICTE PRAVAAH — Integrated Approval Workflow Automation & Compliance Monitoring
+# AEGIS — AICTE Governance & Integrated Compliance System
 
 **Problem Statement ID:** 26262  
 **Theme:** Smart Automation  
@@ -9,7 +9,7 @@
 
 ## 🎯 Executive Overview
 
-**AICTE PRAVAAH** is a unified, secure, and configurable national platform that automates approval-related workflows, enforces strict statutory SLAs, monitors institutional compliance, and resolves administrative bottlenecks across all 10 AICTE Regional Offices.
+**AICTE AEGIS** is a unified, secure, and configurable national platform that automates approval-related workflows, enforces strict statutory SLAs, monitors institutional compliance, and resolves administrative bottlenecks across all 10 AICTE Regional Offices.
 
 ---
 

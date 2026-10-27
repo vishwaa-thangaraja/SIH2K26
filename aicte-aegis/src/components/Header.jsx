@@ -69,7 +69,7 @@ export function Header({
                 </span>
               </div>
               <h1 className="text-lg sm:text-xl font-extrabold text-[#0f2942] tracking-tight flex items-center gap-2">
-                AICTE PRAVAAH
+                AICTE AEGIS
                 <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 hidden md:inline-flex items-center gap-1">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
                   Continuous Compliance Sentinel

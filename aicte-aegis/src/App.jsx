@@ -513,7 +513,7 @@ export function App() {
       <footer className="bg-white border-t border-slate-200 mt-auto py-5 text-xs text-slate-500">
         <div className="w-full max-w-[1720px] mx-auto px-6 sm:px-10 lg:px-12 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center space-x-2.5">
-            <span className="font-bold text-[#0f2942]">AICTE PRAVAAH</span>
+            <span className="font-bold text-[#0f2942]">AICTE AEGIS</span>
             <span>•</span>
             <span>Problem Statement ID: 26262</span>
             <span>•</span>

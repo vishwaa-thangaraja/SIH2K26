@@ -1,10 +1,10 @@
 @echo off
-title AICTE PRAVAAH-SMART Portal Launcher
+title AICTE AEGIS - Governance & Integrated Compliance System
 cd /d "%~dp0"
 
 echo ======================================================================
-echo   AICTE PRAVAAH-SMART Portal (Problem Statement ID: 26262)
-echo   Theme: Smart Automation ^| All India Council for Technical Education
+echo   AICTE AEGIS — Governance & Integrated Compliance System
+echo   Problem Statement ID: 26262 ^| All India Council for Technical Education
 echo ======================================================================
 echo.
 
