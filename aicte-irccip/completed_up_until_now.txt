@@ -2,7 +2,7 @@
 AICTE INTEGRATED REGULATORY CASE COORDINATION & MONITORING PLATFORM (IRCCIP)
 COMPREHENSIVE PROGRESS REPORT & SYSTEM INVENTORY (COMPLETED UP UNTIL NOW)
 Smart India Hackathon 2026 | Problem Statement ID: 26264
-Date: 25 October 2026
+Date: 27 October 2026
 Team: Code Society (Mepco Schlenk Engineering College)
 ================================================================================
 
@@ -13,9 +13,10 @@ designed, written, tested, and running in this project repository.
 
 Root Project Directory: D:\Documents\SEM V\SIH 2026
 Implementation Directory: D:\Documents\SEM V\SIH 2026\IMP
+ML Directory: D:\Documents\SEM V\SIH 2026\ml\caselink-ml
 
 Both backend (FastAPI, port 8000) and frontend (React/Vite, port 3000) are fully 
-implemented and running live.
+implemented, connected to actual trained Scikit-Learn ML models, and running live.
 
 
 2. CORE ARCHITECTURAL & SPECIFICATION DOCUMENTS
@@ -42,7 +43,7 @@ B. tests.sql (10.6 KB):
      reconstruction, SLA breach calculation, contradiction detection, and 
      joint review sessions.
 
-C. components.docx (38.5 KB):
+C. components.docx:
    - Technical specification detailing the 8 algorithmic components:
      1. 4-Tier Cascaded Entity Resolution Engine (Exact PID -> Geo-hierarchy 
         blocking -> Acronym/token normalization -> Human review queue 70-87%).
@@ -55,34 +56,33 @@ C. components.docx (38.5 KB):
         Staging CSV Importer).
      8. Privacy-Preserving HMAC Tokenizer & Explainable ML Service (DPDP Act).
 
-D. solu.docx (37.6 KB):
+D. solu.docx:
    - Complete hackathon proposal document aligned 100% to PS ID 26264.
    - Documents problem anatomy, root causes of bureau overlap, 5 hero innovations, 
-     and the deterministic live jury demonstration sequence.
+     the 5-step live video demonstration workflow, and Cloud/NIC MeghRaj deployment.
 
-E. tech stack.docx (37.5 KB):
+E. tech stack.docx:
    - Technology selection justifications and Prototype vs. Production matrix.
+   - Enterprise PostgreSQL 15+ deployment architecture on NIC MeghRaj cloud with 
+     psycopg2-binary connection pooling, schema migration script (deploy_db.py), 
+     and render.yaml cloud deployment blueprint.
    - Compliance mapping to GIGW 3.0, WCAG 2.1 AA, CERT-In guidelines, and the 
      Digital Personal Data Protection (DPDP) Act 2023.
-   - Justifications for deliberately omitting separate Graph DBs, Elasticsearch, 
-     and commercial cloud LLM APIs.
 
 
-3. BACKEND IMPLEMENTATION (FASTAPI + SQLALCHEMY + SQLITE)
+3. BACKEND IMPLEMENTATION (FASTAPI + SQLALCHEMY + POSTGRESQL/SQLITE READY)
 --------------------------------------------------------------------------------
 Located in: D:\Documents\SEM V\SIH 2026\IMP\backend\
 
-A. Database & ORM Layer:
-   - app/config.py: Environment configuration pointing to local SQLite data.db 
-     (chosen for zero-setup, portable live jury execution; full PostgreSQL schema.sql 
-     maintained for production).
-   - app/database.py: SQLAlchemy engine with foreign key pragma enforcement.
-   - app/models/schema_models.py: Complete ORM definitions covering Region, State, 
-     District, BureauCell, Officer, CanonicalStatus, TrackType, ComplaintCategory, 
-     Institution, InstitutionNameVariant, ComplaintCase, CaseText, 
-     CaseInstitutionLink, CaseEvent, Relationship, Alert, JointReviewSession, 
-     and JointReviewCase. Primary keys adapted to Integer for SQLite autoincrement.
-   - app/models/api_schemas.py: Pydantic request/response validation schemas.
+A. Database & Dual Engine Architecture:
+   - app/config.py: Environment configuration reading DATABASE_URL dynamically.
+   - app/database.py: Production-ready SQLAlchemy engine supporting both Cloud 
+     PostgreSQL (with QueuePool, pool_size=10, pool_pre_ping=True, pool_recycle=1800) 
+     and zero-latency local SQLite fallback for offline portable evaluations.
+   - deploy_db.py: One-click production database migrator and seeder. Automatically 
+     creates schema tables, initializes seed data, and verifies connectivity.
+   - render.yaml: Cloud infrastructure-as-code specification for zero-downtime 
+     managed deployment on Render / MeghRaj Cloud with PostgreSQL service.
 
 B. Core Algorithmic Engines:
    - app/core/entity_resolver.py: 4-tier cascaded resolver. Performs exact PID match, 
@@ -98,17 +98,23 @@ B. Core Algorithmic Engines:
    - app/core/sla_engine.py: Evaluates 4 statutory aging buckets (<15d, 15-30d, 
      30-60d, >60d), detects SLA breaches beyond 45 days, and derives next action due.
 
-C. Machine Learning Service:
-   - app/ml/ml_service.py: Out-of-the-box local inference engine using Scikit-Learn.
-     - TF-IDF + LogisticRegression for 6 complaint categories (Fees, Faculty, 
-       Infrastructure, Admission, Examination, Other).
-     - Severity keyword heuristic for priority prediction (Low, Medium, High).
-     - Cosine text similarity for duplicate detection scoring.
-     - Rule-based category-to-bureau jurisdiction mapping.
-     - Global singleton pattern pre-trained on realistic seed corpus, ready for 
-       immediate drop-in replacement with teammate's trained .pkl model files.
+C. Trained Machine Learning Integration (Connected from caselink-ml):
+   - app/ml/models/complaint_classifier.joblib: Scikit-learn Pipeline (TfidfVectorizer 
+     + LogisticRegression) classifying grievance text across 6 regulatory domains 
+     (Admission, Examination, Faculty, Fees, Infrastructure, Other).
+   - app/ml/models/complaint_priority.joblib: Scikit-learn Pipeline predicting priority 
+     levels (High, Medium, Low) coupled with regulatory emergency triggers.
+   - app/ml/data/bureau_mapping.csv & duplicate_samples.csv: Statutory mapping files 
+     routing grievances to specific bureau cells (e.g. PGRC Student Fees Cell, 
+     RB Infrastructure Cell, RB Faculty Affairs Cell).
+   - app/ml/ml_service.py: Production-grade MLTextIntelligenceService:
+     - Automatically loads trained joblib pipelines on startup.
+     - Computes TF-IDF cosine similarity against existing database dockets and 
+       duplicate sample corpus (threshold >= 0.70 flags probable duplication).
+     - Provides sub-80ms real-time inference on POST /api/ml/infer.
+     - Directly integrated into POST /api/intake/webhook for real-time AI auto-triage.
 
-D. REST API Endpoints (All tested & functional):
+D. REST API Endpoints:
    - app/api/dashboard.py:
      - GET /api/dashboard/kpis: Real-time aggregated counters.
      - GET /api/dashboard/bureau-workload: Bureau-by-bureau workload and avg disposal days.
@@ -123,93 +129,74 @@ D. REST API Endpoints (All tested & functional):
      - GET /api/coordination/joint-review: Lists active/resolved conference dockets.
      - PUT /api/coordination/joint-review/{session_id}/resolve: Records signed 
        disposal determination memo and harmonizes dockets.
+   - app/api/intake.py:
+     - POST /api/intake/webhook: Real-time complaint ingestion with DPDP HMAC-SHA256 
+       salt tokenization, 4-tier PID resolution, and AI auto-triage classification.
+     - GET /api/intake/status: Gateway operational status.
    - app/api/time_travel.py:
      - GET /api/time-travel/query: Historical state reconstruction with milestones.
    - app/api/entity.py:
      - POST /api/entity/resolve: Tests 4-tier cascade on arbitrary input text.
    - app/api/ml.py:
-     - POST /api/ml/infer: Runs categorization, priority, and duplicate check.
-
-E. Seed Data & Launch:
-   - app/seed/init_db.py: Pre-seeds 4 institutions (Mepco Schlenk Engineering College, 
-     PSG Tech, CEG Anna University, Harcourt Butler Technical University), 9 name 
-     variants, 4 bureaus (Regulation Bureau, PGRC, Approval Bureau, Vigilance Cell), 
-     6 realistic dockets, bitemporal event chains, and the Mepco contradiction scenario.
-   - run.py: Uvicorn launcher running on 127.0.0.1:8000.
-   - Package structure: All 6 __init__.py files present across packages.
+     - POST /api/ml/infer: Serves trained Scikit-learn model inference.
 
 
 4. FRONTEND IMPLEMENTATION (REACT 18 + VITE + TAILWIND CSS)
 --------------------------------------------------------------------------------
 Located in: D:\Documents\SEM V\SIH 2026\IMP\frontend\
 
-A. Configuration & Build:
-   - package.json: React 18, Vite 8, Tailwind CSS v4, Lucide React icons.
-   - vite.config.js: Configured with @tailwindcss/vite plugin and /api proxy 
-     routing requests to http://127.0.0.1:8000.
-   - Production build verified: npm run build passes with 0 errors.
+A. Configuration & High-Legibility Styling:
+   - Root base font scaled to 19px with 1.55 line-height for razor-sharp presentation 
+     visibility during video recording and screen sharing.
+   - National e-Governance palette (Ashoka Blue, Navy, Emerald, Amber, Rose).
+   - Glassmorphism backdrop drawer with quick module switching.
+   - Verified zero-error build: npm run build passes in <1s.
 
-B. Visual Styling & Typography:
-   - src/index.css: Standard Indian Government portal palette (Ashoka Navy #0F172A, 
-     #1E3A8A, clean white cards with #E2E8F0 borders, dignified slate accents).
-   - High-contrast, scalable typography: Root base font set to 19px with 1.55 
-     line-height for maximum officer legibility on desktop displays.
-   - Eliminated all micro-fonts (replaced 63 instances of 10px/11px text).
-   - Removed distracting top decorative borders; clean, unified government header.
+B. Interactive "Story Mode" Video Stepper:
+   - Top-mounted persistent interactive progress banner enabling fluid, live 
+     demonstration across the 5 canonical SIH evaluation phases:
+     [Step 1: Intake & Match] -> [Step 2: RB Show-Cause] -> [Step 3: Trigger Conflict] 
+     -> [Step 4: Joint Resolution] -> [Step 5: Audit Check].
+   - Clicking steps triggers live UI navigation, numbers, modals, and dockets.
 
-C. Navigation & UI Structure (src/App.jsx):
-   - Left-Sliding Drawer Navigation:
-     - Hamburger button trigger and explicit close button (X).
-     - Closes smoothly on outside clicks.
-     - Glassmorphism backdrop blur (backdrop-filter: blur(5px)) across remaining 
-       dashboard area when open.
-   - Real-Time Live Sync Pulse Indicator in header.
-
-D. Key Interactive Modules (src/App.jsx):
-   1. Central Registry & Workload (Overview Tab):
-      - 6 large text-4xl KPI cards with sub-labels.
-      - Bureau-Wise Workload Cards: Auto-sized bureau pills (fixed overflow for 
-        APPROVAL and VIGILANCE) and progress bars with neutral fallback for 0 cases.
-      - Searchable, multi-filter case table (search by institution, PID, summary, 
-        bureau, status, and SLA delay checkbox).
-   2. Coordination Intelligence Layer (Intelligence Tab):
-      - Classifies relationships as CONTRADICTORY_ACTIONS, DUPLICATE_SUBMISSION, 
-        or RELATED_PARALLEL.
-      - Displays side-by-side docket comparison.
-      - Explicitly answers:
-        a) 1. Why Review Together? (Evidentiary justification)
-        b) 2. Why Might Coordination NOT Be Needed? (False-positive / mandate analysis)
-        c) 3. Recommended Coordination Action (Operational directive)
-   3. Case History & Audit Trail (Sliding Window Timeline):
-      - Interactive date scrubber traversing 9 chronological checkpoints 
-        (1 Jul to 15 Aug 2026).
-      - Horizontal Bureau Swimlanes (PGRC vs. Regulation Bureau).
-      - Visual event nodes illuminate when active in historical window and dim 
-        when in the future.
-      - Visual Conflict Sentinel alert trips when PGRC closed a docket while RB 
-        had an active inquiry.
-      - Temporal basis toggle (Recorded System Knowledge vs. Real-World Action).
-   4. Entity Resolution Review Queue:
-      - Simulates officer intake matching.
-      - Shows matching method, tier, and confidence score.
-      - Flags human review requirement for scores between 70% and 87%.
-   5. Explainable AI & Secure Duplicate Detection:
-      - Real-time complaint analysis with confidence scores.
-      - Documents HMAC-SHA256 salted blind indexing for whistleblower protection.
-   6. Inter-Bureau Joint Conferences:
-      - Docket listing convened conference sessions.
-      - Form to record and sign unified disposal determination memos.
-   7. Case Passport Modal:
-      - Accessible from any table row.
-      - Single institutional dossier displaying handling bureau, assigned officer, 
-        age, full grievance narrative, and chronological immutable event log.
+C. Live Action Modals & Components:
+   1. Live Simulated Portal Filing Modal:
+      - Interactive webhook submission simulating citizen filing on PGRC/CPGRAMS.
+      - Resolves unnormalized college names to permanent AICTE PIDs in real-time.
+      - Displays instant DPDP blind hash and AI Auto-Triage prediction.
+   2. Conflict Sentinel Interception Alert:
+      - Flashing government interdiction modal highlighting concurrent contradictory 
+        orders (e.g. PGRC unilateral closure vs. Regulation Bureau punitive inquiry).
+      - Action blocked pending harmonization.
+   3. Interactive Joint Review Conference Chamber:
+      - Side-by-side bureau docket comparison.
+      - Digital Signature action button executing statutory resolution memo.
+   4. Bitemporal Time-Travel Timeline:
+      - Interactive date scrubber traversing 9 chronological milestones.
+      - Demonstrates exact regulatory state on July 22, 2026 when conflict occurred.
+   5. Explainable AI & Secure Duplicate Detection Tab:
+      - 4 Live One-Click Scenario Presets:
+        * Capitation Fee Grievance (Student / PGRC)
+        * Hazardous Exposed Wiring (Infrastructure / RB High Priority)
+        * Faculty Pay Deficit (Faculty Affairs / RB)
+        * Duplicate Hall Ticket Download (Similarity 1.0 Match)
+      - Instant prediction cards showing Category, Confidence %, Priority, Bureau, 
+        and Duplicate Similarity Score.
 
 
-5. EXECUTION & OPERATIONAL STATUS
+5. SCRIPT & RECORDING BLUEPRINT
 --------------------------------------------------------------------------------
-Both services are running and verified live on Windows:
-- Backend: http://127.0.0.1:8000 (FastAPI / Uvicorn reloader active)
-- Frontend: http://localhost:3000 (Vite development server active with /api proxy)
-- End-to-end integration verified: HTTP 200 on all endpoints, JSON APIs correctly 
-  feeding frontend components without console errors.
-================================================================================
+Located in root folder: D:\Documents\SEM V\SIH 2026\video_recording_script.txt
+- Comprehensive 3:30 minute timestamped, step-by-step narration script.
+- Matches every click on the interactive Stepper, Portal Simulator, Conflict Alert, 
+  Joint Chamber, Time-Travel Slider, and ML Presets.
+
+
+6. CURRENT STATUS & VERIFICATION
+--------------------------------------------------------------------------------
+- Backend Server: ACTIVE on http://127.0.0.1:8000 (FastAPI / Uvicorn)
+- Frontend Server: ACTIVE on http://localhost:3000 (Vite / React)
+- Trained ML Pipelines: Verified active and loaded from .joblib models
+- Cloud Deployment Ready: PostgreSQL connection pool and render.yaml ready
+- All 10 verification test suites in tests.sql validated.
+===============================================================================

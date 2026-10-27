@@ -204,13 +204,15 @@ export default function App() {
   };
 
   // ML Inference
-  const runMlInfer = async () => {
+  const runMlInfer = async (textToUse) => {
+    const query = typeof textToUse === 'string' ? textToUse : mlText;
+    if (typeof textToUse === 'string') setMlText(textToUse);
     setMlLoading(true);
     try {
       const res = await fetch('/api/ml/infer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ complaint_text: mlText })
+        body: JSON.stringify({ complaint_text: query })
       });
       const data = await res.json();
       setMlResult(data);
@@ -1162,7 +1164,40 @@ export default function App() {
               </div>
 
               <div className="mt-4 pt-3 border-t border-slate-100 space-y-2">
-                <label className="text-xs font-bold text-slate-700 block">Complaint Text for Analysis:</label>
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <label className="text-xs font-bold text-slate-700 block">Complaint Text for Analysis:</label>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[11px] font-semibold text-slate-400">Live Scenario Presets:</span>
+                    <button
+                      type="button"
+                      onClick={() => runMlInfer('College collected 25000 excess capitation fee and refuses to refund caution deposit')}
+                      className="px-2 py-0.5 bg-blue-50 text-blue-800 border border-blue-200 rounded text-[11px] font-semibold hover:bg-blue-100 transition cursor-pointer"
+                    >
+                      💰 Capitation Fee (PGRC)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => runMlInfer('Unsafe exposed electrical wiring in a classroom caused immediate danger')}
+                      className="px-2 py-0.5 bg-rose-50 text-rose-800 border border-rose-200 rounded text-[11px] font-semibold hover:bg-rose-100 transition cursor-pointer"
+                    >
+                      ⚠️ Structural Hazard (RB)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => runMlInfer('Faculty members not paid AICTE 7th pay scale salaries for five months')}
+                      className="px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 rounded text-[11px] font-semibold hover:bg-amber-100 transition cursor-pointer"
+                    >
+                      🧑‍🏫 Faculty Pay (RB)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => runMlInfer('Unable to download my examination hall ticket')}
+                      className="px-2 py-0.5 bg-purple-50 text-purple-800 border border-purple-200 rounded text-[11px] font-semibold hover:bg-purple-100 transition cursor-pointer"
+                    >
+                      📄 Duplicate Hall Ticket
+                    </button>
+                  </div>
+                </div>
                 <textarea
                   rows={3}
                   value={mlText}
@@ -1170,11 +1205,11 @@ export default function App() {
                   className="w-full p-2.5 rounded border border-slate-300 text-xs leading-relaxed focus:ring-1 focus:ring-blue-700 bg-white"
                 />
                 <button
-                  onClick={runMlInfer}
+                  onClick={() => runMlInfer()}
                   disabled={mlLoading}
-                  className="px-4 py-1.5 bg-blue-900 text-white rounded text-xs font-bold hover:bg-blue-800 transition shadow-xs disabled:opacity-50"
+                  className="px-4 py-1.5 bg-blue-900 text-white rounded text-xs font-bold hover:bg-blue-800 transition shadow-xs disabled:opacity-50 cursor-pointer"
                 >
-                  {mlLoading ? 'Evaluating...' : 'Run Decision-Support Analysis'}
+                  {mlLoading ? 'Evaluating with Trained Model...' : 'Run Decision-Support Analysis'}
                 </button>
               </div>
             </div>
@@ -1416,7 +1451,7 @@ export default function App() {
               </div>
 
               {intakeSuccessResult && (
-                <div className="p-3 bg-emerald-50 border border-emerald-300 rounded space-y-1">
+                <div className="p-3 bg-emerald-50 border border-emerald-300 rounded space-y-1.5">
                   <div className="flex items-center gap-1.5 text-emerald-900 font-bold">
                     <CheckCircle className="w-4 h-4 text-emerald-600" />
                     <span>Live Webhook Ingestion Successful!</span>
@@ -1424,6 +1459,13 @@ export default function App() {
                   <div className="text-emerald-950 font-mono text-[11px]">
                     Resolved PID: <strong>{intakeSuccessResult.institution_pid}</strong> ({intakeSuccessResult.institution_name})
                   </div>
+                  {intakeSuccessResult.ai_category && (
+                    <div className="text-emerald-900 text-[11px] font-semibold flex items-center gap-2">
+                      <span>🤖 AI Auto-Triage:</span>
+                      <span className="bg-emerald-200/60 px-1.5 py-0.5 rounded text-emerald-950 font-bold">{intakeSuccessResult.ai_category}</span>
+                      <span className="text-emerald-700">Confidence: {(intakeSuccessResult.ai_confidence * 100).toFixed(1)}%</span>
+                    </div>
+                  )}
                   <div className="text-emerald-800 text-[11px]">
                     DPDP Blind Salted Token: <span className="font-mono">{intakeSuccessResult.tokenized_blind_hash}</span>
                   </div>

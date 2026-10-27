@@ -11,6 +11,7 @@ SIH2K26/
 ├── aicte-irccip/        # AICTE Regulatory Case Coordination & Monitoring Platform [ACTIVE]
 │   ├── backend/         # FastAPI REST API & Core Intelligence Services (Port 8000)
 │   ├── frontend/        # React + Vite Interactive Dashboard UI (Port 3000)
+│   ├── ml/              # Standalone CaseLink ML Training & Evaluation Pipelines
 │   ├── docs/            # Technical Architecture, SRS & Solution Specifications
 │   ├── schema.sql       # 3NF PostgreSQL Relational Schema (55 tables/views/triggers)
 │   ├── tests.sql        # Automated SQL Verification Test Suites (T1-T10)

@@ -37,6 +37,8 @@ class IntakeResponse(BaseModel):
     handling_bureau: str
     tokenized_blind_hash: Optional[str]
     message: str
+    ai_category: Optional[str] = None
+    ai_confidence: Optional[float] = None
 
 def generate_blind_token(raw_id: str) -> str:
     """Salted HMAC-SHA256 for Section 4(1) DPDP Act compliant blind indexing."""
@@ -118,6 +120,9 @@ def receive_portal_webhook(payload: WebhookComplaintPayload, db: Session = Depen
         ))
 
     # 8. Append Immutable Event Log
+    from app.ml.ml_service import ml_service
+    pred_cat, cat_conf = ml_service.classify_complaint(payload.summary)
+
     now_dt = datetime.datetime.utcnow()
     db.add(CaseEvent(
         case_id=new_case.case_id,
@@ -126,7 +131,7 @@ def receive_portal_webhook(payload: WebhookComplaintPayload, db: Session = Depen
         recorded_at=now_dt,
         to_status_id=st_pend.status_id if st_pend else 1,
         to_bureau_id=bureau.bureau_id if bureau else 1,
-        remarks=f"Ingested via {payload.source_portal} Gateway Webhook. Privacy token: {blind_token[:12] if blind_token else 'ANONYMOUS'}..."
+        remarks=f"Ingested via {payload.source_portal} Gateway Webhook. AI Triage: {pred_cat} ({cat_conf*100:.1f}%). Privacy token: {blind_token[:12] if blind_token else 'ANONYMOUS'}..."
     ))
 
     db.commit()
@@ -141,7 +146,9 @@ def receive_portal_webhook(payload: WebhookComplaintPayload, db: Session = Depen
         match_confidence=conf,
         handling_bureau=bureau.code if bureau else "AICTE",
         tokenized_blind_hash=blind_token[:16] + "..." if blind_token else None,
-        message=f"Successfully ingested docket {new_case.source_ref} through real-time webhook gateway."
+        message=f"Successfully ingested docket {new_case.source_ref} through real-time webhook gateway.",
+        ai_category=pred_cat,
+        ai_confidence=cat_conf
     )
 
 @router.get("/status")

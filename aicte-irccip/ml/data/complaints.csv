@@ -1,0 +1,37 @@
+complaint,category
+Unable to download my examination hall ticket,Examination
+Marks are missing from my semester result,Examination
+Correction needed in examination results,Examination
+Examination timetable has not been published,Examination
+Practical exam marks are incorrect,Examination
+Revaluation request has not been processed,Examination
+College charged excess tuition fees,Fees
+Refund of admission fees is pending,Fees
+Extra examination fee was collected,Fees
+Scholarship amount has not been credited,Fees
+Unexpected laboratory fee was charged,Fees
+Fee payment is shown as unpaid despite payment,Fees
+Unable to get admission confirmation,Admission
+Admission application status is not updated,Admission
+Problems with online admission registration,Admission
+College has not issued my admission letter,Admission
+Unable to upload documents for admission,Admission
+Admission application was rejected without explanation,Admission
+College laboratory equipment is damaged,Infrastructure
+Drinking water facility is not available,Infrastructure
+Classroom building needs repair,Infrastructure
+College washrooms are not maintained,Infrastructure
+Computer laboratory has insufficient working computers,Infrastructure
+Library facilities are inadequate,Infrastructure
+Teacher is not attending scheduled classes,Faculty
+Faculty member is not completing the syllabus,Faculty
+Lectures are regularly cancelled,Faculty
+Faculty member is not responding to student queries,Faculty
+Classes are not conducted according to the timetable,Faculty
+Concern about inappropriate faculty conduct,Faculty
+Unable to access student portal,Other
+Complaint about college administration,Other
+Student records need correction,Other
+Unable to obtain a transfer certificate,Other
+College is not responding to my submitted complaint,Other
+Difficulty contacting the institution office,Other
