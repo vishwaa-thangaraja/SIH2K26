@@ -8,7 +8,14 @@ This repository contains hackathon solutions developed by the team for **Smart I
 
 ```text
 SIH2K26/
-├── aicte-irccip/        # AICTE Regulatory Case Coordination & Monitoring Platform [ACTIVE]
+├── aicte-pravaah/       # AICTE PRAVAAH — Approval Workflow Automation & Compliance (PS: 26262) [ACTIVE]
+│   ├── src/             # React 18 + Vite 5 Interactive Approval Workflow UI (Port 5173)
+│   ├── run.bat          # 1-Click Launch Script
+│   ├── PRESENTATION_AND_VIDEO_SCRIPT.md # Official Pitch Deck & 3.5 Min Voiceover Script
+│   ├── SYSTEM_DESIGN_DESCRIPTION.md     # Production Hexagonal SDD & DDL Schemas
+│   └── README.md        # Technical Documentation & Architecture Overview
+│
+├── aicte-irccip/        # AICTE Regulatory Case Coordination & Monitoring Platform (PS: 26264)
 │   ├── backend/         # FastAPI REST API & Core Intelligence Services (Port 8000)
 │   ├── frontend/        # React + Vite Interactive Dashboard UI (Port 3000)
 │   ├── ml/              # Standalone CaseLink ML Training & Evaluation Pipelines
@@ -23,6 +30,30 @@ SIH2K26/
     ├── ML/              # Machine Learning Models & Skill Gap Analysis
     └── README.md        # Continuum Documentation
 ```
+
+---
+
+## 🚀 Active Project: AICTE PRAVAAH (`aicte-pravaah`)
+
+**Problem Statement ID:** 26262  
+**Project Name:** AICTE PRAVAAH — Integrated Approval Workflow Automation, Compliance Monitoring and Alert Management System  
+**Organization:** All India Council for Technical Education (AICTE)  
+**Theme:** Smart Automation  
+
+### Core Highlights
+- **Multi-Track APH Workflow Automation**: Dynamic routing across Scrutiny, EVC, and SAC/SHC stages with strict sequential stage gates.
+- **Cascading SLA Auto-Escalation**: Tier 1 (Soft Alert) $\to$ Tier 2 (Regional Red) $\to$ Tier 3 (Apex Executive) with automated standby reviewer pool reassignment.
+- **EVC Mobile Sentinel**: 3-member panel conflict-of-interest check and 250m GPS geofenced attendance verification.
+- **Time-Bound Undertakings Watchdog**: Active countdown clocks for conditional approvals with automated Show-Cause Notice drafting.
+- **30-Year Land Lease Sentinel**: Expiry horizon radar with SHA-256 cryptographic document checksum verification.
+- **Official Letter of Approval (LoA)**: Statutory printable order with intake quotas and digital QR seal.
+
+### ⚡ Quick Start (1-Click Run)
+```bash
+cd aicte-pravaah
+run.bat
+```
+Launches [http://localhost:5173/](http://localhost:5173/) automatically.
 
 ---
 
