@@ -190,7 +190,62 @@ export default function App() {
       setBureauWorkload(Array.isArray(workloadRes) ? workloadRes : []);
       setJointReviews(Array.isArray(jointRes) ? jointRes : []);
     } catch (err) {
-      console.error('Error fetching dashboard data:', err);
+      console.warn('Backend API unreachable, activating offline standalone showcase dataset:', err);
+      // Fallback KPIs
+      setKpis({
+        total_cases: 13,
+        contradictions_detected: 2,
+        active_joint_reviews: 1,
+        sla_breaches: 3,
+        avg_resolution_days: 14.2
+      });
+      // Fallback contradictions
+      setContradictions([
+        {
+          contradiction_id: 1,
+          case_a_ref: "PGRC/2026/014",
+          bureau_a: "PGRC",
+          case_b_ref: "RB/2026/089",
+          bureau_b: "RB",
+          institution_name: "Mepco Schlenk Engineering College",
+          institution_pid: "1-1049281721",
+          contradiction_type: "MUTUALLY_EXCLUSIVE_DISPOSAL",
+          severity: "CRITICAL",
+          description: "PGRC preparing unconditional closure while Regulation Bureau is actively prosecuting punitive show-cause notice under APH Chapter VII. AICTE Act Sec 10(1)(v) statutory violation.",
+          status: "DETECTED"
+        }
+      ]);
+      // Fallback cases from DOCKET_LIFECYCLES keys
+      const fallbackCases = Object.values(DOCKET_LIFECYCLES).map((d, idx) => ({
+        case_id: idx + 1,
+        source_ref: d.ref || d.source_ref,
+        permanent_id: d.institution_pid || d.permanent_id,
+        institution_name: d.institution || d.institution_name,
+        bureau_code: (d.bureau && d.bureau.includes('PGRC')) ? 'PGRC' : (d.bureau && d.bureau.includes('Approvals')) ? 'AB' : 'RB',
+        category_name: d.category || 'Regulatory Compliance',
+        status_code: d.stages?.[d.stages.length - 1]?.status_code || 'IN_PROGRESS',
+        summary: d.subject || d.category,
+        is_sla_breached: idx % 4 === 0,
+        days_open: 12 + idx * 3
+      }));
+      setCases(fallbackCases);
+      setBureauWorkload([
+        { bureau_code: 'PGRC', active_cases: 6, resolved_cases: 14, sla_breaches: 1 },
+        { bureau_code: 'RB', active_cases: 4, resolved_cases: 9, sla_breaches: 2 },
+        { bureau_code: 'AB', active_cases: 3, resolved_cases: 7, sla_breaches: 0 }
+      ]);
+      setJointReviews([
+        {
+          session_id: 1,
+          institution_name: 'Mepco Schlenk Engineering College',
+          permanent_id: '1-1049281721',
+          conflict_type: 'MUTUALLY_EXCLUSIVE_DISPOSAL',
+          status: 'PENDING_RESOLVE',
+          scheduled_at: '2026-07-20 14:30 IST',
+          case_a_ref: 'PGRC/2026/014',
+          case_b_ref: 'RB/2026/089'
+        }
+      ]);
     } finally {
       setLoading(false);
     }
@@ -219,10 +274,24 @@ export default function App() {
     setLoadingEvents(true);
     try {
       const res = await fetch(`/api/cases/${c.case_id}/events`);
-      const events = await res.json();
-      setCaseEvents(events);
+      if (res.ok) {
+        const events = await res.json();
+        setCaseEvents(events);
+      } else {
+        throw new Error('Events offline');
+      }
     } catch (err) {
-      console.error(err);
+      console.warn('Fallback case events from lifecycle:', err);
+      const lc = DOCKET_LIFECYCLES[c.source_ref] || Object.values(DOCKET_LIFECYCLES)[0];
+      if (lc && lc.stages) {
+        setCaseEvents(lc.stages.map((st, i) => ({
+          event_id: i + 1,
+          event_type: st.title,
+          actor_bureau: st.bureau_code,
+          recorded_at: st.date,
+          details: { action: st.action_summary, doc_ref: st.doc_ref }
+        })));
+      }
     } finally {
       setLoadingEvents(false);
     }
